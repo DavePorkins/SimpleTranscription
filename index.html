@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Whisper V12 Mobile</title>
+    <title>Whisper V13</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root {
             --accent-blue: #5BCEFA;
             --accent-pink: #F5A9B8;
             --text-main: #495057;
-            --glass-bg: rgba(255, 255, 255, 0.90); /* Etwas undurchsichtiger für Mobile */
+            --glass-bg: rgba(255, 255, 255, 0.90);
             --glass-border: rgba(255, 255, 255, 0.6);
         }
 
@@ -22,7 +22,7 @@
             min-height: 100vh; padding: 15px;
             background: linear-gradient(135deg, #5BCEFA 0%, #ffffff 50%, #F5A9B8 100%);
             background-attachment: fixed;
-            -webkit-tap-highlight-color: transparent; /* Kein Klick-Highlight auf Mobile */
+            -webkit-tap-highlight-color: transparent;
         }
 
         /* Toast Message */
@@ -39,7 +39,7 @@
         #toast.waiting { background: var(--accent-pink); }
         #toast.error { background: #ff6b6b; }
 
-        .app-container { width: 100%; max-width: 800px; position: relative; z-index: 2; padding-bottom: 50px; }
+        .app-container { width: 100%; max-width: 900px; position: relative; z-index: 2; padding-bottom: 50px; }
 
         /* --- Header --- */
         header {
@@ -69,7 +69,7 @@
         input[type="password"] {
             background: rgba(255,255,255,0.5); border: 1px solid #dee2e6; color: #555;
             padding: 8px; border-radius: 8px; width: 80px; transition: width 0.3s;
-            font-size: 16px; /* Verhindert Zoom auf iPhone */
+            font-size: 16px;
         }
         input[type="password"]:focus { width: 150px; outline: none; border-color: var(--accent-pink); background: white;}
 
@@ -81,17 +81,24 @@
         .toggle-switch { display: flex; align-items: center; gap: 5px; font-size: 0.85rem; font-weight: 600; color: #666; }
         .toggle-switch input { width: 18px; height: 18px; accent-color: var(--accent-pink); }
 
-        /* --- STAGE --- */
+        /* --- STAGE (Visualizer) --- */
         .stage {
             position: relative; background: var(--glass-bg);
             backdrop-filter: blur(12px); border-radius: 24px; overflow: hidden;
             box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
             border: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
         }
 
-        .drop-overlay { display: none; } /* Drop overlay auf Mobile meist störend, deaktiviert */
-
+        /* MOBILE STANDARD: Klein */
         canvas { width: 100%; height: 200px; display: block; }
+
+        /* DESKTOP FIX: Wenn Bildschirm breiter als 768px ist, mach es groß */
+        @media (min-width: 768px) {
+            canvas { height: 350px; } /* Viel größer am PC */
+            h1 { font-size: 1.5rem; }
+            .app-container { padding-top: 20px; }
+        }
 
         .stage-ui {
             padding: 20px; background: rgba(255,255,255,0.7);
@@ -102,12 +109,12 @@
         .stats { font-family: monospace; color: #868e96; font-size: 0.9rem; display: flex; gap: 15px; font-weight: bold; }
         .stats span.active { color: var(--accent-pink); }
 
-        /* Controls für Mobile optimiert */
         .controls { 
             display: grid; 
-            grid-template-columns: 1fr auto 1fr; /* REC (groß) - Pause - Stop */
+            grid-template-columns: 1fr auto 1fr; 
             gap: 10px; 
             width: 100%;
+            max-width: 500px; /* Begrenzung am PC */
         }
 
         button {
@@ -115,23 +122,20 @@
             font-size: 1rem; font-weight: 700; cursor: pointer;
             transition: transform 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            user-select: none;
-            -webkit-touch-callout: none;
+            user-select: none; -webkit-touch-callout: none;
         }
         button:active { transform: scale(0.96); }
 
         .btn-rec { 
             background: linear-gradient(135deg, #5BCEFA, #4facfe); color: white; 
-            grid-column: 1 / 4; /* Volle Breite am Anfang */
+            grid-column: 1 / 4; 
             font-size: 1.2rem; padding: 20px;
         }
-        /* Wenn Aufnahme läuft, ändern wir das Grid */
         .recording-active .controls { grid-template-columns: 1fr 1fr; } 
-        .recording-active .btn-rec { display: none; } /* Rec Button weg wenn läuft */
+        .recording-active .btn-rec { display: none; }
 
         .btn-pause { background: white; color: #555; width: 100%; }
         .btn-pause.active { background: #ffe066; color: #000; }
-        
         .btn-stop { background: white; color: #ff6b6b; width: 100%; }
         .btn-stop:hover { background: #ff6b6b; color: white; }
 
@@ -162,13 +166,11 @@
         .btn-s { padding: 10px 14px; font-size: 0.85rem; background: white; color: #555; border-radius: 8px; flex: 1; white-space: nowrap;} 
         .btn-del { color: #ff6b6b; flex: 0; }
 
-        /* Mobile Adjustments */
         @media (max-width: 600px) {
             .header-controls { flex-direction: column; align-items: stretch; gap: 12px; }
             .settings-group { display: flex; justify-content: space-between; align-items: center; }
             .btn-rec { border-radius: 20px; }
         }
-
     </style>
 </head>
 <body>
@@ -180,7 +182,7 @@
 <div class="app-container">
     <header>
         <div class="header-top">
-            <h1>🏳️‍⚧️ Whisper V12</h1>
+            <h1>🏳️‍⚧️ Whisper V13</h1>
             <div id="keyBox"><input type="password" id="apiKey" placeholder="API Key"></div>
         </div>
         
@@ -220,7 +222,6 @@
 </div>
 
 <script>
-    // --- SETUP ---
     const els = {
         btnStart: document.getElementById('btnStart'),
         btnPause: document.getElementById('btnPause'),
@@ -243,12 +244,11 @@
     let startTime = 0, pauseDelta = 0, pauseStart = 0, timerInt;
     let pendingClipboardText = null;
 
-    // Load Key
     if(HARDCODED_KEY.length > 5) {
         els.apiKey.value = HARDCODED_KEY; els.keyBox.style.display = 'none';
     } else {
-        els.apiKey.value = localStorage.getItem("openai_v12_key") || "";
-        els.apiKey.addEventListener('change', () => localStorage.setItem("openai_v12_key", els.apiKey.value));
+        els.apiKey.value = localStorage.getItem("openai_v13_key") || "";
+        els.apiKey.addEventListener('change', () => localStorage.setItem("openai_v13_key", els.apiKey.value));
     }
 
     const savedAutoDl = localStorage.getItem("auto_dl_pref");
@@ -263,8 +263,10 @@
         const ctx = els.canvas.getContext('2d');
         function draw() {
             requestAnimationFrame(draw);
-            if(els.canvas.width !== els.canvas.offsetWidth) {
-                els.canvas.width = els.canvas.offsetWidth; els.canvas.height = els.canvas.offsetHeight;
+            // Dynamic Resize Check
+            if(els.canvas.width !== els.canvas.offsetWidth || els.canvas.height !== els.canvas.offsetHeight) {
+                els.canvas.width = els.canvas.offsetWidth; 
+                els.canvas.height = els.canvas.offsetHeight;
             }
             const w = els.canvas.width; const h = els.canvas.height;
             const cx = w/2; const cy = h/2;
@@ -284,7 +286,11 @@
             smoothedVol = smoothedVol * 0.8 + vol * 0.2;
             const blue = '#5BCEFA'; const pink = '#F5A9B8';
             
-            const radius = 35 + (smoothedVol * 0.4);
+            // Radius anpassen an Canvas Größe (damit es auf PC größer wirkt)
+            const minDim = Math.min(w, h);
+            const baseRad = minDim * 0.15; // 15% der kleinsten Seite
+            
+            const radius = baseRad + (smoothedVol * 0.5);
             const grad = ctx.createRadialGradient(cx, cy, radius * 0.2, cx, cy, radius);
             grad.addColorStop(0, 'white');
             grad.addColorStop(0.5, pink);
@@ -297,12 +303,12 @@
 
             if(isRecording && !isPaused && dataArray) {
                 ctx.save(); ctx.translate(cx, cy);
-                const rays = 80; const step = (Math.PI * 2) / rays; // Weniger Rays für Mobile Performance
+                const rays = 80; const step = (Math.PI * 2) / rays; 
                 for(let i=0; i<rays; i++) {
                     let dataIdx = Math.floor((i / rays) * (bufferLength / 2));
                     if(i > rays/2) dataIdx = Math.floor(((rays - i) / rays) * (bufferLength / 2));
                     const val = dataArray[dataIdx];
-                    const rayLen = radius + (val * 0.5);
+                    const rayLen = radius + (val * 0.6); // Rays länger machen
                     ctx.rotate(step);
                     ctx.beginPath();
                     ctx.moveTo(0, radius - 5);
@@ -326,12 +332,10 @@
         if(!els.apiKey.value) return showToast("API Key fehlt!", true);
         
         try {
-            if(!globalStream) {
-                globalStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            }
-            // Analyser neu verbinden falls nötig
+            if(!globalStream) globalStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            
             if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if(audioCtx.state === 'suspended') await audioCtx.resume(); // Wichtig für Mobile!
+            if(audioCtx.state === 'suspended') await audioCtx.resume();
             
             if(!analyser) {
                 analyser = audioCtx.createAnalyser();
@@ -341,10 +345,9 @@
             }
 
             chunks = [];
-            // Versuche Codecs für Mobile
             let options = {};
             if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) options = { mimeType: 'audio/webm;codecs=opus', bitsPerSecond: 32000 };
-            else if (MediaRecorder.isTypeSupported('audio/mp4')) options = { mimeType: 'audio/mp4', bitsPerSecond: 32000 }; // Safari
+            else if (MediaRecorder.isTypeSupported('audio/mp4')) options = { mimeType: 'audio/mp4', bitsPerSecond: 32000 };
             
             mediaRecorder = new MediaRecorder(globalStream, options);
 
@@ -361,16 +364,15 @@
             isRecording = true; isPaused = false; startTime = Date.now(); pauseDelta = 0;
             timerInt = setInterval(updateTimer, 1000);
             
-            // UI Toggle
             els.stageBlock.classList.add('recording-active');
-            els.btnStart.style.display = 'none'; // Verstecken
+            els.btnStart.style.display = 'none'; 
             els.btnPause.disabled = false; els.btnStop.disabled = false;
             els.status.innerText = "REC"; els.status.style.color = "#F5A9B8";
             els.timer.classList.add('active');
 
         } catch(e) { 
             console.error(e);
-            showToast("Mikrofon Zugriff verweigert! Siehe Anleitung.", true); 
+            showToast("Mikrofon Zugriff verweigert!", true); 
         }
     }
 
@@ -399,7 +401,7 @@
     function resetUI() {
         isRecording = false; isPaused = false;
         els.stageBlock.classList.remove('recording-active');
-        els.btnStart.style.display = 'flex'; // Wieder da
+        els.btnStart.style.display = 'flex'; 
         els.btnPause.disabled = true; els.btnStop.disabled = true;
         els.btnPause.classList.remove('active');
         els.status.innerText = "Bereit"; els.status.style.color = "#adb5bd";
@@ -411,9 +413,7 @@
         const id = retryId || Date.now();
         const timestamp = new Date().toLocaleString();
         
-        // Auto Save Audio Check
         if(els.autoDl.checked && !retryId) {
-            // Extension fixen
             const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
             download(blob, `rec_${id}.${ext}`);
         }
@@ -451,20 +451,20 @@
 
     // --- STORAGE ---
     function updateHistory(id, timestamp, text) {
-        let hist = JSON.parse(localStorage.getItem("transcripts_v12") || "[]");
+        let hist = JSON.parse(localStorage.getItem("transcripts_v13") || "[]");
         const idx = hist.findIndex(h => h.id == id);
         if(idx >= 0) hist[idx].text = text;
         else hist.unshift({id, timestamp, text});
         if(hist.length > 50) hist = hist.slice(0, 50);
-        localStorage.setItem("transcripts_v12", JSON.stringify(hist));
+        localStorage.setItem("transcripts_v13", JSON.stringify(hist));
     }
     function removeFromHistory(id) {
-        let hist = JSON.parse(localStorage.getItem("transcripts_v12") || "[]");
+        let hist = JSON.parse(localStorage.getItem("transcripts_v13") || "[]");
         hist = hist.filter(h => h.id != id);
-        localStorage.setItem("transcripts_v12", JSON.stringify(hist));
+        localStorage.setItem("transcripts_v13", JSON.stringify(hist));
     }
     function loadHistory() {
-        let hist = JSON.parse(localStorage.getItem("transcripts_v12") || "[]");
+        let hist = JSON.parse(localStorage.getItem("transcripts_v13") || "[]");
         for(let i = hist.length - 1; i >= 0; i--) {
             createEntry(hist[i].id, hist[i].timestamp, hist[i].text, null);
         }
@@ -484,11 +484,9 @@
     window.addEventListener('focus', () => {
         if(pendingClipboardText) { navigator.clipboard.writeText(pendingClipboardText); showToast("📋 Kopiert!"); pendingClipboardText = null; }
     });
-    // Mobile touch fix für focus
     window.addEventListener('touchstart', () => {
         if(pendingClipboardText) { navigator.clipboard.writeText(pendingClipboardText); showToast("📋 Kopiert!"); pendingClipboardText = null; }
     });
-
 
     function createEntry(id, timeStr, initialText="", audioBlob=null) {
         const d = document.createElement('div'); d.id=`entry-${id}`; d.className='entry';
