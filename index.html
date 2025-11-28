@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Simple Transcription V32</title>
+    <title>Simple Transcription V33</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root {
@@ -139,7 +139,8 @@
             background: var(--glass-bg); backdrop-filter: blur(15px);
             border-radius: 24px; padding: 25px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.03);
-            animation: slideIn 0.4s ease-out; border: 1px solid rgba(255,255,255,0.8);
+            animation: slideIn 0.4s ease-out;
+            border: 1px solid rgba(255,255,255,0.8);
         }
         @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: 0; } }
 
@@ -166,25 +167,6 @@
         }
         .btn-del { flex: 0; color: #ff8888; }
 
-        /* DEV PANEL */
-        #devPanel {
-            display: none; position: fixed; bottom: 20px; left: 20px; right: 20px;
-            background: rgba(255,255,255,0.95); padding: 25px; border-radius: 30px;
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.15); z-index: 1000;
-            border: 1px solid white; backdrop-filter: blur(10px);
-            max-height: 60vh; overflow-y: auto;
-        }
-        #devPanel.visible { display: block; animation: slideUp 0.3s ease; }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
-        .dev-header { display: flex; justify-content: space-between; margin-bottom: 20px; font-weight:bold; font-size:1.1rem;}
-        .dev-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 0.9rem; }
-        .dev-row input[type="color"] { border:none; width:40px; height:30px; cursor:pointer; background:none;}
-        .dev-row input[type="range"] { accent-color: var(--accent); }
-
-        .icon-btn { background: none; border: none; font-size: 1.4rem; cursor: pointer; padding: 5px; opacity: 0.7; transition:0.2s;}
-        .icon-btn:hover { opacity: 1; transform: rotate(15deg); }
-
         /* TOAST */
         #toast {
             position: fixed; top: 20px; left: 50%; transform: translate(-50%, -150%);
@@ -194,7 +176,7 @@
             font-size: 0.95rem; border: 2px solid var(--accent);
         }
         #toast.visible { transform: translate(-50%, 0); }
-        #toast.warn { border-color: var(--warn); color: #d35400; }
+        #toast.error { border-color: var(--danger); color: var(--danger); }
 
     </style>
 </head>
@@ -209,43 +191,19 @@
     <header>
         <div class="top-row">
             <h1>Simple Transcription</h1>
-            
-            <div style="display:flex; gap:5px;">
-                <button class="icon-btn" onclick="clearAll()" title="Alles löschen">🗑️</button>
-                <button class="icon-btn" onclick="toggleDev()" title="Design anpassen">🎨</button>
-            </div>
+            <div class="api-box"><input type="password" id="apiKey" placeholder="🔑 API Key (Optional für Aufnahme)"></div>
         </div>
-        
         <div class="controls-row">
-            <div class="api-box"><input type="password" id="apiKey" placeholder="🔑 API Key (Optional)"></div>
-            <button class="btn-action" onclick="dlZip()" style="flex:0 auto; padding:10px 15px;">📦 ZIP</button>
-        </div>
-        
-        <div style="font-size:0.8rem; color:#666; font-weight:600; margin-top:5px; text-align:center;">
-            <label style="display:inline-flex; align-items:center; gap:5px;"><input type="checkbox" id="autoDl" style="accent-color:var(--accent);"> Auto-Save Audio</label>
+            <button class="btn-action" onclick="dlZip()" style="flex:0 auto; background:white; color:var(--accent);">📦 Als ZIP speichern</button>
+            <div style="font-size:0.85rem; color:#666; font-weight:600;">
+                <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="autoDl" style="accent-color:var(--accent);"> Auto-Save</label>
+            </div>
+            <button class="btn-action btn-del" onclick="clearAll()" style="flex:0 auto;" title="Alles löschen">🗑️</button>
         </div>
     </header>
 
-    <div id="devPanel">
-        <div class="dev-header">
-            <span>🎨 Design Studio</span>
-            <button class="icon-btn" onclick="toggleDev()">✕</button>
-        </div>
-        <div class="dev-row"><span>Hintergrund 1</span> <input type="color" id="col1"></div>
-        <div class="dev-row"><span>Hintergrund 2</span> <input type="color" id="col2"></div>
-        <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
-        <div class="dev-row"><span>Blob 1</span> <input type="color" id="blob1"></div>
-        <div class="dev-row"><span>Blob 2</span> <input type="color" id="blob2"></div>
-        <div class="dev-row"><span>Blob 3</span> <input type="color" id="blob3"></div>
-        <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
-        <div class="dev-row"><span>Größe</span> <input type="range" id="pSize" min="20" max="150"></div>
-        <div class="dev-row"><span>Reaktion</span> <input type="range" id="pGain" min="0" max="200"></div>
-    </div>
-
     <div class="stage">
-        <div class="canvas-wrapper">
-            <canvas id="gooeyCanvas"></canvas>
-        </div>
+        <canvas id="cloudCanvas"></canvas>
         
         <div class="stage-ui">
             <div class="stats-col">
@@ -274,74 +232,52 @@
         btnFinish: document.getElementById('btnFinish'),
         timer: document.getElementById('timer'),
         size: document.getElementById('sizeDisplay'),
-        canvas: document.getElementById('gooeyCanvas'),
+        canvas: document.getElementById('cloudCanvas'),
         feed: document.getElementById('feed'),
         apiKey: document.getElementById('apiKey'),
         fileUpload: document.getElementById('fileUpload'),
         toast: document.getElementById('toast'),
-        autoDl: document.getElementById('autoDl'),
-        devPanel: document.getElementById('devPanel'),
-        // Params
-        col1: document.getElementById('col1'), col2: document.getElementById('col2'),
-        blob1: document.getElementById('blob1'), blob2: document.getElementById('blob2'), blob3: document.getElementById('blob3'),
-        pSize: document.getElementById('pSize'), pGain: document.getElementById('pGain')
+        autoDl: document.getElementById('autoDl')
     };
 
-    // --- DEV DEFAULTS ---
-    const defaults = { c1: '#a18cd1', c2: '#fbc2eb', b1: '#8ec5fc', b2: '#e0c3fc', b3: '#99ddff', sz: 70, gn: 100 };
-
-    function toggleDev() { els.devPanel.classList.toggle('visible'); }
-    function loadDev() {
-        els.col1.value = localStorage.getItem('d_c1') || defaults.c1;
-        els.col2.value = localStorage.getItem('d_c2') || defaults.c2;
-        els.blob1.value = localStorage.getItem('d_b1') || defaults.b1;
-        els.blob2.value = localStorage.getItem('d_b2') || defaults.b2;
-        els.blob3.value = localStorage.getItem('d_b3') || defaults.b3;
-        els.pSize.value = localStorage.getItem('d_sz') || defaults.sz;
-        els.pGain.value = localStorage.getItem('d_gn') || defaults.gn;
-        updateDev();
-    }
-    function updateDev() {
-        document.body.style.backgroundImage = `linear-gradient(135deg, ${els.col1.value} 0%, ${els.col2.value} 100%)`;
-        localStorage.setItem('d_c1', els.col1.value); localStorage.setItem('d_c2', els.col2.value);
-        localStorage.setItem('d_b1', els.blob1.value); localStorage.setItem('d_b2', els.blob2.value);
-        localStorage.setItem('d_b3', els.blob3.value);
-        localStorage.setItem('d_sz', els.pSize.value); localStorage.setItem('d_gn', els.pGain.value);
-    }
-    [els.col1, els.col2, els.blob1, els.blob2, els.blob3, els.pSize, els.pGain].forEach(el => el.addEventListener('input', updateDev));
-    loadDev();
-
-    // --- CORE ---
     let globalStream, mediaRecorder, chunks = [], audioCtx, analyser, dataArray;
     let isRecording = false, isPaused = false;
     let startTime = 0, pauseDelta = 0, pauseStart = 0, timerInt;
     let pendingClipboardText = null;
     
+    // Init Key
     if(HARDCODED_KEY.length > 5) { 
         els.apiKey.value = HARDCODED_KEY; 
         document.querySelector('.api-box').style.display='none'; 
     } else { 
-        els.apiKey.value = localStorage.getItem("key_v32") || "";
-        els.apiKey.addEventListener('change', () => localStorage.setItem("key_v32", els.apiKey.value));
+        els.apiKey.value = localStorage.getItem("key_v33") || "";
+        els.apiKey.addEventListener('change', () => localStorage.setItem("key_v33", els.apiKey.value));
     }
 
-    if(localStorage.getItem("autodl_v32") === 'true') els.autoDl.checked = true;
-    els.autoDl.addEventListener('change', () => localStorage.setItem("autodl_v32", els.autoDl.checked));
+    if(localStorage.getItem("autodl_v33") === 'true') els.autoDl.checked = true;
+    els.autoDl.addEventListener('change', () => localStorage.setItem("autodl_v33", els.autoDl.checked));
 
     loadHistory();
 
-    function resizeCanvas() { els.canvas.width = els.canvas.offsetWidth * 1.5; els.canvas.height = els.canvas.offsetHeight * 1.5; }
+    function resizeCanvas() {
+        els.canvas.width = els.canvas.offsetWidth * 1.5;
+        els.canvas.height = els.canvas.offsetHeight * 1.5;
+    }
     window.addEventListener('resize', resizeCanvas);
 
     // --- VISUALIZER ---
     let smoothedVol = 0;
+    
     function initVisualizer() {
         const ctx = els.canvas.getContext('2d');
         resizeCanvas();
+
         function draw() {
             requestAnimationFrame(draw);
             const w = els.canvas.width; const h = els.canvas.height; const cx = w/2; const cy = h/2;
-            ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, w, h);
+
+            ctx.fillStyle = '#ffffff'; 
+            ctx.fillRect(0, 0, w, h);
 
             let vol = 0;
             if(analyser && isRecording && !isPaused) {
@@ -350,22 +286,33 @@
                 analyser.getByteFrequencyData(dataArray);
                 let sum = 0; for(let i=0; i<len; i++) sum += dataArray[i];
                 vol = (sum / len); 
-            } else { vol = 5 + Math.sin(Date.now()/1500) * 5; }
+            } else {
+                vol = 8 + Math.sin(Date.now()/1200) * 5; 
+            }
 
             smoothedVol = smoothedVol * 0.9 + vol * 0.1;
-            const baseSize = parseInt(els.pSize.value);
-            const gain = parseInt(els.pGain.value) / 100;
-            const intensity = smoothedVol * gain; 
-            const t = Date.now() / 2000;
+            const intensity = smoothedVol * 1.5; 
+            const t = Date.now() / 1500;
 
-            drawBlob(ctx, cx + Math.cos(t)*50, cy + Math.sin(t*1.2)*30, baseSize + intensity*1.5, els.blob1.value);
-            drawBlob(ctx, cx + Math.sin(t*0.8)*60, cy + Math.cos(t)*40, baseSize + intensity*1.5, els.blob2.value);
-            drawBlob(ctx, cx, cy + Math.sin(t*2)*10, (baseSize*0.8) + intensity * 0.8, els.blob3.value);
+            ctx.globalCompositeOperation = 'screen';
+            // Kräftigere Farben für "Vivid Lava"
+            drawGlowBlob(ctx, cx + Math.cos(t)*40, cy + Math.sin(t*1.2)*30, 80 + intensity, 'rgba(30, 144, 255, 0.8)'); // Blau
+            drawGlowBlob(ctx, cx + Math.sin(t*0.8)*50, cy + Math.cos(t)*40, 90 + intensity, 'rgba(255, 20, 147, 0.8)'); // Pink
+            drawGlowBlob(ctx, cx, cy + Math.sin(t*2)*10, 60 + intensity * 0.6, 'rgba(148, 0, 211, 0.8)'); // Lila
+
+            ctx.globalCompositeOperation = 'source-over';
         }
         draw();
     }
-    function drawBlob(ctx, x, y, r, color) {
-        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
+
+    function drawGlowBlob(ctx, x, y, r, color) {
+        const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
+        grad.addColorStop(0, color);
+        grad.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
     }
     initVisualizer();
 
@@ -375,6 +322,7 @@
         else if (isRecording && !isPaused) pauseRec();
         else if (isPaused) resumeRec();
     };
+
     els.btnFinish.onclick = stopRec;
 
     function setMainButtonState(state) {
@@ -395,7 +343,7 @@
 
     // --- LOGIC ---
     async function startRec() {
-        // !!! API CHECK ENTFERNT FÜR RECORDER-MODUS !!!
+        // KEIN API CHECK HIER (Universal Mode)
         els.btnMain.disabled = true;
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -443,42 +391,42 @@
         els.fileUpload.value='';
     });
 
-    // --- API & PROCESSING ---
     async function processAudio(blob, name, retryId) {
         const id = retryId || Date.now();
         const ts = new Date().toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'medium' });
         
         if(els.autoDl.checked && !retryId) {
             let ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
-            if(name!=="Memo") ext=name.split('.').pop();
+            // BUGFIX EXTENSION RETRY:
+            if(name !== "Memo" && name !== "Retry" && name.includes('.')) ext = name.split('.').pop();
             download(blob, `rec_${id}.${ext}`);
         }
 
-        // --- NEW: CREATE ENTRY FIRST ---
         if(!retryId) createEntry(id, ts, "", blob);
         
         const entry = document.getElementById(`e-${id}`);
         const textArea = document.getElementById(`txt-${id}`);
-        const statusSpan = entry.querySelector('.status-text'); // New helper span
         
-        // --- NEW: CHECK FOR KEY ---
+        // CHECK KEY
         if(!els.apiKey.value) {
             textArea.value = "(Wartet auf API Key... Aufnahme gespeichert.)";
-            // Zeige Retry Button
             document.getElementById(`retry-${id}`).style.display = 'flex';
-            showToast("Aufnahme gespeichert. Für Text Key eingeben & Retry drücken.", true);
-            // Speichern in History ohne Text
+            showToast("Gespeichert. Für Text Key eingeben & Retry drücken.", true);
             saveToHistory(id, "", ts);
             return;
         }
 
-        // IF KEY EXISTS:
         textArea.value = "Transkribiere...";
         document.getElementById(`retry-${id}`).style.display = 'none';
         
         const fd = new FormData();
-        let ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
-        if(name!=="Memo") ext=name.split('.').pop();
+        // BUGFIX EXTENSION FOR OPENAI
+        let ext = 'webm';
+        if(blob.type.includes('mp4')) ext = 'mp4';
+        if(blob.type.includes('wav')) ext = 'wav';
+        // Wenn es ein Upload war (Name hat Punkt), nimm die echte Endung
+        if(name && name.includes('.') && name !== "Retry") ext = name.split('.').pop();
+        
         fd.append("file", blob, `audio.${ext}`);
         fd.append("model", "whisper-1");
 
@@ -507,28 +455,23 @@
         if(document.hasFocus()) { navigator.clipboard.writeText(text).then(() => showToast("📋 Kopiert!")); }
         else { pendingClipboardText = text; showToast("✅ Fertig! Tippen zum Kopieren."); }
     }
-    const doPendingCopy = () => { if(pendingClipboardText) { navigator.clipboard.writeText(pendingClipboardText); showToast("📋 Jetzt kopiert!"); pendingClipboardText=null; } };
+    const doPendingCopy = () => { if(pendingClipboardText) { navigator.clipboard.writeText(pendingClipboardText); showToast("📋 Jetzt kopiert!"); pendingClipboardText = null; } };
     window.addEventListener('focus', doPendingCopy); window.addEventListener('click', doPendingCopy); window.addEventListener('touchstart', doPendingCopy);
 
     function saveToHistory(id, text, ts) {
-        let h = JSON.parse(localStorage.getItem("hist_v32")||"[]");
-        // Update existing or add new
-        const existingIdx = h.findIndex(e => e.id == id);
-        if(existingIdx > -1) {
-            h[existingIdx].text = text;
-        } else {
-            h.unshift({ id, text, ts });
-        }
+        let h = JSON.parse(localStorage.getItem("hist_v33")||"[]");
+        const idx = h.findIndex(e => e.id == id);
+        if(idx > -1) h[idx].text = text; else h.unshift({ id, text, ts });
         if(h.length > 30) h.pop();
-        localStorage.setItem("hist_v32", JSON.stringify(h));
+        localStorage.setItem("hist_v33", JSON.stringify(h));
     }
     function loadHistory() {
-        let h = JSON.parse(localStorage.getItem("hist_v32")||"[]");
+        let h = JSON.parse(localStorage.getItem("hist_v33")||"[]");
         h.forEach(e => createEntry(e.id, e.ts, e.text));
     }
     function clearAll() {
         if(confirm("Wirklich ALLES löschen?")) {
-            localStorage.removeItem("hist_v32");
+            localStorage.removeItem("hist_v33");
             els.feed.innerHTML = "";
             showToast("Verlauf gelöscht.");
         }
@@ -558,17 +501,17 @@
         if(blob) d.audioBlob = blob;
     }
 
-    // ACTIONS
     window.doCopy = (id) => { navigator.clipboard.writeText(document.getElementById(`txt-${id}`).value); showToast("Kopiert"); };
-    window.delEntry = (id) => { document.getElementById(`e-${id}`).remove(); let h = JSON.parse(localStorage.getItem("hist_v32")||"[]"); h = h.filter(x => x.id != id); localStorage.setItem("hist_v32", JSON.stringify(h)); };
+    window.delEntry = (id) => { document.getElementById(`e-${id}`).remove(); let h = JSON.parse(localStorage.getItem("hist_v33")||"[]"); h = h.filter(x => x.id != id); localStorage.setItem("hist_v33", JSON.stringify(h)); };
     window.dlTxt = (id) => { download(new Blob([document.getElementById(`txt-${id}`).value]), `transkript_${id}.txt`); };
     window.dlAudio = (id) => { const el = document.getElementById(`e-${id}`); if(el.audioBlob) { let ext = el.audioBlob.type.includes('mp4') ? 'mp4' : 'webm'; download(el.audioBlob, `rec_${id}.${ext}`); }};
     
-    // RETRY FUNCTION
+    // RETRY FIX
     window.retry = (id) => {
         const el = document.getElementById(`e-${id}`);
         if(el.audioBlob) {
-            processAudio(el.audioBlob, "Retry", id); // Re-run process with ID
+            // WICHTIG: Pass the blob directly, name logic is handled inside processAudio
+            processAudio(el.audioBlob, "Retry", id); 
         } else {
             showToast("Audio nicht mehr im Speicher (Reload?)", true);
         }
@@ -599,7 +542,7 @@
     };
 
     function download(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
-    function showToast(txt, err=false) { els.toast.innerText = txt; els.toast.className = err ? 'visible warn' : 'visible'; setTimeout(()=>els.toast.className='', 4000); }
+    function showToast(txt, err=false) { els.toast.innerText = txt; els.toast.style.borderColor = err ? '#ef4444' : 'var(--accent)'; els.toast.style.color = '#333'; els.toast.classList.add('visible'); setTimeout(()=>els.toast.classList.remove('visible'), 3000); }
 </script>
 </body>
 </html>
