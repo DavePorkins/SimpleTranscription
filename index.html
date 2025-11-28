@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Simple Transcription V19</title>
+    <title>Simple Transcription V20</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root {
@@ -20,7 +20,6 @@
             margin: 0;
             display: flex; flex-direction: column; align-items: center;
             min-height: 100vh; padding: 15px;
-            /* Der Hintergrund-Verlauf aus V18 */
             background: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 50%, #fbc2eb 100%);
             background-attachment: fixed;
             -webkit-tap-highlight-color: transparent;
@@ -60,7 +59,6 @@
 
         .header-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: space-between; }
 
-        /* API Input deutlicher */
         .api-wrapper { position: relative; }
         input[type="password"] {
             background: white; border: 2px solid #dee2e6; color: #555;
@@ -162,7 +160,7 @@
         <div class="header-top">
             <h1>Simple Transcription</h1>
             <div class="api-wrapper">
-                <input type="password" id="apiKey" placeholder="🔑 API Key">
+                <input type="password" id="apiKey" placeholder="🔑 API Key hier">
             </div>
         </div>
         
@@ -182,7 +180,7 @@
     </header>
 
     <div class="stage" id="stageBlock">
-        <canvas id="barCanvas"></canvas>
+        <canvas id="liquidCanvas"></canvas>
         
         <div class="stage-ui">
             <div class="stats">
@@ -213,7 +211,7 @@
         timer: document.getElementById('timer'),
         size: document.getElementById('size'),
         status: document.getElementById('status'),
-        canvas: document.getElementById('barCanvas'),
+        canvas: document.getElementById('liquidCanvas'),
         feed: document.getElementById('feed'),
         apiKey: document.getElementById('apiKey'),
         toast: document.getElementById('toast'),
@@ -232,7 +230,7 @@
 
     // Setup
     if(HARDCODED_KEY.length > 5) { els.apiKey.value = HARDCODED_KEY; els.keyBox.style.display = 'none'; }
-    else { els.apiKey.value = localStorage.getItem("key_v19") || ""; els.apiKey.addEventListener('change',()=>localStorage.setItem("key_v19",els.apiKey.value)); }
+    else { els.apiKey.value = localStorage.getItem("key_v20") || ""; els.apiKey.addEventListener('change',()=>localStorage.setItem("key_v20",els.apiKey.value)); }
 
     if(localStorage.getItem("autodl")==='true') els.autoDl.checked = true;
     els.autoDl.addEventListener('change',()=>localStorage.setItem("autodl",els.autoDl.checked));
@@ -246,13 +244,13 @@
     }
     window.addEventListener('resize', resizeCanvas);
 
-    // --- SMOOTH BAR VISUALIZER (Gravity Effect) ---
+    // --- LIQUID FLOW VISUALIZER (Smooth Interpolation) ---
     function initVisualizer() {
         const ctx = els.canvas.getContext('2d');
         resizeCanvas();
 
-        const barCount = 40; // Anzahl der Balken (Symmetrisch = 20 pro Seite)
-        const barStates = new Array(barCount).fill(0); // Speichert aktuelle Höhe für Gravity
+        const points = 50; // Anzahl der Punkte für die Kurve
+        const smoothData = new Array(points).fill(0); // Speichert geglättete Werte
 
         function draw() {
             requestAnimationFrame(draw);
@@ -264,67 +262,72 @@
 
             let bufferLength = 0;
             if(analyser && isRecording && !isPaused) {
-                // Wir nutzen FrequencyData für Balken
                 bufferLength = analyser.frequencyBinCount;
                 if(!dataArray) dataArray = new Uint8Array(bufferLength);
                 analyser.getByteFrequencyData(dataArray);
             }
 
-            // Create Gradient
-            const gradient = ctx.createLinearGradient(0, 0, 0, h);
-            gradient.addColorStop(0, '#5BCEFA'); // Oben Blau
-            gradient.addColorStop(0.5, '#F5A9B8'); // Mitte Pink
-            gradient.addColorStop(1, 'rgba(255,255,255,0.2)'); // Unten fast transparent
+            // --- THE MATH (Smoothing) ---
+            for(let i=0; i<points; i++) {
+                let target = 0;
+                if(dataArray) {
+                    // Mappe die Punkte auf die Frequenzen
+                    // Wir nutzen nur die unteren 70% der Frequenzen (relevanter Bereich)
+                    const idx = Math.floor(i / points * (bufferLength * 0.7));
+                    target = dataArray[idx];
+                } else {
+                    // Idle Wave
+                    target = 5 + Math.sin(Date.now()/800 + i*0.2) * 5;
+                }
+
+                // Smooth Interpolation (Der Trick gegen Flickern)
+                // Wir bewegen uns nur 20% des Weges zum Ziel pro Frame
+                smoothData[i] += (target - smoothData[i]) * 0.2; 
+            }
+
+            // --- DRAWING ---
+            const gradient = ctx.createLinearGradient(0, h, 0, 0);
+            gradient.addColorStop(0, '#F5A9B8'); // Unten Pink
+            gradient.addColorStop(1, '#5BCEFA'); // Oben Blau
 
             ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.moveTo(0, h);
 
-            const barWidth = (w / barCount) * 0.6; // Breite mit Lücke
-            const spacing = (w / barCount) * 0.4;
-            const center = w / 2;
+            const sliceW = w / (points - 1);
 
-            for(let i = 0; i < barCount / 2; i++) {
-                // Wert ermitteln
-                let val = 0;
-                if(dataArray) {
-                    // Wir nehmen nur die unteren Frequenzen (Bass/Stimme) für mehr Action
-                    const dataIndex = Math.floor(i / (barCount/2) * (bufferLength * 0.6));
-                    val = dataArray[dataIndex];
+            // Curve Loop
+            for(let i=0; i<points; i++) {
+                const x = i * sliceW;
+                // Höhe skalieren
+                const val = smoothData[i] * 1.5 * dpr; 
+                const y = h - val; // Von unten wachsen
+
+                // Wir zeichnen eine Kurve zum nächsten Punkt
+                if (i === 0) {
+                    ctx.lineTo(x, y);
                 } else {
-                    // Idle Animation (Sanfte Welle)
-                    val = 10 + Math.sin(Date.now()/500 + i*0.5) * 10;
+                    // Bezier Curve für extra Rundung
+                    const prevX = (i - 1) * sliceW;
+                    const prevVal = smoothData[i-1] * 1.5 * dpr;
+                    const prevY = h - prevVal;
+                    
+                    const cpX = (prevX + x) / 2;
+                    ctx.quadraticCurveTo(prevX, prevY, cpX, (prevY + y) / 2);
+                    if(i === points - 1) ctx.lineTo(x, y);
                 }
-
-                // Gravity Logic:
-                // Wenn neuer Wert höher -> sofort hoch
-                // Wenn neuer Wert tiefer -> langsam fallen (0.9 Faktor)
-                if (val > barStates[i]) {
-                    barStates[i] = val;
-                } else {
-                    barStates[i] *= 0.90; // Fallgeschwindigkeit
-                }
-
-                // Höhe berechnen
-                const barHeight = Math.max(4, barStates[i] * 1.2 * dpr); // min 4px
-
-                // Zeichne Links vom Zentrum
-                drawRoundedBar(ctx, center - (i * (barWidth + spacing)) - barWidth, (h - barHeight)/2, barWidth, barHeight);
-                
-                // Zeichne Rechts vom Zentrum (Spiegelung)
-                drawRoundedBar(ctx, center + (i * (barWidth + spacing)) + spacing, (h - barHeight)/2, barWidth, barHeight);
             }
+
+            ctx.lineTo(w, h); // Rechts unten
+            ctx.closePath();
+            ctx.fill();
         }
         draw();
-    }
-
-    function drawRoundedBar(ctx, x, y, width, height) {
-        const radius = width / 2;
-        ctx.beginPath();
-        ctx.roundRect(x, y, width, height, radius);
-        ctx.fill();
     }
     
     initVisualizer();
 
+    // Rest der Logik (unverändert)
     els.fileUpload.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if(!file) return;
@@ -342,12 +345,10 @@
             if(!analyser) {
                 analyser = audioCtx.createAnalyser(); 
                 analyser.fftSize = 256; 
-                analyser.smoothingTimeConstant = 0.5; // Reaktiver Input
                 const src = audioCtx.createMediaStreamSource(globalStream); src.connect(analyser);
             }
 
             chunks = [];
-            // Standard Long Mode
             let options = { bitsPerSecond: 32000 };
             if(MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) options.mimeType = 'audio/webm;codecs=opus';
             else if(MediaRecorder.isTypeSupported('audio/mp4')) options.mimeType = 'audio/mp4';
@@ -441,18 +442,18 @@
     }
 
     function updateHistory(id, ts, txt) {
-        let h = JSON.parse(localStorage.getItem("hist_v19")||"[]");
+        let h = JSON.parse(localStorage.getItem("hist_v20")||"[]");
         let idx = h.findIndex(x=>x.id==id);
         if(idx>=0) h[idx].text=txt; else h.unshift({id, ts, text:txt});
         if(h.length>50) h=h.slice(0,50);
-        localStorage.setItem("hist_v19", JSON.stringify(h));
+        localStorage.setItem("hist_v20", JSON.stringify(h));
     }
     function removeHist(id) {
-        let h = JSON.parse(localStorage.getItem("hist_v19")||"[]").filter(x=>x.id!=id);
-        localStorage.setItem("hist_v19", JSON.stringify(h));
+        let h = JSON.parse(localStorage.getItem("hist_v20")||"[]").filter(x=>x.id!=id);
+        localStorage.setItem("hist_v20", JSON.stringify(h));
     }
     function loadHistory() {
-        let h = JSON.parse(localStorage.getItem("hist_v19")||"[]");
+        let h = JSON.parse(localStorage.getItem("hist_v20")||"[]");
         for(let i=h.length-1; i>=0; i--) createEntry(h[i].id, h[i].ts, h[i].text, null);
     }
 
