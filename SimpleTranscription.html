@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Whisper V12 Mobile</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        :root {
+            --accent-blue: #5BCEFA;
+            --accent-pink: #F5A9B8;
+            --text-main: #495057;
+            --glass-bg: rgba(255, 255, 255, 0.90); /* Etwas undurchsichtiger für Mobile */
+            --glass-border: rgba(255, 255, 255, 0.6);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text-main);
+            margin: 0;
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; padding: 15px;
+            background: linear-gradient(135deg, #5BCEFA 0%, #ffffff 50%, #F5A9B8 100%);
+            background-attachment: fixed;
+            -webkit-tap-highlight-color: transparent; /* Kein Klick-Highlight auf Mobile */
+        }
+
+        /* Toast Message */
+        #toast {
+            position: fixed; top: 20px; left: 50%; transform: translate(-50%, -150%);
+            background: var(--accent-blue); color: white;
+            padding: 12px 24px; border-radius: 50px;
+            font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 9999; text-align: center; width: max-content; max-width: 90%;
+            border: 2px solid white;
+        }
+        #toast.visible { transform: translate(-50%, 0); }
+        #toast.waiting { background: var(--accent-pink); }
+        #toast.error { background: #ff6b6b; }
+
+        .app-container { width: 100%; max-width: 800px; position: relative; z-index: 2; padding-bottom: 50px; }
+
+        /* --- Header --- */
+        header {
+            display: flex; flex-direction: column; gap: 15px;
+            padding: 15px; 
+            background: var(--glass-bg); 
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-radius: 20px; margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid var(--glass-border);
+        }
+
+        .header-top { display: flex; justify-content: space-between; align-items: center; }
+        
+        h1 { 
+            margin: 0; font-size: 1.1rem; font-weight: 800; 
+            background: linear-gradient(90deg, #5BCEFA, #F5A9B8);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            letter-spacing: 0.5px;
+        }
+
+        .header-controls { 
+            display: flex; gap: 10px; align-items: center; flex-wrap: wrap; 
+            justify-content: space-between;
+        }
+
+        input[type="password"] {
+            background: rgba(255,255,255,0.5); border: 1px solid #dee2e6; color: #555;
+            padding: 8px; border-radius: 8px; width: 80px; transition: width 0.3s;
+            font-size: 16px; /* Verhindert Zoom auf iPhone */
+        }
+        input[type="password"]:focus { width: 150px; outline: none; border-color: var(--accent-pink); background: white;}
+
+        select {
+            padding: 8px; border-radius: 8px; border: 1px solid #dee2e6; 
+            background: rgba(255,255,255,0.5); color: #555; font-size: 16px;
+        }
+
+        .toggle-switch { display: flex; align-items: center; gap: 5px; font-size: 0.85rem; font-weight: 600; color: #666; }
+        .toggle-switch input { width: 18px; height: 18px; accent-color: var(--accent-pink); }
+
+        /* --- STAGE --- */
+        .stage {
+            position: relative; background: var(--glass-bg);
+            backdrop-filter: blur(12px); border-radius: 24px; overflow: hidden;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
+            border: 1px solid var(--glass-border);
+        }
+
+        .drop-overlay { display: none; } /* Drop overlay auf Mobile meist störend, deaktiviert */
+
+        canvas { width: 100%; height: 200px; display: block; }
+
+        .stage-ui {
+            padding: 20px; background: rgba(255,255,255,0.7);
+            display: flex; flex-direction: column; align-items: center; gap: 20px;
+            border-top: 1px solid rgba(255,255,255,0.5);
+        }
+
+        .stats { font-family: monospace; color: #868e96; font-size: 0.9rem; display: flex; gap: 15px; font-weight: bold; }
+        .stats span.active { color: var(--accent-pink); }
+
+        /* Controls für Mobile optimiert */
+        .controls { 
+            display: grid; 
+            grid-template-columns: 1fr auto 1fr; /* REC (groß) - Pause - Stop */
+            gap: 10px; 
+            width: 100%;
+        }
+
+        button {
+            border: none; padding: 15px 20px; border-radius: 12px;
+            font-size: 1rem; font-weight: 700; cursor: pointer;
+            transition: transform 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+        button:active { transform: scale(0.96); }
+
+        .btn-rec { 
+            background: linear-gradient(135deg, #5BCEFA, #4facfe); color: white; 
+            grid-column: 1 / 4; /* Volle Breite am Anfang */
+            font-size: 1.2rem; padding: 20px;
+        }
+        /* Wenn Aufnahme läuft, ändern wir das Grid */
+        .recording-active .controls { grid-template-columns: 1fr 1fr; } 
+        .recording-active .btn-rec { display: none; } /* Rec Button weg wenn läuft */
+
+        .btn-pause { background: white; color: #555; width: 100%; }
+        .btn-pause.active { background: #ffe066; color: #000; }
+        
+        .btn-stop { background: white; color: #ff6b6b; width: 100%; }
+        .btn-stop:hover { background: #ff6b6b; color: white; }
+
+        /* --- FEED --- */
+        #feed { margin-top: 25px; display: flex; flex-direction: column; gap: 15px; }
+        
+        .entry {
+            background: var(--glass-bg); backdrop-filter: blur(10px);
+            border-radius: 16px; padding: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            animation: slideUp 0.4s ease; border: 1px solid var(--glass-border);
+        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: 0; } }
+
+        .entry-top { display: flex; justify-content: space-between; font-size: 0.8rem; color: #adb5bd; margin-bottom: 10px; font-weight: 600; }
+        
+        textarea {
+            width: 100%; background: rgba(255,255,255,0.5); border: 2px solid transparent; color: #495057;
+            padding: 12px; border-radius: 12px; font-family: inherit; resize: none; min-height: 80px; height: auto;
+            box-sizing: border-box; display: block; line-height: 1.4; font-size: 16px;
+        }
+        textarea:focus { outline: none; border-color: var(--accent-pink); background: white; }
+
+        .audio-player-wrapper { margin-top: 10px; width: 100%; }
+        audio { width: 100%; height: 36px; border-radius: 8px; }
+
+        .actions { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn-s { padding: 10px 14px; font-size: 0.85rem; background: white; color: #555; border-radius: 8px; flex: 1; white-space: nowrap;} 
+        .btn-del { color: #ff6b6b; flex: 0; }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            .header-controls { flex-direction: column; align-items: stretch; gap: 12px; }
+            .settings-group { display: flex; justify-content: space-between; align-items: center; }
+            .btn-rec { border-radius: 20px; }
+        }
+
+    </style>
+</head>
+<body>
+
+<script> const HARDCODED_KEY = ""; </script>
+
+<div id="toast">Nachricht</div>
+
+<div class="app-container">
+    <header>
+        <div class="header-top">
+            <h1>🏳️‍⚧️ Whisper V12</h1>
+            <div id="keyBox"><input type="password" id="apiKey" placeholder="API Key"></div>
+        </div>
+        
+        <div class="header-controls">
+            <div class="settings-group">
+                <select id="langSelect">
+                    <option value="">Auto-Detect</option>
+                    <option value="de">Deutsch</option>
+                    <option value="en">English</option>
+                </select>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="autoDl"> Auto-Save
+                </label>
+            </div>
+            <button class="btn-s" onclick="dlZip()" style="background: white; width:100%;">📦 ZIP Download</button>
+        </div>
+    </header>
+
+    <div class="stage" id="stageBlock">
+        <canvas id="solar"></canvas>
+        
+        <div class="stage-ui">
+            <div class="stats">
+                <span id="timer">00:00</span>
+                <span id="size">0.0 MB</span>
+                <span id="status">Bereit</span>
+            </div>
+            <div class="controls">
+                <button id="btnStart" class="btn-rec">● Aufnahme Starten</button>
+                <button id="btnPause" class="btn-pause" disabled>⏸ Pause</button>
+                <button id="btnStop" class="btn-stop" disabled>■ Stop & Senden</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="feed"></div>
+</div>
+
+<script>
+    // --- SETUP ---
+    const els = {
+        btnStart: document.getElementById('btnStart'),
+        btnPause: document.getElementById('btnPause'),
+        btnStop: document.getElementById('btnStop'),
+        timer: document.getElementById('timer'),
+        size: document.getElementById('size'),
+        status: document.getElementById('status'),
+        canvas: document.getElementById('solar'),
+        feed: document.getElementById('feed'),
+        apiKey: document.getElementById('apiKey'),
+        toast: document.getElementById('toast'),
+        keyBox: document.getElementById('keyBox'),
+        langSelect: document.getElementById('langSelect'),
+        autoDl: document.getElementById('autoDl'),
+        stageBlock: document.getElementById('stageBlock')
+    };
+
+    let globalStream, mediaRecorder, chunks = [], audioCtx, analyser, dataArray;
+    let isRecording = false, isPaused = false;
+    let startTime = 0, pauseDelta = 0, pauseStart = 0, timerInt;
+    let pendingClipboardText = null;
+
+    // Load Key
+    if(HARDCODED_KEY.length > 5) {
+        els.apiKey.value = HARDCODED_KEY; els.keyBox.style.display = 'none';
+    } else {
+        els.apiKey.value = localStorage.getItem("openai_v12_key") || "";
+        els.apiKey.addEventListener('change', () => localStorage.setItem("openai_v12_key", els.apiKey.value));
+    }
+
+    const savedAutoDl = localStorage.getItem("auto_dl_pref");
+    if(savedAutoDl === 'true') els.autoDl.checked = true;
+    els.autoDl.addEventListener('change', () => localStorage.setItem("auto_dl_pref", els.autoDl.checked));
+
+    loadHistory();
+
+    // --- VISUALIZER ---
+    let smoothedVol = 0;
+    function initVisualizer() {
+        const ctx = els.canvas.getContext('2d');
+        function draw() {
+            requestAnimationFrame(draw);
+            if(els.canvas.width !== els.canvas.offsetWidth) {
+                els.canvas.width = els.canvas.offsetWidth; els.canvas.height = els.canvas.offsetHeight;
+            }
+            const w = els.canvas.width; const h = els.canvas.height;
+            const cx = w/2; const cy = h/2;
+            
+            ctx.clearRect(0, 0, w, h);
+
+            let bufferLength = 0; let vol = 0;
+            if(analyser && isRecording && !isPaused) {
+                bufferLength = analyser.frequencyBinCount;
+                if(!dataArray) dataArray = new Uint8Array(bufferLength);
+                analyser.getByteFrequencyData(dataArray);
+                let sum = 0;
+                for(let i=0; i<bufferLength; i++) sum += dataArray[i];
+                vol = sum / bufferLength;
+            } else { vol = 10 + Math.sin(Date.now() / 800) * 5; }
+
+            smoothedVol = smoothedVol * 0.8 + vol * 0.2;
+            const blue = '#5BCEFA'; const pink = '#F5A9B8';
+            
+            const radius = 35 + (smoothedVol * 0.4);
+            const grad = ctx.createRadialGradient(cx, cy, radius * 0.2, cx, cy, radius);
+            grad.addColorStop(0, 'white');
+            grad.addColorStop(0.5, pink);
+            grad.addColorStop(1, 'rgba(245, 169, 184, 0.0)');
+
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            if(isRecording && !isPaused && dataArray) {
+                ctx.save(); ctx.translate(cx, cy);
+                const rays = 80; const step = (Math.PI * 2) / rays; // Weniger Rays für Mobile Performance
+                for(let i=0; i<rays; i++) {
+                    let dataIdx = Math.floor((i / rays) * (bufferLength / 2));
+                    if(i > rays/2) dataIdx = Math.floor(((rays - i) / rays) * (bufferLength / 2));
+                    const val = dataArray[dataIdx];
+                    const rayLen = radius + (val * 0.5);
+                    ctx.rotate(step);
+                    ctx.beginPath();
+                    ctx.moveTo(0, radius - 5);
+                    ctx.lineTo(0, rayLen);
+                    ctx.strokeStyle = val > 100 ? pink : blue;
+                    ctx.lineWidth = 3; ctx.lineCap = 'round';
+                    ctx.stroke();
+                }
+                ctx.restore();
+            } else {
+                ctx.beginPath(); ctx.arc(cx, cy, radius + 8, 0, Math.PI*2);
+                ctx.strokeStyle = blue; ctx.lineWidth = 2; ctx.stroke();
+            }
+        }
+        draw();
+    }
+    initVisualizer();
+
+    // --- AUDIO LOGIC ---
+    async function startRec() {
+        if(!els.apiKey.value) return showToast("API Key fehlt!", true);
+        
+        try {
+            if(!globalStream) {
+                globalStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            }
+            // Analyser neu verbinden falls nötig
+            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if(audioCtx.state === 'suspended') await audioCtx.resume(); // Wichtig für Mobile!
+            
+            if(!analyser) {
+                analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 256;
+                const src = audioCtx.createMediaStreamSource(globalStream);
+                src.connect(analyser);
+            }
+
+            chunks = [];
+            // Versuche Codecs für Mobile
+            let options = {};
+            if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) options = { mimeType: 'audio/webm;codecs=opus', bitsPerSecond: 32000 };
+            else if (MediaRecorder.isTypeSupported('audio/mp4')) options = { mimeType: 'audio/mp4', bitsPerSecond: 32000 }; // Safari
+            
+            mediaRecorder = new MediaRecorder(globalStream, options);
+
+            mediaRecorder.ondataavailable = e => { if(e.data.size>0) chunks.push(e.data); checkSize(); };
+            mediaRecorder.onstop = () => {
+                const type = chunks[0].type || 'audio/webm';
+                const blob = new Blob(chunks, { type: type });
+                processAudio(blob, "Memo");
+                clearInterval(timerInt);
+                resetUI();
+            };
+
+            mediaRecorder.start(1000);
+            isRecording = true; isPaused = false; startTime = Date.now(); pauseDelta = 0;
+            timerInt = setInterval(updateTimer, 1000);
+            
+            // UI Toggle
+            els.stageBlock.classList.add('recording-active');
+            els.btnStart.style.display = 'none'; // Verstecken
+            els.btnPause.disabled = false; els.btnStop.disabled = false;
+            els.status.innerText = "REC"; els.status.style.color = "#F5A9B8";
+            els.timer.classList.add('active');
+
+        } catch(e) { 
+            console.error(e);
+            showToast("Mikrofon Zugriff verweigert! Siehe Anleitung.", true); 
+        }
+    }
+
+    els.btnStart.onclick = startRec;
+    els.btnPause.onclick = () => {
+        if(isPaused) {
+            mediaRecorder.resume(); isPaused = false; pauseDelta += (Date.now() - pauseStart);
+            els.btnPause.classList.remove('active'); els.status.innerText = "REC";
+        } else {
+            mediaRecorder.pause(); isPaused = true; pauseStart = Date.now();
+            els.btnPause.classList.add('active'); els.status.innerText = "PAUSE";
+        }
+    };
+    els.btnStop.onclick = () => mediaRecorder.stop();
+
+    function updateTimer() {
+        if(isPaused) return;
+        const s = Math.floor((Date.now() - startTime - pauseDelta)/1000);
+        els.timer.innerText = `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
+    }
+    function checkSize() {
+        const mb = chunks.reduce((a,c)=>a+c.size,0) / (1024*1024);
+        els.size.innerText = `${mb.toFixed(2)} MB`;
+        if(mb > 24) { mediaRecorder.stop(); showToast("⚠️ Limit erreicht: Auto-Stop!", true); }
+    }
+    function resetUI() {
+        isRecording = false; isPaused = false;
+        els.stageBlock.classList.remove('recording-active');
+        els.btnStart.style.display = 'flex'; // Wieder da
+        els.btnPause.disabled = true; els.btnStop.disabled = true;
+        els.btnPause.classList.remove('active');
+        els.status.innerText = "Bereit"; els.status.style.color = "#adb5bd";
+        els.timer.innerText = "00:00"; els.timer.classList.remove('active'); els.size.innerText = "0.0 MB";
+    }
+
+    // --- PROCESS ---
+    async function processAudio(blob, name, retryId) {
+        const id = retryId || Date.now();
+        const timestamp = new Date().toLocaleString();
+        
+        // Auto Save Audio Check
+        if(els.autoDl.checked && !retryId) {
+            // Extension fixen
+            const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
+            download(blob, `rec_${id}.${ext}`);
+        }
+
+        if(!retryId) createEntry(id, timestamp, "", blob);
+        
+        const entry = document.getElementById(`entry-${id}`);
+        entry.audioBlob = blob;
+        entry.timestampStr = timestamp;
+
+        updateStat(id, "Sende an OpenAI...", "load");
+        const fd = new FormData();
+        const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
+        fd.append("file", blob, `rec-${id}.${ext}`);
+        fd.append("model", "whisper-1");
+        if(els.langSelect.value) fd.append("language", els.langSelect.value);
+
+        try {
+            const res = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+                method: "POST", headers: { "Authorization": `Bearer ${els.apiKey.value}` }, body: fd
+            });
+            const data = await res.json();
+            if(res.ok) {
+                document.getElementById(`txt-${id}`).value = data.text;
+                updateStat(id, "Fertig", "ok");
+                smartCopy(data.text);
+                updateHistory(id, timestamp, data.text);
+            } else throw new Error(data.error?.message || "Error");
+        } catch(e) {
+            document.getElementById(`txt-${id}`).value = "Error: " + e.message;
+            updateStat(id, "Fehler", "err");
+            document.getElementById(`retry-${id}`).style.display = 'inline-block';
+        }
+    }
+
+    // --- STORAGE ---
+    function updateHistory(id, timestamp, text) {
+        let hist = JSON.parse(localStorage.getItem("transcripts_v12") || "[]");
+        const idx = hist.findIndex(h => h.id == id);
+        if(idx >= 0) hist[idx].text = text;
+        else hist.unshift({id, timestamp, text});
+        if(hist.length > 50) hist = hist.slice(0, 50);
+        localStorage.setItem("transcripts_v12", JSON.stringify(hist));
+    }
+    function removeFromHistory(id) {
+        let hist = JSON.parse(localStorage.getItem("transcripts_v12") || "[]");
+        hist = hist.filter(h => h.id != id);
+        localStorage.setItem("transcripts_v12", JSON.stringify(hist));
+    }
+    function loadHistory() {
+        let hist = JSON.parse(localStorage.getItem("transcripts_v12") || "[]");
+        for(let i = hist.length - 1; i >= 0; i--) {
+            createEntry(hist[i].id, hist[i].timestamp, hist[i].text, null);
+        }
+    }
+
+    // --- UI HELPER ---
+    function showToast(msg, err=false, wait=false) {
+        els.toast.textContent = msg; els.toast.className = err ? "visible error" : "visible";
+        if(wait) els.toast.classList.add('waiting'); else els.toast.classList.remove('waiting');
+        if(!wait) setTimeout(()=>els.toast.className="", 4000);
+    }
+    
+    function smartCopy(text) {
+        if(document.hasFocus()) { navigator.clipboard.writeText(text); showToast("📋 Text kopiert!"); }
+        else { pendingClipboardText = text; showToast("✅ Fertig (Klick für Copy)", false, true); }
+    }
+    window.addEventListener('focus', () => {
+        if(pendingClipboardText) { navigator.clipboard.writeText(pendingClipboardText); showToast("📋 Kopiert!"); pendingClipboardText = null; }
+    });
+    // Mobile touch fix für focus
+    window.addEventListener('touchstart', () => {
+        if(pendingClipboardText) { navigator.clipboard.writeText(pendingClipboardText); showToast("📋 Kopiert!"); pendingClipboardText = null; }
+    });
+
+
+    function createEntry(id, timeStr, initialText="", audioBlob=null) {
+        const d = document.createElement('div'); d.id=`entry-${id}`; d.className='entry';
+        
+        let playerHTML = "";
+        if(audioBlob) {
+            const url = URL.createObjectURL(audioBlob);
+            playerHTML = `<div class="audio-player-wrapper"><audio controls src="${url}"></audio></div>`;
+        } else if(initialText !== "") {
+            playerHTML = `<div style="margin-top:10px; font-size:0.8rem; color:#aaa;">(Audio nicht gespeichert)</div>`;
+        }
+
+        d.innerHTML = `
+            <div class="entry-top"><span>${timeStr}</span><span id="st-${id}" style="color:${initialText?"#5BCEFA":"#fab005"}">${initialText?"Archiviert":"Wartet..."}</span></div>
+            <textarea id="txt-${id}" oninput="textChanged(${id})">${initialText}</textarea>
+            ${playerHTML}
+            <div class="actions">
+                <button class="btn-s" onclick="doCopy(${id})">Copy</button>
+                <button class="btn-s" onclick="dlBlob(${id}, 'audio')">Audio</button>
+                <button class="btn-s" onclick="dlBlob(${id}, 'text')">Text</button>
+                <button class="btn-s btn-del" onclick="deleteEntry(${id})">X</button>
+                <button class="btn-s" id="retry-${id}" style="display:none; color:#ff6b6b" onclick="retry(${id})">Retry</button>
+            </div>`;
+        els.feed.prepend(d);
+        if(audioBlob) { d.audioBlob = audioBlob; d.timestampStr = timeStr; }
+    }
+    
+    window.textChanged = (id) => {
+        const txt = document.getElementById(`txt-${id}`).value;
+        const entry = document.getElementById(`entry-${id}`);
+        const ts = entry.querySelector('.entry-top span').innerText; 
+        updateHistory(id, ts, txt);
+    };
+
+    function updateStat(id, txt, type) {
+        const s = document.getElementById(`st-${id}`); s.textContent = txt;
+        s.style.color = type==='ok'?'#5BCEFA':(type==='err'?'#ff6b6b':'#fab005');
+    }
+
+    // --- ACTIONS ---
+    window.doCopy = id => navigator.clipboard.writeText(document.getElementById(`txt-${id}`).value).then(()=>showToast("Kopiert!"));
+    
+    window.dlBlob = (id, type) => {
+        const entry = document.getElementById(`entry-${id}`);
+        if(type==='audio') {
+            if(entry.audioBlob) {
+                const ext = entry.audioBlob.type.includes('mp4') ? 'mp4' : 'webm';
+                download(entry.audioBlob, `rec_${id}.${ext}`);
+            } else showToast("Audio weg", true);
+        }
+        if(type==='text') {
+            const txt = document.getElementById(`txt-${id}`).value;
+            const ts = entry.querySelector('.entry-top span').innerText;
+            const content = `Aufnahme: ${ts}\n\n${txt}`;
+            download(new Blob([content], {type:'text/plain'}), `transkript_${id}.txt`);
+        }
+    };
+    
+    window.deleteEntry = id => { document.getElementById(`entry-${id}`).remove(); removeFromHistory(id); };
+    window.retry = id => { const e = document.getElementById(`entry-${id}`); if(e.audioBlob) processAudio(e.audioBlob,"Retry",id); };
+
+    window.dlZip = async () => {
+        if(!window.JSZip) return; 
+        const zip = new JSZip();
+        const folderAudio = zip.folder("audio");
+        let combinedText = "--- PROTOKOLL ---\n\n";
+
+        const entries = document.querySelectorAll('.entry');
+        entries.forEach(e => {
+            const id = e.id.split('-')[1];
+            const txt = e.querySelector('textarea').value;
+            const ts = e.querySelector('.entry-top span').innerText;
+            combinedText += `[${ts}]\n${txt}\n\n---\n\n`;
+            if(e.audioBlob) {
+                const ext = e.audioBlob.type.includes('mp4') ? 'mp4' : 'webm';
+                folderAudio.file(`rec_${id}.${ext}`, e.audioBlob);
+            }
+        });
+        zip.file("Alle_Texte.txt", combinedText);
+        const content = await zip.generateAsync({type:"blob"});
+        download(content, `Session_${Date.now()}.zip`);
+    };
+
+    function download(blob, name) {
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+</script>
+</body>
+</html>
