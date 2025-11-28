@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Simple Transcription V25</title>
+    <title>Simple Transcription V26</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root {
-            /* DEIN PASTELL-FAVORIT */
+            /* DEIN PASTELL-FAVORIT (V25) */
             --bg-gradient: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
             
             --glass-bg: rgba(255, 255, 255, 0.6);
             --glass-border: rgba(255, 255, 255, 0.8);
             --text: #555;
-            --accent: #9b72cf; /* Soft Purple */
+            --accent: #9b72cf;
         }
 
         body {
@@ -54,7 +54,7 @@
         }
         .api-box input:focus { width: 180px; outline: none; border-color: var(--accent); background: white; }
 
-        /* --- VISUALIZER STAGE (THE GOOEY EFFECT) --- */
+        /* --- VISUALIZER STAGE --- */
         .stage {
             position: relative; 
             background: rgba(255, 255, 255, 0.3);
@@ -62,21 +62,18 @@
             box-shadow: 0 20px 50px rgba(162, 162, 255, 0.2);
             border: 1px solid rgba(255,255,255,0.6);
             margin-bottom: 20px;
-            overflow: hidden; /* Wichtig für den Filter */
+            overflow: hidden; 
         }
 
-        /* Der Container für den Gooey Effekt */
         .canvas-wrapper {
             width: 100%; height: 300px;
             background: transparent;
-            /* DAS IST DER TRICK: Contrast hochdrehen schneidet den Blur ab -> Flüssigkeit */
             filter: contrast(20); 
-            background-color: white; /* Braucht einen hellen Background für Contrast */
+            background-color: white; 
         }
 
         canvas { 
             width: 100%; height: 100%; display: block; 
-            /* Starke Unschärfe auf die Bälle */
             filter: blur(20px); 
         }
 
@@ -90,40 +87,57 @@
 
         .timer { font-family: monospace; font-size: 1.5rem; font-weight: bold; color: #777; letter-spacing: 2px; }
 
-        /* BUTTONS (Soft & Round) */
+        /* --- SMART CONTROLS --- */
         .rec-controls { 
-            display: flex; align-items: center; justify-content: center; gap: 25px; width: 100%;
+            display: flex; align-items: center; justify-content: center; gap: 20px; width: 100%;
+            height: 90px; /* Feste Höhe gegen Springen */
         }
 
-        .btn-circle {
-            width: 55px; height: 55px; border-radius: 50%; border: none;
-            background: white; color: #555; font-size: 1.2rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05); cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .btn-circle:active { transform: scale(0.85); }
-        .btn-circle:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
-
-        #btnStart {
-            width: 80px; height: 80px; font-size: 1.5rem; color: white;
-            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+        /* Der Haupt-Button (Rec / Pause / Resume) */
+        #btnMain {
+            width: 80px; height: 80px; border-radius: 50%; border: none;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
             box-shadow: 0 10px 25px rgba(255, 154, 158, 0.4);
+            color: white; font-size: 2rem; cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex; align-items: center; justify-content: center;
         }
-        #btnStart.recording { 
-            animation: pulse 2s infinite; 
-            background: #ff6b6b; box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+        #btnMain:active { transform: scale(0.9); }
+        
+        /* Status: Recording (Wird zum Pause Button) */
+        #btnMain.state-recording {
+            background: white; color: #555;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-size: 1.5rem;
         }
         
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        /* Status: Paused (Wird zum Resume Button) */
+        #btnMain.state-paused {
+            background: #ffeaa7; color: #d35400; /* Warmes Gelb */
+            box-shadow: 0 5px 15px rgba(255, 200, 0, 0.3);
+            font-size: 1.5rem;
+            animation: none;
+        }
+
+        /* Der Stop Button (Erscheint nur wenn aktiv) */
+        #btnFinish {
+            width: 60px; height: 60px; border-radius: 50%; border: none;
+            background: white; color: #ff6b6b; font-size: 1.2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); cursor: pointer;
+            display: none; /* Initial versteckt */
+            align-items: center; justify-content: center;
+            transition: all 0.3s ease;
+        }
+        #btnFinish.visible { display: flex; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        
+        @keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
         .btn-upload {
             background: white; border: 1px solid #e0e0e0; color: #888;
             padding: 10px 20px; border-radius: 20px; font-size: 0.85rem; cursor: pointer;
             box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: 0.2s;
         }
-        .btn-upload:hover { background: #f9f9f9; color: #555; }
-
+        
         /* FEED */
         #feed { display: flex; flex-direction: column; gap: 20px; }
         
@@ -140,7 +154,7 @@
         
         textarea {
             width: 100%; background: #fdfdfd; border: 1px solid #eee; color: #444;
-            padding: 15px; border-radius: 16px; font-family: inherit; resize: none; min-height: 80px;
+            padding: 15px; border-radius: 16px; font-family: inherit; resize: none; min-height: 90px;
             box-sizing: border-box; display: block; line-height: 1.6; font-size: 16px; transition: 0.2s;
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.01);
         }
@@ -157,7 +171,6 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.03); cursor: pointer;
             display: flex; align-items: center; justify-content: center; gap: 6px;
         }
-        .btn-action:hover { transform: translateY(-2px); color: var(--accent); }
         .btn-del { flex: 0; color: #ff8888; }
 
         /* TOAST */
@@ -169,6 +182,7 @@
             font-size: 0.95rem; border: 2px solid var(--accent);
         }
         #toast.visible { transform: translate(-50%, 0); }
+        #toast.error { border-color: #ff6b6b; color: #ff6b6b; }
 
     </style>
 </head>
@@ -202,13 +216,9 @@
             <div class="timer" id="timer">00:00</div>
             
             <div class="rec-controls">
-                <button id="btnPause" class="btn-circle" disabled title="Pause">
-                    <span>⏸</span>
-                </button>
+                <button id="btnMain" title="Aufnahme starten">●</button>
                 
-                <button id="btnStart" class="btn-circle">●</button>
-                
-                <button id="btnStop" class="btn-circle" disabled title="Fertig">
+                <button id="btnFinish" class="btn-circle" title="Fertig & Senden">
                     <span>■</span>
                 </button>
             </div>
@@ -224,9 +234,8 @@
 
 <script>
     const els = {
-        btnStart: document.getElementById('btnStart'),
-        btnPause: document.getElementById('btnPause'),
-        btnStop: document.getElementById('btnStop'),
+        btnMain: document.getElementById('btnMain'),
+        btnFinish: document.getElementById('btnFinish'),
         timer: document.getElementById('timer'),
         canvas: document.getElementById('gooeyCanvas'),
         feed: document.getElementById('feed'),
@@ -241,30 +250,28 @@
     let startTime = 0, pauseDelta = 0, pauseStart = 0, timerInt;
     let pendingClipboardText = null;
     
-    // Settings Init
+    // Init
     if(HARDCODED_KEY.length > 5) { 
         els.apiKey.value = HARDCODED_KEY; 
         document.querySelector('.api-box').style.display='none'; 
     } else { 
-        els.apiKey.value = localStorage.getItem("key_v25") || "";
-        els.apiKey.addEventListener('change', () => localStorage.setItem("key_v25", els.apiKey.value));
+        els.apiKey.value = localStorage.getItem("key_v26") || "";
+        els.apiKey.addEventListener('change', () => localStorage.setItem("key_v26", els.apiKey.value));
     }
 
-    if(localStorage.getItem("autodl_v25") === 'true') els.autoDl.checked = true;
-    els.autoDl.addEventListener('change', () => localStorage.setItem("autodl_v25", els.autoDl.checked));
+    if(localStorage.getItem("autodl_v26") === 'true') els.autoDl.checked = true;
+    els.autoDl.addEventListener('change', () => localStorage.setItem("autodl_v26", els.autoDl.checked));
 
     loadHistory();
 
     function resizeCanvas() {
-        // Interne Auflösung erhöhen für glatte Kanten
         els.canvas.width = els.canvas.offsetWidth * 1.5;
         els.canvas.height = els.canvas.offsetHeight * 1.5;
     }
     window.addEventListener('resize', resizeCanvas);
 
-    // --- VISUALIZER: PASTEL LIQUID (Metaballs) ---
+    // --- VISUALIZER ---
     let smoothedVol = 0;
-    let phase = 0;
     
     function initVisualizer() {
         const ctx = els.canvas.getContext('2d');
@@ -272,13 +279,10 @@
 
         function draw() {
             requestAnimationFrame(draw);
-            const w = els.canvas.width; 
-            const h = els.canvas.height;
-            const cx = w/2; 
-            const cy = h/2;
+            const w = els.canvas.width; const h = els.canvas.height;
+            const cx = w/2; const cy = h/2;
 
-            // Clear Background
-            ctx.fillStyle = '#ffffff'; // Weißer Hintergrund ist wichtig für den Kontrast-Filter!
+            ctx.fillStyle = '#ffffff'; 
             ctx.fillRect(0, 0, w, h);
 
             let vol = 0;
@@ -286,38 +290,19 @@
                 const len = analyser.frequencyBinCount;
                 if(!dataArray) dataArray = new Uint8Array(len);
                 analyser.getByteFrequencyData(dataArray);
-                let sum = 0; 
-                for(let i=0; i<len; i++) sum += dataArray[i];
+                let sum = 0; for(let i=0; i<len; i++) sum += dataArray[i];
                 vol = sum / len; 
             } else {
                 vol = 5 + Math.sin(Date.now()/1500) * 5; 
             }
 
             smoothedVol = smoothedVol * 0.9 + vol * 0.1;
-            
             const intensity = smoothedVol * 1.5; 
             const t = Date.now() / 1500;
 
-            // Wir zeichnen schwarze/bunte Blobs. Durch den Filter wird alles "Gooey".
-            // Farben: Pastell
-            
-            // Blob 1 (Pastell Blau)
-            drawBlob(ctx, 
-                cx + Math.cos(t)*50, 
-                cy + Math.sin(t*1.2)*30, 
-                80 + intensity, '#8ec5fc');
-
-            // Blob 2 (Pastell Rosa)
-            drawBlob(ctx, 
-                cx + Math.sin(t*0.8)*60, 
-                cy + Math.cos(t)*40, 
-                80 + intensity, '#e0c3fc');
-
-            // Blob 3 (Mitte, verbindend)
-            drawBlob(ctx, 
-                cx, 
-                cy + Math.sin(t*2)*10, 
-                60 + intensity * 0.5, '#99ddff');
+            drawBlob(ctx, cx + Math.cos(t)*50, cy + Math.sin(t*1.2)*30, 80 + intensity, '#8ec5fc');
+            drawBlob(ctx, cx + Math.sin(t*0.8)*60, cy + Math.cos(t)*40, 80 + intensity, '#e0c3fc');
+            drawBlob(ctx, cx, cy + Math.sin(t*2)*10, 60 + intensity * 0.5, '#99ddff');
         }
         draw();
     }
@@ -328,30 +313,60 @@
         ctx.fillStyle = color;
         ctx.fill();
     }
-    
     initVisualizer();
 
-    // --- UPLOAD ---
-    els.fileUpload.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if(!file) return;
-        
-        // Allowed Extensions check
-        const allowed = ['flac','m4a','mp3','mp4','mpeg','mpga','oga','ogg','wav','webm'];
-        const ext = file.name.split('.').pop().toLowerCase();
-        
-        if(!allowed.includes(ext)) {
-            alert("❌ Ungültiges Format!\nErlaubt: mp3, mp4, m4a, wav, webm...");
-            return;
+    // --- SMART CONTROLS ---
+    
+    els.btnMain.onclick = () => {
+        if(!isRecording && !isPaused) {
+            // State: Idle -> Start Recording
+            startRec();
+        } else if (isRecording && !isPaused) {
+            // State: Recording -> Pause
+            pauseRec();
+        } else if (isPaused) {
+            // State: Paused -> Resume
+            resumeRec();
         }
+    };
 
-        processAudio(file, file.name);
-        els.fileUpload.value = '';
-    });
+    els.btnFinish.onclick = () => {
+        stopRec();
+    };
 
-    // --- RECORDER ---
+    function setMainButtonState(state) {
+        // state: 'idle', 'recording', 'paused'
+        const btn = els.btnMain;
+        
+        if(state === 'idle') {
+            btn.innerHTML = '●';
+            btn.className = ''; // Reset style
+            btn.title = "Aufnahme starten";
+            els.btnFinish.classList.remove('visible'); // Hide Stop
+            els.timer.style.color = "#777";
+        } 
+        else if (state === 'recording') {
+            btn.innerHTML = '⏸';
+            btn.className = 'state-recording';
+            btn.title = "Pausieren";
+            els.btnFinish.classList.add('visible'); // Show Stop
+            els.timer.style.color = "#ff6b6b";
+        }
+        else if (state === 'paused') {
+            btn.innerHTML = '▶'; // Oder ●
+            btn.className = 'state-paused';
+            btn.title = "Weiter aufnehmen";
+            els.timer.style.color = "#f39c12"; // Orange für Pause
+        }
+    }
+
+    // --- RECORDING LOGIC ---
     async function startRec() {
         if(!els.apiKey.value) return showToast("API Key fehlt!", true);
+        
+        // Anti-Double-Click Lock
+        els.btnMain.disabled = true;
+
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             globalStream = stream;
@@ -362,7 +377,6 @@
             const src = audioCtx.createMediaStreamSource(stream); src.connect(analyser);
 
             chunks = [];
-            // Low Bitrate für lange Aufnahmen
             let options = { bitsPerSecond: 32000 };
             if(MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) options.mimeType='audio/webm;codecs=opus';
             
@@ -375,29 +389,46 @@
             };
 
             mediaRecorder.start(1000);
-            isRecording = true; isPaused = false; startTime = Date.now(); pauseDelta=0;
+            isRecording = true; isPaused = false; 
+            startTime = Date.now(); pauseDelta=0;
             timerInt = setInterval(updateTimer, 1000);
             
-            els.btnStart.classList.add('recording');
-            els.btnPause.disabled = false; els.btnStop.disabled = false;
-            els.timer.style.color = "#ff6b6b";
+            setMainButtonState('recording');
 
-        } catch(e) { console.error(e); showToast("Mikrofon Fehler!", true); }
+        } catch(e) { 
+            console.error(e); 
+            showToast("Mikrofon Fehler!", true); 
+            resetUI();
+        } finally {
+            els.btnMain.disabled = false;
+        }
     }
 
-    els.btnStart.onclick = startRec;
-    
-    els.btnPause.onclick = () => {
-        if(isPaused) { 
-            mediaRecorder.resume(); isPaused=false; pauseDelta += Date.now()-pauseStart;
-            els.btnPause.style.background = "white"; els.btnPause.style.color = "#555";
-        } else { 
-            mediaRecorder.pause(); isPaused=true; pauseStart=Date.now();
-            els.btnPause.style.background = "#FFFB7D"; els.btnPause.style.color = "#333";
+    function pauseRec() {
+        if(mediaRecorder && mediaRecorder.state === "recording") {
+            mediaRecorder.pause();
+            isPaused = true;
+            pauseStart = Date.now();
+            setMainButtonState('paused');
         }
-    };
-    
-    els.btnStop.onclick = () => mediaRecorder.stop();
+    }
+
+    function resumeRec() {
+        if(mediaRecorder && mediaRecorder.state === "paused") {
+            mediaRecorder.resume();
+            isPaused = false;
+            pauseDelta += Date.now() - pauseStart;
+            setMainButtonState('recording');
+        }
+    }
+
+    function stopRec() {
+        if(mediaRecorder) {
+            mediaRecorder.stop();
+            // Button sofort disablen damit man nicht nochmal drückt
+            els.btnFinish.disabled = true; 
+        }
+    }
 
     function updateTimer() {
         if(isPaused) return;
@@ -408,12 +439,32 @@
     }
 
     function resetUI() {
-        isRecording = false; clearInterval(timerInt);
-        els.btnStart.classList.remove('recording');
-        els.btnPause.disabled = true; els.btnPause.style.background="white";
-        els.btnStop.disabled = true;
-        els.timer.innerText = "00:00"; els.timer.style.color = "#777";
+        isRecording = false; isPaused = false; clearInterval(timerInt);
+        setMainButtonState('idle');
+        els.timer.innerText = "00:00"; 
+        els.btnFinish.disabled = false; // Wieder aktivieren
+        // Stream stoppen um Mikro freizugeben (Optional, aber gut für Battery)
+        if(globalStream) globalStream.getTracks().forEach(track => track.stop());
     }
+
+    // --- UPLOAD ---
+    els.fileUpload.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if(!file) return;
+        
+        // CHECK EXTENSION
+        const allowed = ['flac','m4a','mp3','mp4','mpeg','mpga','oga','ogg','wav','webm'];
+        const ext = file.name.split('.').pop().toLowerCase();
+        
+        if(!allowed.includes(ext)) {
+            showToast(`Format .${ext} nicht unterstützt!`, true);
+            els.fileUpload.value = ''; // Reset
+            return;
+        }
+
+        processAudio(file, file.name);
+        els.fileUpload.value = '';
+    });
 
     // --- API ---
     async function processAudio(blob, name) {
@@ -422,7 +473,7 @@
         
         if(els.autoDl.checked) {
             let ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
-            if(name !== "Memo") ext = name.split('.').pop(); // Original extension
+            if(name !== "Memo") ext = name.split('.').pop();
             download(blob, `rec_${id}.${ext}`);
         }
 
@@ -430,7 +481,7 @@
         
         const fd = new FormData();
         let ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
-        if(name !== "Memo") ext = name.split('.').pop(); // Original Extension nutzen!
+        if(name !== "Memo") ext = name.split('.').pop();
         
         fd.append("file", blob, `audio.${ext}`);
         fd.append("model", "whisper-1");
@@ -453,6 +504,7 @@
         }
     }
 
+    // --- HELPER (Copy, History, Zip) ---
     function smartCopy(text) {
         if(document.hasFocus()) {
             navigator.clipboard.writeText(text).then(() => showToast("📋 Kopiert!"));
@@ -461,7 +513,6 @@
             showToast("✅ Fertig! Tippen zum Kopieren.");
         }
     }
-
     const doPendingCopy = () => {
         if(pendingClipboardText) {
             navigator.clipboard.writeText(pendingClipboardText);
@@ -474,14 +525,14 @@
     window.addEventListener('touchstart', doPendingCopy);
 
     function saveToHistory(id, text) {
-        let h = JSON.parse(localStorage.getItem("hist_v25")||"[]");
+        let h = JSON.parse(localStorage.getItem("hist_v26")||"[]");
         h.unshift({ id, text, ts: new Date().toLocaleTimeString() });
         if(h.length > 20) h.pop();
-        localStorage.setItem("hist_v25", JSON.stringify(h));
+        localStorage.setItem("hist_v26", JSON.stringify(h));
     }
     
     function loadHistory() {
-        let h = JSON.parse(localStorage.getItem("hist_v25")||"[]");
+        let h = JSON.parse(localStorage.getItem("hist_v26")||"[]");
         h.forEach(e => createEntry(e.id, e.ts, e.text));
     }
 
@@ -511,67 +562,35 @@
         if(blob) d.audioBlob = blob;
     }
 
-    window.doCopy = (id) => {
-        navigator.clipboard.writeText(document.getElementById(`txt-${id}`).value);
-        showToast("Manuell kopiert");
-    };
-
-    window.delEntry = (id) => {
-        document.getElementById(`e-${id}`).remove();
-        let h = JSON.parse(localStorage.getItem("hist_v25")||"[]");
-        h = h.filter(x => x.id != id);
-        localStorage.setItem("hist_v25", JSON.stringify(h));
-    };
-
-    window.dlTxt = (id) => {
-        const txt = document.getElementById(`txt-${id}`).value;
-        download(new Blob([txt]), `transkript_${id}.txt`);
-    };
-
-    window.dlAudio = (id) => {
-        const el = document.getElementById(`e-${id}`);
-        if(el.audioBlob) {
-            let ext = el.audioBlob.type.includes('mp4') ? 'mp4' : 'webm';
-            download(el.audioBlob, `rec_${id}.${ext}`);
-        }
-    };
-
+    // Standard Actions
+    window.doCopy = (id) => { navigator.clipboard.writeText(document.getElementById(`txt-${id}`).value); showToast("Manuell kopiert"); };
+    window.delEntry = (id) => { document.getElementById(`e-${id}`).remove(); let h = JSON.parse(localStorage.getItem("hist_v26")||"[]"); h = h.filter(x => x.id != id); localStorage.setItem("hist_v26", JSON.stringify(h)); };
+    window.dlTxt = (id) => { download(new Blob([document.getElementById(`txt-${id}`).value]), `transkript_${id}.txt`); };
+    window.dlAudio = (id) => { const el = document.getElementById(`e-${id}`); if(el.audioBlob) { let ext = el.audioBlob.type.includes('mp4') ? 'mp4' : 'webm'; download(el.audioBlob, `rec_${id}.${ext}`); }};
+    
     window.shareEntry = async (id) => {
         const el = document.getElementById(`e-${id}`);
         const txt = document.getElementById(`txt-${id}`).value;
-        
         if(el.audioBlob && navigator.share) {
             let ext = el.audioBlob.type.includes('mp4') ? 'mp4' : 'webm';
             const f = new File([el.audioBlob], `audio.${ext}`, {type: el.audioBlob.type});
             try { await navigator.share({files:[f], text: txt}); } catch(e){}
-        } else if (navigator.share) {
-            try { await navigator.share({text: txt}); } catch(e){}
-        } else {
-            alert("Teilen nicht unterstützt.");
-        }
+        } else if (navigator.share) { try { await navigator.share({text: txt}); } catch(e){} }
+        else alert("Teilen nicht unterstützt.");
     };
 
     window.dlZip = async () => {
-        if(!window.JSZip) return; 
-        const zip = new JSZip();
-        const fAud = zip.folder("audio");
+        if(!window.JSZip) return; const zip = new JSZip(); const fAud = zip.folder("audio");
         let allTxt = "--- PROTOKOLL ---\n\n";
-        
         document.querySelectorAll('.entry').forEach(e => {
             const id = e.id.replace('e-','');
             const txt = e.querySelector('textarea').value;
             const ts = e.querySelector('.entry-meta').innerText;
             allTxt += `[${ts}]\n${txt}\n\n---\n\n`;
-            
-            if(e.audioBlob) {
-                let ext = e.audioBlob.type.includes('mp4')?'mp4':'webm';
-                fAud.file(`rec_${id}.${ext}`, e.audioBlob);
-            }
+            if(e.audioBlob) { let ext = e.audioBlob.type.includes('mp4')?'mp4':'webm'; fAud.file(`rec_${id}.${ext}`, e.audioBlob); }
         });
-        
         zip.file("Alle_Texte.txt", allTxt);
-        const content = await zip.generateAsync({type:"blob"});
-        download(content, `Session_${Date.now()}.zip`);
+        download(await zip.generateAsync({type:"blob"}), `Session_${Date.now()}.zip`);
     };
 
     function download(blob, name) {
@@ -581,10 +600,8 @@
 
     function showToast(txt, err=false) {
         els.toast.innerText = txt;
-        els.toast.style.borderColor = err ? '#ef4444' : 'var(--accent)';
-        els.toast.style.color = '#333';
-        els.toast.classList.add('visible');
-        setTimeout(()=>els.toast.classList.remove('visible'), 3000);
+        els.toast.className = err ? 'visible error' : 'visible';
+        setTimeout(()=>els.toast.className='', 3000);
     }
 </script>
 </body>
