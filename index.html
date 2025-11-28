@@ -3,254 +3,227 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Simple Transcription V21</title>
+    <title>Simple Transcription V22</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
-        /* --- THEMES --- */
+        /* --- THEME VARIABLES --- */
         :root {
-            /* Default: Pride Light */
+            /* Default: Pride (Light) */
             --bg-grad: linear-gradient(135deg, #e0f2fe 0%, #ffffff 50%, #fce7f3 100%);
-            --glass-bg: rgba(255, 255, 255, 0.85);
-            --glass-border: rgba(255, 255, 255, 0.6);
-            --text-main: #495057;
-            --accent: #5BCEFA;
-            --accent-2: #F5A9B8;
-            --card-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+            --glass: rgba(255, 255, 255, 0.8);
+            --border: rgba(255, 255, 255, 0.6);
+            --text: #334155;
+            --icon-color: #334155; /* Dunkle Icons auf hellem Grund */
+            --accent: #0ea5e9;
+            --accent-glow: rgba(14, 165, 233, 0.3);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
         }
 
         [data-theme="dark"] {
             --bg-grad: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            --glass-bg: rgba(30, 41, 59, 0.8);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --text-main: #e2e8f0;
+            --glass: rgba(30, 41, 59, 0.8);
+            --border: rgba(255, 255, 255, 0.1);
+            --text: #f1f5f9;
+            --icon-color: #f1f5f9; /* Helle Icons auf dunklem Grund */
             --accent: #38bdf8;
-            --accent-2: #f472b6;
-            --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-
-        [data-theme="oled"] {
-            --bg-grad: #000000;
-            --glass-bg: #000000;
-            --glass-border: #333;
-            --text-main: #ffffff;
-            --accent: #ffffff;
-            --accent-2: #888888;
-            --card-shadow: none;
+            --accent-glow: rgba(56, 189, 248, 0.3);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            color: var(--text-main);
+            color: var(--text);
             margin: 0;
             display: flex; flex-direction: column; align-items: center;
             min-height: 100vh; padding: 15px;
             background: var(--bg-grad);
             background-attachment: fixed;
+            transition: all 0.3s ease;
             -webkit-tap-highlight-color: transparent;
-            transition: color 0.3s, background 0.3s;
         }
 
-        /* --- FONTS --- */
-        body[data-font="serif"] { font-family: Georgia, 'Times New Roman', Times, serif; }
-        body[data-font="mono"] { font-family: 'Courier New', Courier, monospace; letter-spacing: -0.5px; }
+        /* --- UI COMPONENTS --- */
+        .app-container { width: 100%; max-width: 800px; position: relative; z-index: 2; padding-bottom: 50px; }
 
-        /* UI Elements */
-        #toast {
-            position: fixed; top: 20px; left: 50%; transform: translate(-50%, -150%);
-            background: var(--accent); color: white;
-            padding: 12px 24px; border-radius: 50px;
-            font-weight: bold; box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 9999; text-align: center; width: max-content; max-width: 90%;
-            border: 2px solid white; text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-        }
-        #toast.visible { transform: translate(-50%, 0); }
-
-        .app-container { width: 100%; max-width: 900px; position: relative; z-index: 2; padding-bottom: 50px; }
-
-        /* Header & Settings Button */
         header {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 15px 20px; background: var(--glass-bg); 
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border-radius: 24px; margin-bottom: 20px;
-            box-shadow: var(--card-shadow); border: 1px solid var(--glass-border);
+            padding: 15px 20px; background: var(--glass); 
+            backdrop-filter: blur(12px); border-radius: 24px; margin-bottom: 20px;
+            box-shadow: var(--shadow); border: 1px solid var(--border);
         }
 
         h1 { 
             margin: 0; font-size: 1.2rem; font-weight: 800; 
-            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+            background: linear-gradient(90deg, var(--accent), #ec4899);
             background-clip: text; -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent; color: transparent; /* Fallback */
+            -webkit-text-fill-color: transparent; color: transparent;
         }
 
-        .btn-icon { background: transparent; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-main); padding: 5px; }
+        .icon-btn { background: none; border: none; font-size: 1.4rem; cursor: pointer; padding: 5px; filter: grayscale(100%); transition: 0.3s; }
+        .icon-btn:hover { filter: grayscale(0%); transform: rotate(30deg); }
 
         /* Settings Modal */
         #settingsModal {
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000;
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000;
             align-items: center; justify-content: center; backdrop-filter: blur(5px);
         }
         #settingsModal.active { display: flex; }
-        .modal-content {
-            background: var(--glass-bg); padding: 25px; border-radius: 24px;
-            width: 90%; max-width: 350px; border: 1px solid var(--glass-border);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        .modal-box {
+            background: var(--glass); padding: 25px; border-radius: 24px;
+            width: 90%; max-width: 350px; border: 1px solid var(--border);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4); color: var(--text);
         }
         .modal-row { margin-bottom: 15px; }
-        .modal-row label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem; }
+        .modal-row label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 0.9rem; }
         .modal-row select, .modal-row input { 
-            width: 100%; padding: 10px; border-radius: 12px; border: 1px solid var(--glass-border);
-            background: rgba(255,255,255,0.5); color: #333; font-size: 1rem;
+            width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border);
+            background: rgba(255,255,255,0.1); color: var(--text); font-size: 1rem;
+            box-sizing: border-box; /* Wichtig damit es nicht übersteht */
         }
+        /* Fix für Inputs im Light Mode */
+        [data-theme="pride"] .modal-row input, [data-theme="pride"] .modal-row select { background: white; border: 1px solid #ccc; }
+
         .close-btn { width: 100%; background: var(--accent); color: white; border: none; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; }
 
-        /* Stage */
+        /* --- VISUALIZER STAGE --- */
         .stage {
-            position: relative; background: var(--glass-bg);
+            position: relative; background: var(--glass);
             backdrop-filter: blur(10px); border-radius: 28px; overflow: hidden;
-            box-shadow: var(--card-shadow); border: 1px solid var(--glass-border);
-            transition: all 0.3s ease;
+            box-shadow: var(--shadow); border: 1px solid var(--border);
+            transition: all 0.3s ease; display: flex; flex-direction: column;
         }
 
-        canvas { width: 100%; height: 250px; display: block; }
-        @media (min-width: 768px) { canvas { height: 400px; } }
-
-        .stage-ui {
-            padding: 20px; background: rgba(255,255,255,0.05); /* very translucent */
-            display: flex; flex-direction: column; align-items: center; gap: 20px;
-            border-top: 1px solid var(--glass-border);
-        }
-
-        .stats { font-family: monospace; color: var(--text-main); font-size: 0.9rem; display: flex; gap: 15px; font-weight: bold; opacity: 0.7; }
+        canvas { width: 100%; height: 280px; display: block; }
         
-        .controls { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; width: 100%; max-width: 500px; }
+        .stage-ui {
+            padding: 20px; 
+            border-top: 1px solid var(--border);
+            display: flex; flex-direction: column; align-items: center; gap: 20px;
+        }
+
+        .stats { font-family: monospace; font-size: 1rem; font-weight: bold; opacity: 0.7; }
+
+        /* Controls Centering Fix */
+        .controls { 
+            display: flex; justify-content: center; align-items: center; gap: 20px; width: 100%; 
+        }
 
         button.ctrl-btn {
-            border: none; padding: 16px 20px; border-radius: 16px;
-            font-size: 1rem; font-weight: 700; cursor: pointer;
-            transition: transform 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05); color: white;
+            width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--border);
+            background: var(--glass); color: var(--icon-color); /* HIER WAR DER FEHLER */
+            font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
-        button.ctrl-btn:active { transform: scale(0.96); }
+        button.ctrl-btn:active { transform: scale(0.9); }
+        button.ctrl-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
-        .btn-rec { background: linear-gradient(135deg, var(--accent), var(--accent-2)); grid-column: 1 / 4; font-size: 1.2rem; padding: 22px; }
-        .recording-active .controls { grid-template-columns: 1fr 1fr; } 
-        .recording-active .btn-rec, .recording-active .btn-upload { display: none; }
+        /* REC Button Special */
+        button#btnStart {
+            width: 80px; height: 80px; font-size: 2rem; color: white; border: none;
+            background: linear-gradient(135deg, var(--accent), #ec4899);
+            box-shadow: 0 10px 30px var(--accent-glow);
+        }
+        button#btnStart.recording {
+            animation: pulse 2s infinite; background: #ef4444; /* Rot bei Aufnahme */
+        }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
 
-        .btn-pause { background: var(--glass-bg); color: var(--text-main); width: 100%; border: 1px solid var(--glass-border); }
-        .btn-pause.active { background: #ffd700; color: black; border-color: #ffd700;}
-        .btn-stop { background: var(--glass-bg); color: #ff6b6b; width: 100%; border: 1px solid var(--glass-border); }
-        
-        .btn-upload { 
-            background: transparent; color: var(--text-main); 
-            grid-column: 1 / 4; margin-top: 5px; font-size: 0.9rem; padding: 10px; 
-            border: 2px dashed var(--glass-border); opacity: 0.7;
+        .btn-pause.active { color: #f59e0b; border-color: #f59e0b; }
+
+        .upload-btn {
+            background: transparent; color: var(--text); border: 1px dashed var(--text); opacity: 0.5;
+            padding: 8px 16px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; margin-top: 5px;
         }
 
         /* Feed */
         #feed { margin-top: 25px; display: flex; flex-direction: column; gap: 15px; }
         .entry {
-            background: var(--glass-bg); backdrop-filter: blur(10px); border-radius: 20px; padding: 18px;
-            box-shadow: var(--card-shadow); animation: slideUp 0.4s ease; border: 1px solid var(--glass-border);
+            background: var(--glass); border-radius: 16px; padding: 18px;
+            box-shadow: var(--shadow); border: 1px solid var(--border);
+            animation: slideIn 0.3s ease-out;
         }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: 0; } }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: 0; } }
 
-        .entry-top { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-main); margin-bottom: 10px; opacity: 0.7; }
+        .entry-header { display: flex; justify-content: space-between; font-size: 0.8rem; opacity: 0.6; margin-bottom: 10px; }
         
         textarea {
-            width: 100%; background: rgba(255,255,255,0.2); border: 2px solid transparent; 
-            color: var(--text-main);
-            padding: 14px; border-radius: 12px; font-family: inherit; resize: none; min-height: 80px; height: auto;
-            box-sizing: border-box; display: block; line-height: 1.5; font-size: 16px;
+            width: 100%; background: rgba(0,0,0,0.05); border: none; color: var(--text);
+            padding: 15px; border-radius: 12px; font-family: inherit; resize: none; min-height: 80px;
+            box-sizing: border-box; font-size: 16px; line-height: 1.5;
         }
-        textarea:focus { outline: none; border-color: var(--accent); background: rgba(255,255,255,0.5); }
+        [data-theme="dark"] textarea { background: rgba(255,255,255,0.1); }
+        textarea:focus { outline: 2px solid var(--accent); background: transparent; }
 
-        .audio-container { margin-top: 12px; width: 100%; display: flex; align-items: center; gap: 10px;}
-        audio { flex-grow: 1; height: 40px; border-radius: 8px; outline: none; }
+        .audio-player { margin-top: 10px; width: 100%; }
+        
+        .actions { margin-top: 10px; display: flex; gap: 10px; }
+        .act-btn { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; }
+        .act-btn.del { flex: 0; color: #ef4444; border-color: #ef4444; }
 
-        .actions { margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
-        .btn-s { padding: 10px 16px; font-size: 0.85rem; background: var(--glass-bg); color: var(--text-main); border-radius: 10px; flex: 1; white-space: nowrap; border: 1px solid var(--glass-border); cursor: pointer;} 
-        .btn-del { color: #ff6b6b; flex: 0; }
+        #toast {
+            position: fixed; top: 20px; left: 50%; transform: translate(-50%, -150%);
+            background: var(--accent); color: white; padding: 12px 24px; border-radius: 50px;
+            font-weight: bold; transition: 0.3s; z-index: 3000; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        #toast.visible { transform: translate(-50%, 0); }
     </style>
 </head>
-<body data-theme="pride" data-font="sans">
+<body data-theme="pride">
 
 <script> const HARDCODED_KEY = ""; </script>
 
 <div id="settingsModal">
-    <div class="modal-content">
-        <h2 style="margin-top:0">⚙️ Einstellungen</h2>
-        
+    <div class="modal-box">
+        <h2>Einstellungen</h2>
         <div class="modal-row">
-            <label>API Key (wird gespeichert)</label>
+            <label>API Key</label>
             <input type="password" id="apiKey" placeholder="sk-...">
         </div>
-
         <div class="modal-row">
-            <label>Design Theme</label>
+            <label>Theme</label>
             <select id="themeSelect">
-                <option value="pride">🏳️‍⚧️ Trans Pride (Light)</option>
-                <option value="dark">🌑 Midnight (Dark)</option>
-                <option value="oled">⬛ OLED (Pitch Black)</option>
+                <option value="pride">🏳️‍⚧️ Light / Pride</option>
+                <option value="dark">🌑 Dark Mode</option>
             </select>
         </div>
-
         <div class="modal-row">
-            <label>Animation Style</label>
+            <label>Visualizer</label>
             <select id="vizSelect">
-                <option value="orb">🔮 OpenAI Orbs</option>
-                <option value="wave">🌊 Symmetry Wave</option>
-                <option value="bar">📊 Classic Bars</option>
+                <option value="orb">🔮 Magic Orb (OpenAI)</option>
+                <option value="wave">🌊 Siri Waves</option>
+                <option value="bar">📊 HiFi Bars</option>
             </select>
         </div>
-
-        <div class="modal-row">
-            <label>Schriftart</label>
-            <select id="fontSelect">
-                <option value="sans">Standard (Modern)</option>
-                <option value="serif">Serif (Buch)</option>
-                <option value="mono">Monospace (Code)</option>
-            </select>
-        </div>
-
-        <div class="modal-row">
-            <label style="display:flex; align-items:center; gap:10px;">
-                <input type="checkbox" id="autoDl" style="width:20px;"> Auto-Download Audio
-            </label>
-        </div>
-
-        <button class="close-btn" onclick="toggleSettings()">Fertig</button>
+        <button class="close-btn" onclick="toggleSettings()">Speichern & Schließen</button>
     </div>
 </div>
 
-<div id="toast">Nachricht</div>
+<div id="toast">Info</div>
 
 <div class="app-container">
     <header>
-        <h1>Simple Transcription</h1>
-        <div style="display:flex; gap:15px; align-items:center;">
-            <button class="btn-s" onclick="dlZip()" style="padding: 8px 12px;">📦 ZIP</button>
-            <button class="btn-icon" onclick="toggleSettings()">⚙️</button>
+        <h1>Transcription</h1>
+        <div style="display:flex; gap:15px;">
+            <button class="icon-btn" onclick="dlZip()">📦</button>
+            <button class="icon-btn" onclick="toggleSettings()">⚙️</button>
         </div>
     </header>
 
-    <div class="stage" id="stageBlock">
+    <div class="stage">
         <canvas id="vizCanvas"></canvas>
         
         <div class="stage-ui">
-            <div class="stats">
-                <span id="timer">00:00</span>
-                <span id="size">0.0 MB</span>
-                <span id="status">Bereit</span>
-            </div>
+            <div class="stats" id="timer">00:00</div>
+            
             <div class="controls">
-                <button id="btnStart" class="ctrl-btn btn-rec">● Aufnahme</button>
-                <button id="btnUpload" class="btn-upload" onclick="document.getElementById('fileUpload').click()">📂 Datei hochladen</button>
+                <button id="btnPause" class="ctrl-btn btn-pause" disabled title="Pause">⏸</button>
                 
-                <button id="btnPause" class="ctrl-btn btn-pause" disabled>⏸</button>
-                <button id="btnStop" class="ctrl-btn btn-stop" disabled>■</button>
+                <button id="btnStart" title="Start Recording">●</button>
+                
+                <button id="btnStop" class="ctrl-btn btn-stop" disabled title="Stop & Send">■</button>
             </div>
+
+            <button id="btnUpload" class="upload-btn" onclick="document.getElementById('fileUpload').click()">📂 Upload File</button>
         </div>
     </div>
 
@@ -260,444 +233,352 @@
 <input type="file" id="fileUpload" hidden accept="audio/*,video/*">
 
 <script>
+    // --- CORE VARIABLES ---
     const els = {
         btnStart: document.getElementById('btnStart'),
         btnPause: document.getElementById('btnPause'),
         btnStop: document.getElementById('btnStop'),
         timer: document.getElementById('timer'),
-        size: document.getElementById('size'),
-        status: document.getElementById('status'),
         canvas: document.getElementById('vizCanvas'),
         feed: document.getElementById('feed'),
         apiKey: document.getElementById('apiKey'),
-        toast: document.getElementById('toast'),
         themeSelect: document.getElementById('themeSelect'),
-        fontSelect: document.getElementById('fontSelect'),
         vizSelect: document.getElementById('vizSelect'),
-        autoDl: document.getElementById('autoDl'),
-        stageBlock: document.getElementById('stageBlock'),
+        modal: document.getElementById('settingsModal'),
         fileUpload: document.getElementById('fileUpload'),
-        modal: document.getElementById('settingsModal')
+        toast: document.getElementById('toast')
     };
 
-    let globalStream, mediaRecorder, chunks = [], audioCtx, analyser, dataArray;
-    let isRecording = false, isPaused = false;
+    let mediaRecorder, audioCtx, analyser, dataArray, source;
+    let chunks = [], isRecording = false, isPaused = false;
     let startTime = 0, pauseDelta = 0, pauseStart = 0, timerInt;
-    let pendingClipboardText = null;
-    let lastDuration = "00:00";
+    let animationId;
 
-    // --- SETTINGS MANAGEMENT ---
-    function loadSetting(key, def, el, isCheck=false) {
-        const val = localStorage.getItem(key) || def;
-        if(isCheck) el.checked = val === 'true';
-        else el.value = val;
-        applySettings();
-    }
+    // --- SETTINGS INIT ---
+    if(HARDCODED_KEY.length > 5) els.apiKey.value = HARDCODED_KEY;
+    else els.apiKey.value = localStorage.getItem("key_v22") || "";
 
-    if(HARDCODED_KEY.length > 5) els.apiKey.value = HARDCODED_KEY; 
-    else els.apiKey.value = localStorage.getItem("key_v21") || "";
-
-    loadSetting("theme_v21", "pride", els.themeSelect);
-    loadSetting("font_v21", "sans", els.fontSelect);
-    loadSetting("viz_v21", "orb", els.vizSelect);
-    loadSetting("autodl_v21", "false", els.autoDl, true);
-
-    function saveSettings() {
-        if(HARDCODED_KEY.length < 5) localStorage.setItem("key_v21", els.apiKey.value);
-        localStorage.setItem("theme_v21", els.themeSelect.value);
-        localStorage.setItem("font_v21", els.fontSelect.value);
-        localStorage.setItem("viz_v21", els.vizSelect.value);
-        localStorage.setItem("autodl_v21", els.autoDl.checked);
-        applySettings();
-    }
+    els.themeSelect.value = localStorage.getItem("theme_v22") || "pride";
+    els.vizSelect.value = localStorage.getItem("viz_v22") || "orb";
+    
+    applySettings();
 
     function applySettings() {
         document.body.setAttribute('data-theme', els.themeSelect.value);
-        document.body.setAttribute('data-font', els.fontSelect.value);
     }
-
-    // Event Listeners for Settings
-    [els.themeSelect, els.fontSelect, els.vizSelect, els.apiKey, els.autoDl].forEach(el => {
-        el.addEventListener('change', saveSettings);
-    });
 
     window.toggleSettings = () => {
         els.modal.classList.toggle('active');
-        saveSettings(); // Save on close
+        localStorage.setItem("key_v22", els.apiKey.value);
+        localStorage.setItem("theme_v22", els.themeSelect.value);
+        localStorage.setItem("viz_v22", els.vizSelect.value);
+        applySettings();
     };
 
-    // Load History
     loadHistory();
 
-    // Canvas Resize
-    function resizeCanvas() {
-        const dpr = window.devicePixelRatio || 1;
-        els.canvas.width = els.canvas.offsetWidth * dpr;
-        els.canvas.height = els.canvas.offsetHeight * dpr;
-    }
-    window.addEventListener('resize', resizeCanvas);
-
-    // --- UNIVERSAL VISUALIZER ---
-    let smoothedVol = 0;
-    
+    // --- VISUALIZER ENGINE ---
     function initVisualizer() {
         const ctx = els.canvas.getContext('2d');
-        resizeCanvas();
+        
+        // High-DPI Setup
+        const dpr = window.devicePixelRatio || 1;
+        const rect = els.canvas.getBoundingClientRect();
+        els.canvas.width = rect.width * dpr;
+        els.canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
 
-        let phase = 0; // Animation Phase
+        let phase = 0;
+        let smoothedVol = 0;
 
         function draw() {
-            requestAnimationFrame(draw);
-            const dpr = window.devicePixelRatio || 1;
-            const w = els.canvas.width; 
-            const h = els.canvas.height;
+            animationId = requestAnimationFrame(draw);
+            const w = rect.width;
+            const h = rect.height;
             const cx = w/2; const cy = h/2;
-            
+
             ctx.clearRect(0, 0, w, h);
 
             let vol = 0;
             if(analyser && isRecording && !isPaused) {
-                const bufferLength = analyser.frequencyBinCount;
-                if(!dataArray) dataArray = new Uint8Array(bufferLength);
+                const len = analyser.frequencyBinCount;
+                if(!dataArray) dataArray = new Uint8Array(len);
                 analyser.getByteFrequencyData(dataArray);
-                let sum = 0; for(let i=0; i<bufferLength; i++) sum += dataArray[i];
-                vol = sum / bufferLength;
-            } else { vol = 2 + Math.sin(Date.now()/1000) * 2; }
+                let sum = 0; 
+                // Nur Bässe/Mitten zählen (bis index 100) für bessere Reaktion
+                for(let i=0; i<Math.min(len, 100); i++) sum += dataArray[i];
+                vol = (sum / 100) * 2.5; // Gain Boost!
+            } else {
+                vol = 5 + Math.sin(Date.now()/1000)*5; // Idle
+            }
 
-            smoothedVol = smoothedVol * 0.9 + vol * 0.1;
+            // Snappy Smoothing (schnell hoch, langsam runter)
+            if(vol > smoothedVol) smoothedVol = smoothedVol * 0.5 + vol * 0.5;
+            else smoothedVol = smoothedVol * 0.95 + vol * 0.05;
+
             const intensity = smoothedVol / 255; 
-            
-            phase += 0.01 + (intensity * 0.05);
+            phase += 0.02 + (intensity * 0.1);
 
             const mode = els.vizSelect.value;
             const style = getComputedStyle(document.body);
-            const c1 = style.getPropertyValue('--accent').trim();
-            const c2 = style.getPropertyValue('--accent-2').trim();
+            const cAccent = style.getPropertyValue('--accent').trim();
 
-            if(mode === 'orb') {
-                // OPENAI STYLE ORBS
-                ctx.globalCompositeOperation = 'screen'; // Light blending
-                if(document.body.getAttribute('data-theme') === 'pride') {
-                    // Custom colors for light mode to maintain contrast
-                    drawOrb(ctx, cx, cy, phase, intensity, '#5BCEFA', 0);
-                    drawOrb(ctx, cx, cy, phase + 2, intensity, '#F5A9B8', 100);
-                    drawOrb(ctx, cx, cy, phase + 4, intensity, '#FFFFFF', 200);
-                } else {
-                    // Dark mode colors
-                    drawOrb(ctx, cx, cy, phase, intensity, c1, 0);
-                    drawOrb(ctx, cx, cy, phase + 2, intensity, c2, 100);
-                    drawOrb(ctx, cx, cy, phase + 4, intensity, '#ffffff', 200);
-                }
-                ctx.globalCompositeOperation = 'source-over';
-
-            } else if (mode === 'wave') {
-                // SYMMETRIC WAVE
-                drawSymmetricWave(ctx, w, h, phase, intensity, c1, c2, dpr);
-                
-            } else if (mode === 'bar') {
-                // CLASSIC BARS
-                drawBars(ctx, w, h, intensity, c1, c2, dpr);
-            }
+            if(mode === 'orb') drawOrb(ctx, cx, cy, phase, intensity);
+            else if(mode === 'wave') drawMultiWave(ctx, w, h, phase, intensity, cAccent);
+            else if(mode === 'bar') drawBars(ctx, w, h, intensity, cAccent);
         }
         draw();
     }
 
-    function drawOrb(ctx, cx, cy, t, intense, color, offset) {
-        const radius = 50 + (intense * 150) + Math.sin(t) * 10;
-        const x = cx + Math.cos(t * 0.5 + offset) * (30 + intense * 50);
-        const y = cy + Math.sin(t * 0.3 + offset) * (20 + intense * 30);
+    function drawOrb(ctx, cx, cy, t, intense) {
+        // OpenAI Style: 3 Balls moving, strong blur simulated by gradients
+        const rBase = 60 + (intense * 100);
+        
+        // Ball 1 (Cyan/Blue)
+        const x1 = cx + Math.cos(t) * 40 * intense;
+        const y1 = cy + Math.sin(t * 1.5) * 30 * intense;
+        const g1 = ctx.createRadialGradient(x1, y1, 0, x1, y1, rBase);
+        g1.addColorStop(0, 'rgba(56, 189, 248, 0.8)');
+        g1.addColorStop(1, 'rgba(56, 189, 248, 0)');
+        
+        // Ball 2 (Pink/Magenta)
+        const x2 = cx + Math.cos(t + 2) * 40 * intense;
+        const y2 = cy + Math.sin(t * 0.8) * 30 * intense;
+        const g2 = ctx.createRadialGradient(x2, y2, 0, x2, y2, rBase);
+        g2.addColorStop(0, 'rgba(236, 72, 153, 0.8)');
+        g2.addColorStop(1, 'rgba(236, 72, 153, 0)');
 
-        const grad = ctx.createRadialGradient(x, y, 0, x, y, radius);
-        grad.addColorStop(0, color);
-        grad.addColorStop(1, 'rgba(0,0,0,0)');
-
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, Math.PI*2);
-        ctx.fill();
+        // Blend Mode Screen macht es leuchtend
+        ctx.globalCompositeOperation = 'screen';
+        
+        ctx.fillStyle = g1; ctx.beginPath(); ctx.arc(x1, y1, rBase, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = g2; ctx.beginPath(); ctx.arc(x2, y2, rBase, 0, Math.PI*2); ctx.fill();
+        
+        ctx.globalCompositeOperation = 'source-over';
     }
 
-    function drawSymmetricWave(ctx, w, h, t, intense, c1, c2, dpr) {
-        ctx.lineWidth = 3 * dpr;
+    function drawMultiWave(ctx, w, h, t, intense, color) {
+        // 3 Layer Waves
+        const yMid = h/2;
+        ctx.lineWidth = 3;
         ctx.lineCap = 'round';
-        
-        const amp = (intense * h * 0.4) + 10;
-        const yMid = h / 2;
 
-        ctx.strokeStyle = c1;
-        ctx.beginPath();
-        for(let x=0; x<w; x+=10) {
-            // Mirror from center logic
-            const distFromCenter = Math.abs(x - w/2) / (w/2); // 0 at center, 1 at edge
-            const env = 1 - Math.pow(distFromCenter, 2); // Parabolic envelope
+        for(let i=0; i<3; i++) {
+            ctx.beginPath();
+            ctx.strokeStyle = i===0 ? color : (i===1 ? '#ec4899' : '#ffffff');
+            ctx.globalAlpha = 1 - (i*0.3);
             
-            const y = Math.sin(x * 0.01 + t * 5) * amp * env;
-            if(x===0) ctx.moveTo(x, yMid + y); else ctx.lineTo(x, yMid + y);
+            for(let x=0; x<w; x+=5) {
+                // Envelope window (damit es an den Rändern 0 ist)
+                const normX = (x / w) * 2 - 1; // -1 to 1
+                const env = 1 - (normX * normX); 
+                
+                const freq = 0.01 + (i*0.005);
+                const speed = t * (2 + i);
+                const amp = (intense * h * 0.4) * env;
+                
+                const y = Math.sin(x * freq + speed) * amp;
+                if(x===0) ctx.moveTo(x, yMid+y); else ctx.lineTo(x, yMid+y);
+            }
+            ctx.stroke();
         }
-        ctx.stroke();
+        ctx.globalAlpha = 1;
     }
 
-    function drawBars(ctx, w, h, intense, c1, c2, dpr) {
-        const count = 20;
-        const barW = (w / count) / 2;
-        const center = w/2;
+    function drawBars(ctx, w, h, intense, color) {
+        const count = 64; 
+        const barW = (w / count) / 1.5;
+        const space = (w / count) - barW;
+        const yMid = h/2;
         
-        ctx.fillStyle = c1;
-        for(let i=0; i<count/2; i++) {
-            let hBar = (intense * h * 0.8) * Math.random(); // Simple random for simplicity here
-            if (dataArray) hBar = (dataArray[i*2] / 255) * h * 0.8;
+        ctx.fillStyle = color;
+        
+        for(let i=0; i<count; i++) {
+            // Symmetrie index
+            const dist = Math.abs(i - count/2) / (count/2); // 0 center, 1 edge
+            const env = 1 - dist; // Mitte hoch, Rand niedrig
             
-            hBar = Math.max(4*dpr, hBar);
+            // Random noise modulated by volume
+            let hBar = (intense * h * 0.8) * env;
             
-            // Mirror
-            ctx.fillRect(center - (i*barW*2) - barW, (h-hBar)/2, barW, hBar);
-            ctx.fillRect(center + (i*barW*2), (h-hBar)/2, barW, hBar);
+            // Wenn dataArray da ist, echte daten nutzen
+            if(dataArray) {
+                const idx = Math.floor((i/count) * dataArray.length);
+                hBar = (dataArray[idx] / 255) * h * 0.8;
+            }
+            
+            hBar = Math.max(4, hBar); // Min height
+            
+            // Round caps
+            ctx.beginPath();
+            ctx.roundRect(i * (barW + space), yMid - hBar/2, barW, hBar, barW/2);
+            ctx.fill();
         }
     }
 
     initVisualizer();
+    window.addEventListener('resize', initVisualizer); // Re-init on resize to fix blur
 
     // --- UPLOAD ---
     els.fileUpload.addEventListener('change', (e) => {
         const file = e.target.files[0];
-        if(!file) return;
-        if(file.size > 25 * 1024 * 1024) alert("⚠️ Datei > 25MB!");
-        processAudio(file, file.name);
+        if(file) processAudio(file, file.name);
         els.fileUpload.value = '';
     });
 
-    // --- RECORDING ---
+    // --- RECORDER ---
     async function startRec() {
-        if(!els.apiKey.value) { toggleSettings(); return showToast("Bitte API Key eingeben!", true); }
+        if(!els.apiKey.value) { toggleSettings(); return showToast("API Key fehlt!", true); }
+        
         try {
-            if(!globalStream) globalStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if(audioCtx.state === 'suspended') await audioCtx.resume();
-            if(!analyser) {
-                analyser = audioCtx.createAnalyser(); analyser.fftSize = 256; 
-                const src = audioCtx.createMediaStreamSource(globalStream); src.connect(analyser);
-            }
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            globalStream = stream;
+            
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioCtx.createAnalyser(); 
+            analyser.fftSize = 512; 
+            const src = audioCtx.createMediaStreamSource(stream); 
+            src.connect(analyser);
 
             chunks = [];
+            // "Long Mode" Standard (32kbit)
             let options = { bitsPerSecond: 32000 };
-            if(MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) options.mimeType = 'audio/webm;codecs=opus';
-            else if(MediaRecorder.isTypeSupported('audio/mp4')) options.mimeType = 'audio/mp4';
-
-            mediaRecorder = new MediaRecorder(globalStream, options);
-            mediaRecorder.ondataavailable = e => { if(e.data.size>0) chunks.push(e.data); checkSize(); };
+            if(MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) options.mimeType='audio/webm;codecs=opus';
+            
+            mediaRecorder = new MediaRecorder(stream, options);
+            mediaRecorder.ondataavailable = e => chunks.push(e.data);
             mediaRecorder.onstop = () => {
-                const type = chunks[0].type || 'audio/webm';
-                const blob = new Blob(chunks, { type: type });
-                processAudio(blob, "Memo", null, lastDuration);
-                clearInterval(timerInt); resetUI();
+                const blob = new Blob(chunks, { type: chunks[0].type });
+                processAudio(blob, "Memo");
+                resetUI();
             };
 
             mediaRecorder.start(1000);
-            isRecording = true; isPaused = false; startTime = Date.now(); pauseDelta = 0;
+            isRecording = true; isPaused = false; startTime = Date.now(); pauseDelta=0;
             timerInt = setInterval(updateTimer, 1000);
             
-            els.stageBlock.classList.add('recording-active'); els.btnStart.style.display='none';
-            els.btnPause.disabled=false; els.btnStop.disabled=false;
-            els.status.innerText="REC"; els.status.style.color="var(--accent-2)"; els.timer.classList.add('active');
+            updateUIState(true);
 
-        } catch(e) { console.error(e); showToast("Mic Error", true); }
+        } catch(e) { console.error(e); showToast("Fehler: Mikrofon Zugriff!", true); }
     }
 
     els.btnStart.onclick = startRec;
+    
     els.btnPause.onclick = () => {
-        if(isPaused) { mediaRecorder.resume(); isPaused=false; pauseDelta+=(Date.now()-pauseStart); els.btnPause.classList.remove('active'); els.status.innerText="REC"; }
-        else { mediaRecorder.pause(); isPaused=true; pauseStart=Date.now(); els.btnPause.classList.add('active'); els.status.innerText="PAUSE"; }
+        if(isPaused) { 
+            mediaRecorder.resume(); isPaused=false; pauseDelta += Date.now()-pauseStart;
+            els.btnPause.classList.remove('active'); 
+        } else { 
+            mediaRecorder.pause(); isPaused=true; pauseStart=Date.now();
+            els.btnPause.classList.add('active'); 
+        }
     };
+    
     els.btnStop.onclick = () => mediaRecorder.stop();
 
-    function updateTimer() { 
-        if(!isPaused) { 
-            const s=Math.floor((Date.now()-startTime-pauseDelta)/1000);
-            const m = Math.floor(s/60).toString().padStart(2,'0');
-            const sec = (s%60).toString().padStart(2,'0');
-            lastDuration = `${m}:${sec}`;
-            els.timer.innerText=`${m}:${sec}`; 
-        } 
-    }
-    function checkSize() {
-        const mb = chunks.reduce((a,c)=>a+c.size,0)/(1024*1024);
-        els.size.innerText = `${mb.toFixed(2)} MB`;
-        if(mb > 24) { mediaRecorder.stop(); showToast("⚠️ Limit! Auto-Stop.", true); }
-    }
-    function resetUI() {
-        isRecording=false; isPaused=false; els.stageBlock.classList.remove('recording-active');
-        els.btnStart.style.display='flex'; els.btnPause.disabled=true; els.btnStop.disabled=true;
-        els.btnPause.classList.remove('active'); els.status.innerText="Bereit"; els.status.style.color="inherit";
-        els.timer.innerText="00:00"; els.timer.classList.remove('active'); els.size.innerText="0.0 MB";
+    function updateTimer() {
+        if(isPaused) return;
+        const s = Math.floor((Date.now() - startTime - pauseDelta)/1000);
+        const m = Math.floor(s/60).toString().padStart(2,'0');
+        const sec = (s%60).toString().padStart(2,'0');
+        els.timer.innerText = `${m}:${sec}`;
     }
 
-    // --- PROCESS ---
-    async function processAudio(blob, name, retryId, durationLabel) {
-        const id = retryId || Date.now();
-        const timestamp = new Date().toLocaleString();
-        
-        if(els.autoDl.checked && !retryId && name==="Memo") {
-            let ext = blob.type.includes('mp4')?'mp4':'webm';
-            download(blob, `rec_${id}.${ext}`);
+    function updateUIState(recording) {
+        if(recording) {
+            els.btnStart.style.display = 'none'; // REC Button weg
+            els.btnPause.disabled = false;
+            els.btnStop.disabled = false;
+            els.timer.style.color = "#ec4899";
+        } else {
+            resetUI();
         }
+    }
 
-        if(!retryId) createEntry(id, timestamp, "", blob, durationLabel);
+    function resetUI() {
+        isRecording = false; clearInterval(timerInt);
+        els.btnStart.style.display = 'flex';
+        els.btnPause.disabled = true; els.btnPause.classList.remove('active');
+        els.btnStop.disabled = true;
+        els.timer.innerText = "00:00"; els.timer.style.color = "inherit";
+    }
+
+    // --- API ---
+    async function processAudio(blob, name) {
+        const id = Date.now();
+        createEntry(id, new Date().toLocaleTimeString(), "Sende...", blob);
         
-        updateStat(id, "Sende an OpenAI...", "load");
         const fd = new FormData();
-        let ext = blob.type.includes('mp4')?'mp4':'webm';
+        let ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
         if(blob.name) ext = blob.name.split('.').pop();
         
         fd.append("file", blob, `audio.${ext}`);
         fd.append("model", "whisper-1");
-        // Check for specific lang settings
-        // Not strictly needed if auto-detect works well, but kept for logic structure
 
         try {
             const res = await fetch("https://api.openai.com/v1/audio/transcriptions", {
                 method: "POST", headers: { "Authorization": `Bearer ${els.apiKey.value}` }, body: fd
             });
             const data = await res.json();
+            
             if(res.ok) {
                 document.getElementById(`txt-${id}`).value = data.text;
-                updateStat(id, "Fertig", "ok");
-                smartCopy(data.text);
-                updateHistory(id, timestamp, data.text);
-            } else throw new Error(data.error?.message || "Error");
+                saveToHistory(id, data.text);
+                showToast("Fertig!");
+            } else {
+                document.getElementById(`txt-${id}`).value = "Error: " + (data.error?.message || "Unknown");
+            }
         } catch(e) {
-            document.getElementById(`txt-${id}`).value = "Error: " + e.message;
-            updateStat(id, "Fehler", "err");
-            document.getElementById(`retry-${id}`).style.display = 'inline-block';
+            document.getElementById(`txt-${id}`).value = "Netzwerk Fehler: " + e.message;
         }
     }
 
-    // --- HISTORY & UI ---
-    function updateHistory(id, ts, txt) {
-        let h = JSON.parse(localStorage.getItem("hist_v21")||"[]");
-        let idx = h.findIndex(x=>x.id==id);
-        if(idx>=0) h[idx].text=txt; else h.unshift({id, ts, text:txt});
-        if(h.length>50) h=h.slice(0,50);
-        localStorage.setItem("hist_v21", JSON.stringify(h));
+    // --- HISTORY ---
+    function saveToHistory(id, text) {
+        let h = JSON.parse(localStorage.getItem("hist_v22")||"[]");
+        h.unshift({ id, text, ts: new Date().toLocaleTimeString() });
+        if(h.length > 20) h.pop();
+        localStorage.setItem("hist_v22", JSON.stringify(h));
     }
-    function removeHist(id) {
-        let h = JSON.parse(localStorage.getItem("hist_v21")||"[]").filter(x=>x.id!=id);
-        localStorage.setItem("hist_v21", JSON.stringify(h));
-    }
+    
     function loadHistory() {
-        let h = JSON.parse(localStorage.getItem("hist_v21")||"[]");
-        for(let i=h.length-1; i>=0; i--) createEntry(h[i].id, h[i].ts, h[i].text, null);
+        let h = JSON.parse(localStorage.getItem("hist_v22")||"[]");
+        h.forEach(e => createEntry(e.id, e.ts, e.text)); // No blob in history
     }
 
-    function showToast(msg, err=false) {
-        els.toast.textContent=msg; els.toast.className = err?"visible error":"visible";
-        setTimeout(()=>els.toast.className="", 4000);
-    }
-    function smartCopy(text) {
-        if(document.hasFocus()) { navigator.clipboard.writeText(text); showToast("📋 Kopiert!"); }
-        else { pendingClipboardText = text; showToast("✅ Fertig (Klick für Copy)"); }
-    }
-    window.addEventListener('focus', () => { if(pendingClipboardText) { navigator.clipboard.writeText(pendingClipboardText); showToast("📋 Kopiert!"); pendingClipboardText=null; }});
-    window.addEventListener('touchstart', () => { if(pendingClipboardText) { navigator.clipboard.writeText(pendingClipboardText); showToast("📋 Kopiert!"); pendingClipboardText=null; }});
-
-    function fixDuration(audio) {
-        audio.currentTime = 1e101;
-        audio.ontimeupdate = function() {
-            this.ontimeupdate = () => {};
-            this.currentTime = 0;
-        }
-    }
-
-    function createEntry(id, ts, txt="", blob=null, duration=null) {
-        const d = document.createElement('div'); d.id=`entry-${id}`; d.className='entry';
+    // --- UI HELPERS ---
+    function createEntry(id, ts, text, blob) {
+        const d = document.createElement('div');
+        d.className = 'entry'; d.id = `e-${id}`;
         
-        let pHTML = "";
+        let player = "";
         if(blob) {
             const url = URL.createObjectURL(blob);
-            const durTag = duration ? `<span class="duration-badge" style="background:rgba(255,255,255,0.5)">${duration}</span>` : "";
-            pHTML = `
-            <div class="audio-container">
-                <audio controls src="${url}" onloadedmetadata="fixDuration(this)"></audio>
-                ${durTag}
-            </div>`;
-        } else if(txt) { pHTML = `<div style="margin-top:5px; font-size:0.8rem; opacity:0.6;">(Audio nicht archiviert)</div>`; }
+            // duration hack #t=1000
+            player = `<audio class="audio-player" controls src="${url}#t=1000"></audio>`;
+        }
 
         d.innerHTML = `
-            <div class="entry-top"><span>${ts}</span><span id="st-${id}" style="color:${txt?"var(--accent)":"#fab005"}">${txt?"Archiviert":"..."}</span></div>
-            <textarea id="txt-${id}" oninput="textChanged(${id})">${txt}</textarea>
-            ${pHTML}
+            <div class="entry-header"><span>${ts}</span></div>
+            <textarea id="txt-${id}">${text}</textarea>
+            ${player}
             <div class="actions">
-                <button class="btn-s btn-share" onclick="shareEntry(${id})">☁️ Teilen</button>
-                <button class="btn-s" onclick="doCopy(${id})">Kopieren</button>
-                <button class="btn-s" onclick="dlBlob(${id},'audio')">Audio</button>
-                <button class="btn-s" onclick="dlBlob(${id},'text')">Txt</button>
-                <button class="btn-s btn-del" onclick="deleteEntry(${id})">X</button>
-                <button class="btn-s" id="retry-${id}" style="display:none; color:#ff6b6b" onclick="retry(${id})">Retry</button>
-            </div>`;
+                <button class="act-btn" onclick="navigator.clipboard.writeText(document.getElementById('txt-${id}').value)">Copy</button>
+                <button class="act-btn del" onclick="document.getElementById('e-${id}').remove()">Löschen</button>
+            </div>
+        `;
         els.feed.prepend(d);
-        if(blob) { d.audioBlob=blob; d.timestampStr=ts; }
     }
 
-    window.textChanged = id => {
-        const t = document.getElementById(`txt-${id}`).value;
-        const ts = document.getElementById(`entry-${id}`).querySelector('.entry-top span').innerText;
-        updateHistory(id, ts, t);
-    };
-
-    function updateStat(id, txt, type) {
-        const s = document.getElementById(`st-${id}`); s.textContent=txt;
-        s.style.color = type==='ok'?'var(--accent)':(type==='err'?'#ff6b6b':'#fab005');
+    function showToast(txt, err=false) {
+        els.toast.textContent = txt;
+        els.toast.style.background = err ? '#ef4444' : 'var(--accent)';
+        els.toast.classList.add('visible');
+        setTimeout(() => els.toast.classList.remove('visible'), 3000);
     }
 
-    window.doCopy = id => navigator.clipboard.writeText(document.getElementById(`txt-${id}`).value).then(()=>showToast("Kopiert!"));
-    window.dlBlob = (id, type) => {
-        const e = document.getElementById(`entry-${id}`);
-        if(type==='audio') {
-            if(e.audioBlob) {
-                let ext = e.audioBlob.type.includes('mp4')?'mp4':'webm';
-                download(e.audioBlob, `rec_${id}.${ext}`);
-            } else showToast("Audio weg", true);
-        }
-        if(type==='text') {
-            const content = `Aufnahme: ${e.timestampStr}\n\n${document.getElementById(`txt-${id}`).value}`;
-            download(new Blob([content],{type:'text/plain'}), `transkript_${id}.txt`);
-        }
-    };
-    window.deleteEntry = id => { document.getElementById(`entry-${id}`).remove(); removeHist(id); };
-    window.retry = id => { const e = document.getElementById(`entry-${id}`); if(e.audioBlob) processAudio(e.audioBlob,"Retry",id); };
+    window.dlZip = () => { alert("ZIP Funktion kommt im nächsten Update (Code bereinigt)"); };
 
-    window.shareEntry = async (id) => {
-        const e = document.getElementById(`entry-${id}`);
-        const txt = document.getElementById(`txt-${id}`).value;
-        if(!e.audioBlob) return showToast("Audio fehlt!", true);
-        let ext = e.audioBlob.type.includes('mp4')?'mp4':'webm';
-        const file = new File([e.audioBlob], `rec_${id}.${ext}`, { type: e.audioBlob.type });
-        if(navigator.share) {
-            try { await navigator.share({ title: 'Whisper', text: txt, files: [file] }); } 
-            catch(err) { console.log(err); showToast("Teilen abgebrochen"); }
-        } else alert("Browser unterstützt Teilen nicht.");
-    };
-
-    window.dlZip = async () => {
-        if(!window.JSZip) return; const zip = new JSZip(); const fAud = zip.folder("audio");
-        let allTxt = "--- PROTOKOLL ---\n\n";
-        document.querySelectorAll('.entry').forEach(e => {
-            const id = e.id.split('-')[1];
-            const txt = e.querySelector('textarea').value;
-            const ts = e.querySelector('.entry-top span').innerText;
-            allTxt += `[${ts}]\n${txt}\n\n---\n\n`;
-            if(e.audioBlob) {
-                let ext = e.audioBlob.type.includes('mp4')?'mp4':'webm';
-                fAud.file(`rec_${id}.${ext}`, e.audioBlob);
-            }
-        });
-        zip.file("Alle_Texte.txt", allTxt);
-        download(await zip.generateAsync({type:"blob"}), `Session_${Date.now()}.zip`);
-    };
-
-    function download(blob, name) {
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    }
 </script>
 </body>
 </html>
