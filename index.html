@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Simple Transcription V18</title>
+    <title>Simple Transcription V19</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root {
             --accent-blue: #5BCEFA;
             --accent-pink: #F5A9B8;
             --text-main: #495057;
-            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-bg: rgba(255, 255, 255, 0.92);
             --glass-border: rgba(255, 255, 255, 0.6);
         }
 
@@ -20,7 +20,7 @@
             margin: 0;
             display: flex; flex-direction: column; align-items: center;
             min-height: 100vh; padding: 15px;
-            /* Lebendigerer Hintergrund */
+            /* Der Hintergrund-Verlauf aus V18 */
             background: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 50%, #fbc2eb 100%);
             background-attachment: fixed;
             -webkit-tap-highlight-color: transparent;
@@ -53,40 +53,41 @@
         h1 { 
             margin: 0; font-size: 1.3rem; font-weight: 800; 
             background: linear-gradient(90deg, #5BCEFA, #F5A9B8);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; color: transparent;
             letter-spacing: 0.5px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
         }
 
         .header-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: space-between; }
 
+        /* API Input deutlicher */
+        .api-wrapper { position: relative; }
         input[type="password"] {
-            background: rgba(255,255,255,0.6); border: 1px solid #dee2e6; color: #555;
-            padding: 8px; border-radius: 8px; width: 80px; transition: width 0.3s; font-size: 16px;
+            background: white; border: 2px solid #dee2e6; color: #555;
+            padding: 10px 14px; border-radius: 10px; width: 100px; transition: all 0.3s; font-size: 14px;
         }
-        input[type="password"]:focus { width: 150px; outline: none; border-color: var(--accent-pink); background: white;}
+        input[type="password"]:focus { width: 200px; outline: none; border-color: var(--accent-pink); box-shadow: 0 0 0 3px rgba(245, 169, 184, 0.2); }
+        input[type="password"]::placeholder { color: #aaa; font-style: italic; }
 
-        select { padding: 8px; border-radius: 8px; border: 1px solid #dee2e6; background: rgba(255,255,255,0.6); color: #555; font-size: 16px; }
+        select { padding: 10px; border-radius: 10px; border: 1px solid #dee2e6; background: rgba(255,255,255,0.8); color: #555; font-size: 14px; }
 
         .toggle-label { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600; color: #666; background: rgba(255,255,255,0.5); padding: 8px 12px; border-radius: 12px;}
         .toggle-label input { width: 18px; height: 18px; accent-color: var(--accent-pink); }
 
         /* --- STAGE --- */
         .stage {
-            position: relative; background: rgba(255,255,255,0.3);
+            position: relative; background: rgba(255,255,255,0.4);
             backdrop-filter: blur(10px); border-radius: 28px; overflow: hidden;
             box-shadow: 0 15px 40px -10px rgba(0,0,0,0.1);
             border: 1px solid rgba(255,255,255,0.8);
             transition: all 0.3s ease;
         }
 
-        canvas { 
-            width: 100%; height: 220px; display: block; 
-            /* Kein Filter mehr -> Scharfe Linien! */
-        }
+        canvas { width: 100%; height: 220px; display: block; }
         @media (min-width: 768px) { canvas { height: 350px; } }
 
         .stage-ui {
-            padding: 20px; background: rgba(255,255,255,0.85);
+            padding: 20px; background: rgba(255,255,255,0.9);
             display: flex; flex-direction: column; align-items: center; gap: 20px;
             border-top: 1px solid rgba(255,255,255,0.5);
             position: relative; z-index: 10;
@@ -127,7 +128,7 @@
         }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: 0; } }
 
-        .entry-top { display: flex; justify-content: space-between; font-size: 0.8rem; color: #adb5bd; margin-bottom: 12px; font-weight: 600; }
+        .entry-top { display: flex; justify-content: space-between; font-size: 0.8rem; color: #adb5bd; margin-bottom: 10px; font-weight: 600; }
         
         textarea {
             width: 100%; background: rgba(255,255,255,0.5); border: 2px solid transparent; color: #495057;
@@ -160,7 +161,9 @@
     <header>
         <div class="header-top">
             <h1>Simple Transcription</h1>
-            <div id="keyBox"><input type="password" id="apiKey" placeholder="API Key"></div>
+            <div class="api-wrapper">
+                <input type="password" id="apiKey" placeholder="🔑 API Key">
+            </div>
         </div>
         
         <div class="header-controls">
@@ -179,7 +182,7 @@
     </header>
 
     <div class="stage" id="stageBlock">
-        <canvas id="waveCanvas"></canvas>
+        <canvas id="barCanvas"></canvas>
         
         <div class="stage-ui">
             <div class="stats">
@@ -210,11 +213,11 @@
         timer: document.getElementById('timer'),
         size: document.getElementById('size'),
         status: document.getElementById('status'),
-        canvas: document.getElementById('waveCanvas'),
+        canvas: document.getElementById('barCanvas'),
         feed: document.getElementById('feed'),
         apiKey: document.getElementById('apiKey'),
         toast: document.getElementById('toast'),
-        keyBox: document.getElementById('keyBox'),
+        keyBox: document.querySelector('.api-wrapper'),
         langSelect: document.getElementById('langSelect'),
         autoDl: document.getElementById('autoDl'),
         stageBlock: document.getElementById('stageBlock'),
@@ -229,30 +232,27 @@
 
     // Setup
     if(HARDCODED_KEY.length > 5) { els.apiKey.value = HARDCODED_KEY; els.keyBox.style.display = 'none'; }
-    else { els.apiKey.value = localStorage.getItem("key_v18") || ""; els.apiKey.addEventListener('change',()=>localStorage.setItem("key_v18",els.apiKey.value)); }
+    else { els.apiKey.value = localStorage.getItem("key_v19") || ""; els.apiKey.addEventListener('change',()=>localStorage.setItem("key_v19",els.apiKey.value)); }
 
     if(localStorage.getItem("autodl")==='true') els.autoDl.checked = true;
     els.autoDl.addEventListener('change',()=>localStorage.setItem("autodl",els.autoDl.checked));
 
     loadHistory();
 
-    // --- HIGH RES RESIZE ---
     function resizeCanvas() {
         const dpr = window.devicePixelRatio || 1;
-        // Setze interne Pixel-Größe (scharf)
         els.canvas.width = els.canvas.offsetWidth * dpr;
         els.canvas.height = els.canvas.offsetHeight * dpr;
-        
-        // Kontext muss wissen, dass wir skaliert haben, aber hier machen wir das in der Draw Loop
     }
     window.addEventListener('resize', resizeCanvas);
 
-    // --- CRYSTAL WAVE VISUALIZER ---
+    // --- SMOOTH BAR VISUALIZER (Gravity Effect) ---
     function initVisualizer() {
         const ctx = els.canvas.getContext('2d');
         resizeCanvas();
 
-        let phase = 0; // Für Bewegung
+        const barCount = 40; // Anzahl der Balken (Symmetrisch = 20 pro Seite)
+        const barStates = new Array(barCount).fill(0); // Speichert aktuelle Höhe für Gravity
 
         function draw() {
             requestAnimationFrame(draw);
@@ -262,56 +262,69 @@
             
             ctx.clearRect(0, 0, w, h);
 
-            let vol = 0;
+            let bufferLength = 0;
             if(analyser && isRecording && !isPaused) {
-                // Wir nehmen TimeDomainData für Wellenform!
-                const bufferLength = analyser.frequencyBinCount;
+                // Wir nutzen FrequencyData für Balken
+                bufferLength = analyser.frequencyBinCount;
                 if(!dataArray) dataArray = new Uint8Array(bufferLength);
-                analyser.getByteTimeDomainData(dataArray);
-                
-                // Berechne Amplitude
-                let sum = 0;
-                for(let i=0; i<bufferLength; i++) {
-                    const v = (dataArray[i] - 128) / 128.0;
-                    sum += v*v;
+                analyser.getByteFrequencyData(dataArray);
+            }
+
+            // Create Gradient
+            const gradient = ctx.createLinearGradient(0, 0, 0, h);
+            gradient.addColorStop(0, '#5BCEFA'); // Oben Blau
+            gradient.addColorStop(0.5, '#F5A9B8'); // Mitte Pink
+            gradient.addColorStop(1, 'rgba(255,255,255,0.2)'); // Unten fast transparent
+
+            ctx.fillStyle = gradient;
+
+            const barWidth = (w / barCount) * 0.6; // Breite mit Lücke
+            const spacing = (w / barCount) * 0.4;
+            const center = w / 2;
+
+            for(let i = 0; i < barCount / 2; i++) {
+                // Wert ermitteln
+                let val = 0;
+                if(dataArray) {
+                    // Wir nehmen nur die unteren Frequenzen (Bass/Stimme) für mehr Action
+                    const dataIndex = Math.floor(i / (barCount/2) * (bufferLength * 0.6));
+                    val = dataArray[dataIndex];
+                } else {
+                    // Idle Animation (Sanfte Welle)
+                    val = 10 + Math.sin(Date.now()/500 + i*0.5) * 10;
                 }
-                vol = Math.sqrt(sum / bufferLength) * 500; // Verstärkung
-            } 
-            
-            // Idle Bewegung
-            if (vol < 5) vol = 5;
 
-            phase += 0.05 + (vol * 0.005); // Schneller wenn laut
+                // Gravity Logic:
+                // Wenn neuer Wert höher -> sofort hoch
+                // Wenn neuer Wert tiefer -> langsam fallen (0.9 Faktor)
+                if (val > barStates[i]) {
+                    barStates[i] = val;
+                } else {
+                    barStates[i] *= 0.90; // Fallgeschwindigkeit
+                }
 
-            // Zeichne 3 Wellen
-            drawWave(ctx, w, h, phase, vol, '#5BCEFA', 1.0); // Blau
-            drawWave(ctx, w, h, phase + 2, vol, '#F5A9B8', 0.8); // Pink
-            drawWave(ctx, w, h, phase + 4, vol, '#FFFFFF', 0.6); // Weiß
+                // Höhe berechnen
+                const barHeight = Math.max(4, barStates[i] * 1.2 * dpr); // min 4px
+
+                // Zeichne Links vom Zentrum
+                drawRoundedBar(ctx, center - (i * (barWidth + spacing)) - barWidth, (h - barHeight)/2, barWidth, barHeight);
+                
+                // Zeichne Rechts vom Zentrum (Spiegelung)
+                drawRoundedBar(ctx, center + (i * (barWidth + spacing)) + spacing, (h - barHeight)/2, barWidth, barHeight);
+            }
         }
         draw();
     }
 
-    function drawWave(ctx, w, h, offset, amplitude, color, speedMult) {
+    function drawRoundedBar(ctx, x, y, width, height) {
+        const radius = width / 2;
         ctx.beginPath();
-        ctx.lineWidth = 4 * (window.devicePixelRatio || 1);
-        ctx.strokeStyle = color;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-
-        const yMid = h / 2;
-        
-        for (let x = 0; x < w; x+=10) { // Schrittweite
-            // Sinus Wellen Formel
-            const y = Math.sin((x * 0.01) + (offset * speedMult)) * (amplitude * 1.5 * (window.devicePixelRatio||1)) * Math.sin(x/w * Math.PI);
-            
-            if (x === 0) ctx.moveTo(x, yMid + y);
-            else ctx.lineTo(x, yMid + y);
-        }
-        ctx.stroke();
+        ctx.roundRect(x, y, width, height, radius);
+        ctx.fill();
     }
+    
     initVisualizer();
 
-    // --- UPLOAD ---
     els.fileUpload.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if(!file) return;
@@ -320,7 +333,6 @@
         els.fileUpload.value = '';
     });
 
-    // --- RECORDING ---
     async function startRec() {
         if(!els.apiKey.value) return showToast("API Key fehlt!", true);
         try {
@@ -328,7 +340,9 @@
             if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if(audioCtx.state === 'suspended') await audioCtx.resume();
             if(!analyser) {
-                analyser = audioCtx.createAnalyser(); analyser.fftSize = 2048; // TimeDomain braucht mehr Daten
+                analyser = audioCtx.createAnalyser(); 
+                analyser.fftSize = 256; 
+                analyser.smoothingTimeConstant = 0.5; // Reaktiver Input
                 const src = audioCtx.createMediaStreamSource(globalStream); src.connect(analyser);
             }
 
@@ -386,7 +400,6 @@
         els.timer.innerText="00:00"; els.timer.classList.remove('active'); els.size.innerText="0.0 MB";
     }
 
-    // --- PROCESS ---
     async function processAudio(blob, name, retryId, durationLabel) {
         const id = retryId || Date.now();
         const timestamp = new Date().toLocaleString();
@@ -427,20 +440,19 @@
         }
     }
 
-    // --- STORAGE & UI ---
     function updateHistory(id, ts, txt) {
-        let h = JSON.parse(localStorage.getItem("hist_v18")||"[]");
+        let h = JSON.parse(localStorage.getItem("hist_v19")||"[]");
         let idx = h.findIndex(x=>x.id==id);
         if(idx>=0) h[idx].text=txt; else h.unshift({id, ts, text:txt});
         if(h.length>50) h=h.slice(0,50);
-        localStorage.setItem("hist_v18", JSON.stringify(h));
+        localStorage.setItem("hist_v19", JSON.stringify(h));
     }
     function removeHist(id) {
-        let h = JSON.parse(localStorage.getItem("hist_v18")||"[]").filter(x=>x.id!=id);
-        localStorage.setItem("hist_v18", JSON.stringify(h));
+        let h = JSON.parse(localStorage.getItem("hist_v19")||"[]").filter(x=>x.id!=id);
+        localStorage.setItem("hist_v19", JSON.stringify(h));
     }
     function loadHistory() {
-        let h = JSON.parse(localStorage.getItem("hist_v18")||"[]");
+        let h = JSON.parse(localStorage.getItem("hist_v19")||"[]");
         for(let i=h.length-1; i>=0; i--) createEntry(h[i].id, h[i].ts, h[i].text, null);
     }
 
