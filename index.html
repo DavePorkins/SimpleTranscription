@@ -3,31 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Simple Transcription V22</title>
+    <title>Simple Transcription V23</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
-        /* --- THEME VARIABLES --- */
         :root {
-            /* Default: Pride (Light) */
-            --bg-grad: linear-gradient(135deg, #e0f2fe 0%, #ffffff 50%, #fce7f3 100%);
-            --glass: rgba(255, 255, 255, 0.8);
-            --border: rgba(255, 255, 255, 0.6);
-            --text: #334155;
-            --icon-color: #334155; /* Dunkle Icons auf hellem Grund */
-            --accent: #0ea5e9;
-            --accent-glow: rgba(14, 165, 233, 0.3);
-            --shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
-        }
-
-        [data-theme="dark"] {
-            --bg-grad: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            --glass: rgba(30, 41, 59, 0.8);
-            --border: rgba(255, 255, 255, 0.1);
-            --text: #f1f5f9;
-            --icon-color: #f1f5f9; /* Helle Icons auf dunklem Grund */
-            --accent: #38bdf8;
-            --accent-glow: rgba(56, 189, 248, 0.3);
-            --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            /* Der lebendige Original-Gradient */
+            --bg-gradient: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); 
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --text: #4a4a4a;
+            --accent: #ff7eb3;
+            --accent-blue: #8ec5fc;
         }
 
         body {
@@ -36,194 +22,175 @@
             margin: 0;
             display: flex; flex-direction: column; align-items: center;
             min-height: 100vh; padding: 15px;
-            background: var(--bg-grad);
+            background-image: var(--bg-gradient);
             background-attachment: fixed;
-            transition: all 0.3s ease;
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* --- UI COMPONENTS --- */
-        .app-container { width: 100%; max-width: 800px; position: relative; z-index: 2; padding-bottom: 50px; }
+        .app-container { width: 100%; max-width: 800px; position: relative; z-index: 2; padding-bottom: 80px; }
 
+        /* HEADER */
         header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 15px 20px; background: var(--glass); 
+            display: flex; flex-direction: column; gap: 15px;
+            padding: 20px; background: var(--glass-bg); 
             backdrop-filter: blur(12px); border-radius: 24px; margin-bottom: 20px;
-            box-shadow: var(--shadow); border: 1px solid var(--border);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.05); border: 1px solid var(--glass-border);
         }
 
         h1 { 
-            margin: 0; font-size: 1.2rem; font-weight: 800; 
-            background: linear-gradient(90deg, var(--accent), #ec4899);
-            background-clip: text; -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent; color: transparent;
+            margin: 0; font-size: 1.4rem; font-weight: 800; 
+            background: linear-gradient(90deg, #ff758c, #ff7eb3);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
         }
 
-        .icon-btn { background: none; border: none; font-size: 1.4rem; cursor: pointer; padding: 5px; filter: grayscale(100%); transition: 0.3s; }
-        .icon-btn:hover { filter: grayscale(0%); transform: rotate(30deg); }
+        .top-row { display: flex; justify-content: space-between; align-items: center; }
+        .controls-row { display: flex; gap: 10px; justify-content: space-between; align-items: center; }
 
-        /* Settings Modal */
-        #settingsModal {
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000;
-            align-items: center; justify-content: center; backdrop-filter: blur(5px);
+        /* API INPUT */
+        .api-box input {
+            background: rgba(255,255,255,0.6); border: 1px solid #ccc; color: #555;
+            padding: 8px 12px; border-radius: 12px; width: 100px; transition: width 0.3s;
         }
-        #settingsModal.active { display: flex; }
-        .modal-box {
-            background: var(--glass); padding: 25px; border-radius: 24px;
-            width: 90%; max-width: 350px; border: 1px solid var(--border);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.4); color: var(--text);
-        }
-        .modal-row { margin-bottom: 15px; }
-        .modal-row label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 0.9rem; }
-        .modal-row select, .modal-row input { 
-            width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border);
-            background: rgba(255,255,255,0.1); color: var(--text); font-size: 1rem;
-            box-sizing: border-box; /* Wichtig damit es nicht übersteht */
-        }
-        /* Fix für Inputs im Light Mode */
-        [data-theme="pride"] .modal-row input, [data-theme="pride"] .modal-row select { background: white; border: 1px solid #ccc; }
+        .api-box input:focus { width: 180px; outline: none; border-color: var(--accent); background: white; }
 
-        .close-btn { width: 100%; background: var(--accent); color: white; border: none; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-
-        /* --- VISUALIZER STAGE --- */
+        /* MAIN STAGE (Visualizer) */
         .stage {
-            position: relative; background: var(--glass);
-            backdrop-filter: blur(10px); border-radius: 28px; overflow: hidden;
-            box-shadow: var(--shadow); border: 1px solid var(--border);
-            transition: all 0.3s ease; display: flex; flex-direction: column;
+            position: relative; background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(20px); border-radius: 30px; overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.6);
+            margin-bottom: 20px;
         }
 
-        canvas { width: 100%; height: 280px; display: block; }
-        
+        /* Der Trick für den "OpenAI Cloud Look": Starker Blur auf dem Canvas */
+        canvas { 
+            width: 100%; height: 300px; display: block; 
+            filter: blur(40px) contrast(1.5); /* Das macht die Blobs weich */
+            opacity: 0.9;
+        }
+
         .stage-ui {
-            padding: 20px; 
-            border-top: 1px solid var(--border);
-            display: flex; flex-direction: column; align-items: center; gap: 20px;
+            padding: 20px; background: rgba(255,255,255,0.8);
+            border-top: 1px solid rgba(255,255,255,0.5);
+            display: flex; flex-direction: column; align-items: center; gap: 15px;
         }
 
-        .stats { font-family: monospace; font-size: 1rem; font-weight: bold; opacity: 0.7; }
+        .timer { font-family: monospace; font-size: 1.2rem; font-weight: bold; color: #666; }
 
-        /* Controls Centering Fix */
-        .controls { 
-            display: flex; justify-content: center; align-items: center; gap: 20px; width: 100%; 
+        /* BUTTONS (Repariert) */
+        .rec-controls { 
+            display: flex; align-items: center; justify-content: center; gap: 20px; width: 100%;
         }
 
-        button.ctrl-btn {
-            width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--border);
-            background: var(--glass); color: var(--icon-color); /* HIER WAR DER FEHLER */
-            font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
-            transition: all 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        .btn-circle {
+            width: 50px; height: 50px; border-radius: 50%; border: none;
+            background: white; color: #555; font-size: 1.2rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.1s;
         }
-        button.ctrl-btn:active { transform: scale(0.9); }
-        button.ctrl-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .btn-circle:active { transform: scale(0.9); }
+        .btn-circle:disabled { opacity: 0.4; cursor: not-allowed; }
 
-        /* REC Button Special */
-        button#btnStart {
-            width: 80px; height: 80px; font-size: 2rem; color: white; border: none;
-            background: linear-gradient(135deg, var(--accent), #ec4899);
-            box-shadow: 0 10px 30px var(--accent-glow);
+        /* Der Große Rote Button */
+        #btnStart {
+            width: 70px; height: 70px; font-size: 1.5rem; color: white;
+            background: linear-gradient(135deg, #ff758c, #ff7eb3);
+            box-shadow: 0 8px 20px rgba(255, 117, 140, 0.4);
         }
-        button#btnStart.recording {
-            animation: pulse 2s infinite; background: #ef4444; /* Rot bei Aufnahme */
-        }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+        #btnStart.recording { animation: pulse 2s infinite; background: #ef4444; }
+        
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-        .btn-pause.active { color: #f59e0b; border-color: #f59e0b; }
-
-        .upload-btn {
-            background: transparent; color: var(--text); border: 1px dashed var(--text); opacity: 0.5;
-            padding: 8px 16px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; margin-top: 5px;
+        .btn-upload {
+            background: transparent; border: 1px dashed #999; color: #666;
+            padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; cursor: pointer;
         }
 
-        /* Feed */
-        #feed { margin-top: 25px; display: flex; flex-direction: column; gap: 15px; }
+        /* FEED (Karten) */
+        #feed { display: flex; flex-direction: column; gap: 15px; }
+        
         .entry {
-            background: var(--glass); border-radius: 16px; padding: 18px;
-            box-shadow: var(--shadow); border: 1px solid var(--border);
+            background: var(--glass-bg); backdrop-filter: blur(12px);
+            border-radius: 20px; padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
             animation: slideIn 0.3s ease-out;
+            border: 1px solid white;
         }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: 0; } }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: 0; } }
 
-        .entry-header { display: flex; justify-content: space-between; font-size: 0.8rem; opacity: 0.6; margin-bottom: 10px; }
+        .entry-meta { display: flex; justify-content: space-between; font-size: 0.8rem; color: #888; margin-bottom: 10px; }
         
         textarea {
-            width: 100%; background: rgba(0,0,0,0.05); border: none; color: var(--text);
-            padding: 15px; border-radius: 12px; font-family: inherit; resize: none; min-height: 80px;
-            box-sizing: border-box; font-size: 16px; line-height: 1.5;
+            width: 100%; background: rgba(255,255,255,0.5); border: 2px solid transparent; color: #333;
+            padding: 12px; border-radius: 12px; font-family: inherit; resize: none; min-height: 80px;
+            box-sizing: border-box; display: block; line-height: 1.5; font-size: 16px; transition: 0.2s;
         }
-        [data-theme="dark"] textarea { background: rgba(255,255,255,0.1); }
-        textarea:focus { outline: 2px solid var(--accent); background: transparent; }
+        textarea:focus { outline: none; border-color: var(--accent); background: white; }
 
-        .audio-player { margin-top: 10px; width: 100%; }
+        .audio-wrapper { margin-top: 10px; width: 100%; }
+        audio { width: 100%; height: 40px; border-radius: 10px; }
+
+        /* ACTION BUTTONS (Wieder da!) */
+        .actions { margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
         
-        .actions { margin-top: 10px; display: flex; gap: 10px; }
-        .act-btn { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; }
-        .act-btn.del { flex: 0; color: #ef4444; border-color: #ef4444; }
+        .btn-action {
+            flex: 1; padding: 10px; border: none; border-radius: 10px;
+            background: white; color: #555; font-size: 0.9rem; font-weight: 600;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 5px;
+        }
+        .btn-action:hover { background: #f8f9fa; }
+        .btn-del { flex: 0; color: #ff6b6b; }
 
+        /* TOAST */
         #toast {
             position: fixed; top: 20px; left: 50%; transform: translate(-50%, -150%);
             background: var(--accent); color: white; padding: 12px 24px; border-radius: 50px;
-            font-weight: bold; transition: 0.3s; z-index: 3000; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            font-weight: bold; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            z-index: 9999; box-shadow: 0 5px 20px rgba(0,0,0,0.2);
         }
         #toast.visible { transform: translate(-50%, 0); }
+
     </style>
 </head>
-<body data-theme="pride">
+<body>
 
 <script> const HARDCODED_KEY = ""; </script>
 
-<div id="settingsModal">
-    <div class="modal-box">
-        <h2>Einstellungen</h2>
-        <div class="modal-row">
-            <label>API Key</label>
-            <input type="password" id="apiKey" placeholder="sk-...">
-        </div>
-        <div class="modal-row">
-            <label>Theme</label>
-            <select id="themeSelect">
-                <option value="pride">🏳️‍⚧️ Light / Pride</option>
-                <option value="dark">🌑 Dark Mode</option>
-            </select>
-        </div>
-        <div class="modal-row">
-            <label>Visualizer</label>
-            <select id="vizSelect">
-                <option value="orb">🔮 Magic Orb (OpenAI)</option>
-                <option value="wave">🌊 Siri Waves</option>
-                <option value="bar">📊 HiFi Bars</option>
-            </select>
-        </div>
-        <button class="close-btn" onclick="toggleSettings()">Speichern & Schließen</button>
-    </div>
-</div>
-
-<div id="toast">Info</div>
+<div id="toast">Nachricht</div>
 
 <div class="app-container">
+    
     <header>
-        <h1>Transcription</h1>
-        <div style="display:flex; gap:15px;">
-            <button class="icon-btn" onclick="dlZip()">📦</button>
-            <button class="icon-btn" onclick="toggleSettings()">⚙️</button>
+        <div class="top-row">
+            <h1>Simple Transcription</h1>
+            <div class="api-box"><input type="password" id="apiKey" placeholder="🔑 API Key"></div>
+        </div>
+        <div class="controls-row">
+            <button class="btn-action" onclick="dlZip()" style="flex:0 auto;">📦 Alles als ZIP</button>
+            <div style="font-size:0.8rem; color:#666;">
+                <label><input type="checkbox" id="autoDl"> Auto-Save Audio</label>
+            </div>
         </div>
     </header>
 
     <div class="stage">
-        <canvas id="vizCanvas"></canvas>
+        <canvas id="cloudCanvas"></canvas>
         
         <div class="stage-ui">
-            <div class="stats" id="timer">00:00</div>
+            <div class="timer" id="timer">00:00</div>
             
-            <div class="controls">
-                <button id="btnPause" class="ctrl-btn btn-pause" disabled title="Pause">⏸</button>
+            <div class="rec-controls">
+                <button id="btnPause" class="btn-circle" disabled>⏸</button>
                 
-                <button id="btnStart" title="Start Recording">●</button>
+                <button id="btnStart" class="btn-circle">●</button>
                 
-                <button id="btnStop" class="ctrl-btn btn-stop" disabled title="Stop & Send">■</button>
+                <button id="btnStop" class="btn-circle" disabled>■</button>
             </div>
 
-            <button id="btnUpload" class="upload-btn" onclick="document.getElementById('fileUpload').click()">📂 Upload File</button>
+            <button id="btnUpload" class="btn-upload" onclick="document.getElementById('fileUpload').click()">📂 Datei hochladen</button>
         </div>
     </div>
 
@@ -233,215 +200,124 @@
 <input type="file" id="fileUpload" hidden accept="audio/*,video/*">
 
 <script>
-    // --- CORE VARIABLES ---
+    // --- ELEMENTE ---
     const els = {
         btnStart: document.getElementById('btnStart'),
         btnPause: document.getElementById('btnPause'),
         btnStop: document.getElementById('btnStop'),
         timer: document.getElementById('timer'),
-        canvas: document.getElementById('vizCanvas'),
+        canvas: document.getElementById('cloudCanvas'),
         feed: document.getElementById('feed'),
         apiKey: document.getElementById('apiKey'),
-        themeSelect: document.getElementById('themeSelect'),
-        vizSelect: document.getElementById('vizSelect'),
-        modal: document.getElementById('settingsModal'),
         fileUpload: document.getElementById('fileUpload'),
-        toast: document.getElementById('toast')
+        toast: document.getElementById('toast'),
+        autoDl: document.getElementById('autoDl')
     };
 
-    let mediaRecorder, audioCtx, analyser, dataArray, source;
-    let chunks = [], isRecording = false, isPaused = false;
+    let globalStream, mediaRecorder, chunks = [], audioCtx, analyser, dataArray;
+    let isRecording = false, isPaused = false;
     let startTime = 0, pauseDelta = 0, pauseStart = 0, timerInt;
-    let animationId;
-
-    // --- SETTINGS INIT ---
-    if(HARDCODED_KEY.length > 5) els.apiKey.value = HARDCODED_KEY;
-    else els.apiKey.value = localStorage.getItem("key_v22") || "";
-
-    els.themeSelect.value = localStorage.getItem("theme_v22") || "pride";
-    els.vizSelect.value = localStorage.getItem("viz_v22") || "orb";
     
-    applySettings();
-
-    function applySettings() {
-        document.body.setAttribute('data-theme', els.themeSelect.value);
+    // --- INIT ---
+    if(HARDCODED_KEY.length > 5) { 
+        els.apiKey.value = HARDCODED_KEY; 
+        document.querySelector('.api-box').style.display='none'; 
+    } else { 
+        els.apiKey.value = localStorage.getItem("key_v23") || "";
+        els.apiKey.addEventListener('change', () => localStorage.setItem("key_v23", els.apiKey.value));
     }
 
-    window.toggleSettings = () => {
-        els.modal.classList.toggle('active');
-        localStorage.setItem("key_v22", els.apiKey.value);
-        localStorage.setItem("theme_v22", els.themeSelect.value);
-        localStorage.setItem("viz_v22", els.vizSelect.value);
-        applySettings();
-    };
+    if(localStorage.getItem("autodl_v23") === 'true') els.autoDl.checked = true;
+    els.autoDl.addEventListener('change', () => localStorage.setItem("autodl_v23", els.autoDl.checked));
 
     loadHistory();
 
-    // --- VISUALIZER ENGINE ---
+    // Canvas Resize (für Schärfe)
+    function resizeCanvas() {
+        els.canvas.width = els.canvas.offsetWidth;
+        els.canvas.height = els.canvas.offsetHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    // --- VISUALIZER: THE GLOW CLOUD (OpenAI Style) ---
+    // Wir nutzen CSS Blur für den weichen Look, keine komplexe Mathe.
+    let smoothedVol = 0;
+    
     function initVisualizer() {
         const ctx = els.canvas.getContext('2d');
-        
-        // High-DPI Setup
-        const dpr = window.devicePixelRatio || 1;
-        const rect = els.canvas.getBoundingClientRect();
-        els.canvas.width = rect.width * dpr;
-        els.canvas.height = rect.height * dpr;
-        ctx.scale(dpr, dpr);
-
-        let phase = 0;
-        let smoothedVol = 0;
+        resizeCanvas();
 
         function draw() {
-            animationId = requestAnimationFrame(draw);
-            const w = rect.width;
-            const h = rect.height;
-            const cx = w/2; const cy = h/2;
+            requestAnimationFrame(draw);
+            const w = els.canvas.width; 
+            const h = els.canvas.height;
+            const cx = w/2; 
+            const cy = h/2;
 
-            ctx.clearRect(0, 0, w, h);
+            ctx.clearRect(0, 0, w, h); // Clear Frame
 
+            // Audio Daten holen
             let vol = 0;
             if(analyser && isRecording && !isPaused) {
                 const len = analyser.frequencyBinCount;
                 if(!dataArray) dataArray = new Uint8Array(len);
                 analyser.getByteFrequencyData(dataArray);
                 let sum = 0; 
-                // Nur Bässe/Mitten zählen (bis index 100) für bessere Reaktion
-                for(let i=0; i<Math.min(len, 100); i++) sum += dataArray[i];
-                vol = (sum / 100) * 2.5; // Gain Boost!
+                for(let i=0; i<len; i++) sum += dataArray[i];
+                vol = sum / len; // 0 - 255
             } else {
-                vol = 5 + Math.sin(Date.now()/1000)*5; // Idle
+                // Idle Animation (Sanftes Atmen)
+                vol = 10 + Math.sin(Date.now()/1500) * 10;
             }
 
-            // Snappy Smoothing (schnell hoch, langsam runter)
-            if(vol > smoothedVol) smoothedVol = smoothedVol * 0.5 + vol * 0.5;
-            else smoothedVol = smoothedVol * 0.95 + vol * 0.05;
+            // Glättung (Damit es nicht zuckt)
+            smoothedVol = smoothedVol * 0.9 + vol * 0.1;
+            
+            const intensity = smoothedVol * 0.8; // Skalierungsfaktor
+            const t = Date.now() / 1000;
 
-            const intensity = smoothedVol / 255; 
-            phase += 0.02 + (intensity * 0.1);
+            // Wir zeichnen 3 "Blobs" (Kreise), die sich leicht bewegen
+            // Durch den CSS-Filter (blur) verschmelzen sie.
+            
+            // 1. Der Blaue Blob (Wandert)
+            const x1 = cx + Math.cos(t) * 30;
+            const y1 = cy + Math.sin(t * 1.2) * 20;
+            drawBlob(ctx, x1, y1, 60 + intensity, '#8ec5fc');
 
-            const mode = els.vizSelect.value;
-            const style = getComputedStyle(document.body);
-            const cAccent = style.getPropertyValue('--accent').trim();
+            // 2. Der Pinke Blob (Wandert anders)
+            const x2 = cx + Math.sin(t * 0.8) * 30;
+            const y2 = cy + Math.cos(t * 1.1) * 20;
+            drawBlob(ctx, x2, y2, 60 + intensity, '#ff7eb3');
 
-            if(mode === 'orb') drawOrb(ctx, cx, cy, phase, intensity);
-            else if(mode === 'wave') drawMultiWave(ctx, w, h, phase, intensity, cAccent);
-            else if(mode === 'bar') drawBars(ctx, w, h, intensity, cAccent);
+            // 3. Der Weiße Kern (Bleibt mittig, pulsiert stark)
+            drawBlob(ctx, cx, cy, 40 + intensity * 0.5, '#ffffff');
         }
         draw();
     }
 
-    function drawOrb(ctx, cx, cy, t, intense) {
-        // OpenAI Style: 3 Balls moving, strong blur simulated by gradients
-        const rBase = 60 + (intense * 100);
-        
-        // Ball 1 (Cyan/Blue)
-        const x1 = cx + Math.cos(t) * 40 * intense;
-        const y1 = cy + Math.sin(t * 1.5) * 30 * intense;
-        const g1 = ctx.createRadialGradient(x1, y1, 0, x1, y1, rBase);
-        g1.addColorStop(0, 'rgba(56, 189, 248, 0.8)');
-        g1.addColorStop(1, 'rgba(56, 189, 248, 0)');
-        
-        // Ball 2 (Pink/Magenta)
-        const x2 = cx + Math.cos(t + 2) * 40 * intense;
-        const y2 = cy + Math.sin(t * 0.8) * 30 * intense;
-        const g2 = ctx.createRadialGradient(x2, y2, 0, x2, y2, rBase);
-        g2.addColorStop(0, 'rgba(236, 72, 153, 0.8)');
-        g2.addColorStop(1, 'rgba(236, 72, 153, 0)');
-
-        // Blend Mode Screen macht es leuchtend
-        ctx.globalCompositeOperation = 'screen';
-        
-        ctx.fillStyle = g1; ctx.beginPath(); ctx.arc(x1, y1, rBase, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = g2; ctx.beginPath(); ctx.arc(x2, y2, rBase, 0, Math.PI*2); ctx.fill();
-        
-        ctx.globalCompositeOperation = 'source-over';
-    }
-
-    function drawMultiWave(ctx, w, h, t, intense, color) {
-        // 3 Layer Waves
-        const yMid = h/2;
-        ctx.lineWidth = 3;
-        ctx.lineCap = 'round';
-
-        for(let i=0; i<3; i++) {
-            ctx.beginPath();
-            ctx.strokeStyle = i===0 ? color : (i===1 ? '#ec4899' : '#ffffff');
-            ctx.globalAlpha = 1 - (i*0.3);
-            
-            for(let x=0; x<w; x+=5) {
-                // Envelope window (damit es an den Rändern 0 ist)
-                const normX = (x / w) * 2 - 1; // -1 to 1
-                const env = 1 - (normX * normX); 
-                
-                const freq = 0.01 + (i*0.005);
-                const speed = t * (2 + i);
-                const amp = (intense * h * 0.4) * env;
-                
-                const y = Math.sin(x * freq + speed) * amp;
-                if(x===0) ctx.moveTo(x, yMid+y); else ctx.lineTo(x, yMid+y);
-            }
-            ctx.stroke();
-        }
-        ctx.globalAlpha = 1;
-    }
-
-    function drawBars(ctx, w, h, intense, color) {
-        const count = 64; 
-        const barW = (w / count) / 1.5;
-        const space = (w / count) - barW;
-        const yMid = h/2;
-        
+    function drawBlob(ctx, x, y, r, color) {
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
         ctx.fillStyle = color;
-        
-        for(let i=0; i<count; i++) {
-            // Symmetrie index
-            const dist = Math.abs(i - count/2) / (count/2); // 0 center, 1 edge
-            const env = 1 - dist; // Mitte hoch, Rand niedrig
-            
-            // Random noise modulated by volume
-            let hBar = (intense * h * 0.8) * env;
-            
-            // Wenn dataArray da ist, echte daten nutzen
-            if(dataArray) {
-                const idx = Math.floor((i/count) * dataArray.length);
-                hBar = (dataArray[idx] / 255) * h * 0.8;
-            }
-            
-            hBar = Math.max(4, hBar); // Min height
-            
-            // Round caps
-            ctx.beginPath();
-            ctx.roundRect(i * (barW + space), yMid - hBar/2, barW, hBar, barW/2);
-            ctx.fill();
-        }
+        ctx.fill();
     }
-
+    
     initVisualizer();
-    window.addEventListener('resize', initVisualizer); // Re-init on resize to fix blur
 
-    // --- UPLOAD ---
-    els.fileUpload.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if(file) processAudio(file, file.name);
-        els.fileUpload.value = '';
-    });
-
-    // --- RECORDER ---
+    // --- RECORDING ---
     async function startRec() {
-        if(!els.apiKey.value) { toggleSettings(); return showToast("API Key fehlt!", true); }
-        
+        if(!els.apiKey.value) return showToast("API Key fehlt!", true);
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             globalStream = stream;
             
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             analyser = audioCtx.createAnalyser(); 
-            analyser.fftSize = 512; 
-            const src = audioCtx.createMediaStreamSource(stream); 
-            src.connect(analyser);
+            analyser.fftSize = 64; // Niedrig für weiche Animation
+            const src = audioCtx.createMediaStreamSource(stream); src.connect(analyser);
 
             chunks = [];
-            // "Long Mode" Standard (32kbit)
+            // Optimierte Bitrate (Langzeitaufnahme)
             let options = { bitsPerSecond: 32000 };
             if(MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) options.mimeType='audio/webm;codecs=opus';
             
@@ -449,6 +325,7 @@
             mediaRecorder.ondataavailable = e => chunks.push(e.data);
             mediaRecorder.onstop = () => {
                 const blob = new Blob(chunks, { type: chunks[0].type });
+                // Fix Duration Hack
                 processAudio(blob, "Memo");
                 resetUI();
             };
@@ -457,9 +334,13 @@
             isRecording = true; isPaused = false; startTime = Date.now(); pauseDelta=0;
             timerInt = setInterval(updateTimer, 1000);
             
-            updateUIState(true);
+            // UI Update
+            els.btnStart.style.display = 'none'; // REC Button weg
+            els.btnPause.disabled = false;
+            els.btnStop.disabled = false;
+            els.timer.style.color = "#ff7eb3";
 
-        } catch(e) { console.error(e); showToast("Fehler: Mikrofon Zugriff!", true); }
+        } catch(e) { console.error(e); showToast("Mikrofon Zugriff verweigert!", true); }
     }
 
     els.btnStart.onclick = startRec;
@@ -467,10 +348,10 @@
     els.btnPause.onclick = () => {
         if(isPaused) { 
             mediaRecorder.resume(); isPaused=false; pauseDelta += Date.now()-pauseStart;
-            els.btnPause.classList.remove('active'); 
+            els.btnPause.style.background = "white"; els.btnPause.style.color = "#555";
         } else { 
             mediaRecorder.pause(); isPaused=true; pauseStart=Date.now();
-            els.btnPause.classList.add('active'); 
+            els.btnPause.style.background = "#ffd700"; els.btnPause.style.color = "white";
         }
     };
     
@@ -484,29 +365,34 @@
         els.timer.innerText = `${m}:${sec}`;
     }
 
-    function updateUIState(recording) {
-        if(recording) {
-            els.btnStart.style.display = 'none'; // REC Button weg
-            els.btnPause.disabled = false;
-            els.btnStop.disabled = false;
-            els.timer.style.color = "#ec4899";
-        } else {
-            resetUI();
-        }
-    }
-
     function resetUI() {
         isRecording = false; clearInterval(timerInt);
-        els.btnStart.style.display = 'flex';
-        els.btnPause.disabled = true; els.btnPause.classList.remove('active');
+        els.btnStart.style.display = 'flex'; // REC Button wieder da
+        els.btnPause.disabled = true; els.btnPause.style.background="white";
         els.btnStop.disabled = true;
-        els.timer.innerText = "00:00"; els.timer.style.color = "inherit";
+        els.timer.innerText = "00:00"; els.timer.style.color = "#666";
     }
 
-    // --- API ---
+    // --- UPLOAD ---
+    els.fileUpload.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if(!file) return;
+        processAudio(file, file.name);
+        els.fileUpload.value = '';
+    });
+
+    // --- API & PROCESSING ---
     async function processAudio(blob, name) {
         const id = Date.now();
-        createEntry(id, new Date().toLocaleTimeString(), "Sende...", blob);
+        const ts = new Date().toLocaleTimeString();
+        
+        // Auto Save
+        if(els.autoDl.checked) {
+            let ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
+            download(blob, `rec_${id}.${ext}`);
+        }
+
+        createEntry(id, ts, "Transkribiere...", blob);
         
         const fd = new FormData();
         let ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
@@ -535,18 +421,18 @@
 
     // --- HISTORY ---
     function saveToHistory(id, text) {
-        let h = JSON.parse(localStorage.getItem("hist_v22")||"[]");
+        let h = JSON.parse(localStorage.getItem("hist_v23")||"[]");
         h.unshift({ id, text, ts: new Date().toLocaleTimeString() });
         if(h.length > 20) h.pop();
-        localStorage.setItem("hist_v22", JSON.stringify(h));
+        localStorage.setItem("hist_v23", JSON.stringify(h));
     }
     
     function loadHistory() {
-        let h = JSON.parse(localStorage.getItem("hist_v22")||"[]");
-        h.forEach(e => createEntry(e.id, e.ts, e.text)); // No blob in history
+        let h = JSON.parse(localStorage.getItem("hist_v23")||"[]");
+        h.forEach(e => createEntry(e.id, e.ts, e.text)); // History ohne Audio-Blob
     }
 
-    // --- UI HELPERS ---
+    // --- UI ENTRY ---
     function createEntry(id, ts, text, blob) {
         const d = document.createElement('div');
         d.className = 'entry'; d.id = `e-${id}`;
@@ -554,31 +440,102 @@
         let player = "";
         if(blob) {
             const url = URL.createObjectURL(blob);
-            // duration hack #t=1000
-            player = `<audio class="audio-player" controls src="${url}#t=1000"></audio>`;
+            // Duration Fix Hack
+            player = `<div class="audio-wrapper"><audio controls src="${url}#t=1000"></audio></div>`;
         }
 
         d.innerHTML = `
-            <div class="entry-header"><span>${ts}</span></div>
+            <div class="entry-meta"><span>📅 ${ts}</span></div>
             <textarea id="txt-${id}">${text}</textarea>
             ${player}
             <div class="actions">
-                <button class="act-btn" onclick="navigator.clipboard.writeText(document.getElementById('txt-${id}').value)">Copy</button>
-                <button class="act-btn del" onclick="document.getElementById('e-${id}').remove()">Löschen</button>
+                <button class="btn-action" onclick="shareEntry(${id})">☁️ Teilen</button>
+                <button class="btn-action" onclick="doCopy(${id})">📋 Copy</button>
+                <button class="btn-action" onclick="dlTxt(${id})">💾 Text</button>
+                ${blob ? `<button class="btn-action" onclick="dlAudio(${id})">🎵 Audio</button>` : ''}
+                <button class="btn-action btn-del" onclick="delEntry(${id})">X</button>
             </div>
         `;
         els.feed.prepend(d);
+        if(blob) d.audioBlob = blob;
+    }
+
+    // --- ACTIONS ---
+    window.doCopy = (id) => {
+        navigator.clipboard.writeText(document.getElementById(`txt-${id}`).value);
+        showToast("Kopiert!");
+    };
+
+    window.delEntry = (id) => {
+        document.getElementById(`e-${id}`).remove();
+        // Remove from storage
+        let h = JSON.parse(localStorage.getItem("hist_v23")||"[]");
+        h = h.filter(x => x.id != id);
+        localStorage.setItem("hist_v23", JSON.stringify(h));
+    };
+
+    window.dlTxt = (id) => {
+        const txt = document.getElementById(`txt-${id}`).value;
+        download(new Blob([txt]), `transkript_${id}.txt`);
+    };
+
+    window.dlAudio = (id) => {
+        const el = document.getElementById(`e-${id}`);
+        if(el.audioBlob) {
+            let ext = el.audioBlob.type.includes('mp4') ? 'mp4' : 'webm';
+            download(el.audioBlob, `rec_${id}.${ext}`);
+        }
+    };
+
+    window.shareEntry = async (id) => {
+        const el = document.getElementById(`e-${id}`);
+        const txt = document.getElementById(`txt-${id}`).value;
+        
+        if(el.audioBlob && navigator.share) {
+            let ext = el.audioBlob.type.includes('mp4') ? 'mp4' : 'webm';
+            const f = new File([el.audioBlob], `audio.${ext}`, {type: el.audioBlob.type});
+            try { await navigator.share({files:[f], text: txt}); } catch(e){}
+        } else if (navigator.share) {
+            try { await navigator.share({text: txt}); } catch(e){}
+        } else {
+            alert("Teilen nicht unterstützt. Bitte kopieren.");
+        }
+    };
+
+    window.dlZip = async () => {
+        if(!window.JSZip) return; 
+        const zip = new JSZip();
+        const fAud = zip.folder("audio");
+        let allTxt = "--- PROTOKOLL ---\n\n";
+        
+        document.querySelectorAll('.entry').forEach(e => {
+            const id = e.id.replace('e-','');
+            const txt = e.querySelector('textarea').value;
+            const ts = e.querySelector('.entry-meta').innerText;
+            allTxt += `[${ts}]\n${txt}\n\n---\n\n`;
+            
+            if(e.audioBlob) {
+                let ext = e.audioBlob.type.includes('mp4')?'mp4':'webm';
+                fAud.file(`rec_${id}.${ext}`, e.audioBlob);
+            }
+        });
+        
+        zip.file("Alle_Texte.txt", allTxt);
+        const content = await zip.generateAsync({type:"blob"});
+        download(content, `Session_${Date.now()}.zip`);
+    };
+
+    function download(blob, name) {
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
     }
 
     function showToast(txt, err=false) {
-        els.toast.textContent = txt;
+        els.toast.innerText = txt;
         els.toast.style.background = err ? '#ef4444' : 'var(--accent)';
-        els.toast.classList.add('visible');
-        setTimeout(() => els.toast.classList.remove('visible'), 3000);
+        els.toast.className = 'visible';
+        setTimeout(()=>els.toast.className='', 3000);
     }
-
-    window.dlZip = () => { alert("ZIP Funktion kommt im nächsten Update (Code bereinigt)"); };
-
 </script>
 </body>
 </html>
