@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Simple Transcription V27</title>
+    <title>Simple Transcription V28</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root {
-            /* Dein Pastell-Favorit */
-            --bg-gradient: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
-            --glass-bg: rgba(255, 255, 255, 0.65);
-            --glass-border: rgba(255, 255, 255, 0.8);
-            --text: #555;
-            --accent: #9b72cf;
+            /* Hintergrund: Sanft aber bunt */
+            --bg-gradient: linear-gradient(120deg, #a18cd1 0%, #fbc2eb 100%);
+            
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.9);
+            --text: #444;
+            --accent: #c471ed;
             --danger: #ff6b6b;
         }
 
@@ -34,12 +35,12 @@
             display: flex; flex-direction: column; gap: 15px;
             padding: 20px; background: var(--glass-bg); 
             backdrop-filter: blur(20px); border-radius: 30px; margin-bottom: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.05); border: 1px solid var(--glass-border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid var(--glass-border);
         }
 
         h1 { 
             margin: 0; font-size: 1.4rem; font-weight: 800; 
-            background: linear-gradient(90deg, #9b72cf, #ff9a9e);
+            background: linear-gradient(90deg, #12c2e9, #c471ed, #f64f59);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             letter-spacing: -0.5px;
         }
@@ -48,7 +49,7 @@
         .controls-row { display: flex; gap: 10px; justify-content: space-between; align-items: center; }
 
         .api-box input {
-            background: rgba(255,255,255,0.7); border: 1px solid #fff; color: #555;
+            background: rgba(255,255,255,0.8); border: 1px solid #fff; color: #555;
             padding: 8px 12px; border-radius: 12px; width: 100px; transition: width 0.3s;
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);
         }
@@ -57,84 +58,76 @@
         /* --- STAGE --- */
         .stage {
             position: relative; 
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.5); /* Hellerer Hintergrund */
             border-radius: 35px; 
-            box-shadow: 0 20px 50px rgba(162, 162, 255, 0.2);
-            border: 1px solid rgba(255,255,255,0.6);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.8);
             margin-bottom: 20px;
             overflow: hidden; 
         }
 
         canvas { 
             width: 100%; height: 300px; display: block; 
-            /* Weichmacher für die Wolken */
-            filter: blur(30px) contrast(1.2);
+            /* WICHTIG: Blur hier im CSS macht die Bälle zu Wolken */
+            filter: blur(35px); 
             opacity: 0.9;
         }
 
         .stage-ui {
-            padding: 20px; background: rgba(255,255,255,0.8);
+            padding: 20px; background: rgba(255,255,255,0.85);
             backdrop-filter: blur(15px);
-            border-top: 1px solid rgba(255,255,255,0.5);
+            border-top: 1px solid rgba(255,255,255,0.6);
             display: flex; flex-direction: column; align-items: center; gap: 20px;
             position: relative; z-index: 10;
         }
 
-        /* STATS (Timer & MB) */
         .stats-row {
             display: flex; gap: 20px; align-items: baseline;
-            font-family: monospace; color: #777;
+            font-family: monospace; color: #666;
         }
         .timer { font-size: 1.8rem; font-weight: bold; letter-spacing: 2px; }
         .size-info { font-size: 1rem; font-weight: normal; opacity: 0.8; }
 
-        /* BUTTONS (Perfekt Zentriert) */
         .rec-controls { 
             display: flex; align-items: center; justify-content: center; gap: 30px; width: 100%;
             height: 90px;
         }
 
-        /* Basis Button Style */
         .btn-circle {
             border-radius: 50%; border: none; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; /* Flexbox Zentrierung */
+            display: flex; align-items: center; justify-content: center;
             transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            background: white; color: #555;
-            padding: 0; /* Wichtig für Zentrierung */
+            background: white; color: #555; padding: 0;
         }
         .btn-circle:active { transform: scale(0.9); }
         .btn-circle:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; transform: none; }
 
-        /* Icons */
         .icon-lg { font-size: 2rem; line-height: 1; }
-        .icon-md { font-size: 1.5rem; line-height: 1; margin-left: 2px; /* Optischer Ausgleich für Play-Dreieck */ } 
+        .icon-md { font-size: 1.5rem; line-height: 1; margin-left: 3px; } 
         .icon-sq { font-size: 1.4rem; line-height: 1; }
 
-        /* Der Haupt-Button */
         #btnMain {
             width: 80px; height: 80px; 
-            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-            box-shadow: 0 10px 25px rgba(255, 154, 158, 0.4);
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); /* Orange-Gold Verlauf */
+            box-shadow: 0 10px 25px rgba(253, 160, 133, 0.4);
             color: white;
         }
         
-        /* Status Styles */
         #btnMain.state-recording {
             background: white; color: #555;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
         
         #btnMain.state-paused {
-            background: #f1c40f; color: white;
-            box-shadow: 0 5px 15px rgba(241, 196, 15, 0.4);
+            background: #a18cd1; color: white;
+            box-shadow: 0 5px 15px rgba(161, 140, 209, 0.4);
         }
 
-        /* Der Stop Button */
         #btnFinish {
             width: 60px; height: 60px; 
             background: white; color: var(--danger);
-            display: none; /* Initial weg */
+            display: none;
         }
         #btnFinish.visible { display: flex; animation: popIn 0.3s ease; }
         
@@ -146,7 +139,6 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: 0.2s;
         }
         
-        /* FEED */
         #feed { display: flex; flex-direction: column; gap: 20px; }
         
         .entry {
@@ -244,7 +236,6 @@
 <input type="file" id="fileUpload" hidden accept=".flac,.m4a,.mp3,.mp4,.mpeg,.mpga,.oga,.ogg,.wav,.webm">
 
 <script>
-    // --- ELEMENTS ---
     const els = {
         btnMain: document.getElementById('btnMain'),
         btnFinish: document.getElementById('btnFinish'),
@@ -263,30 +254,28 @@
     let startTime = 0, pauseDelta = 0, pauseStart = 0, timerInt;
     let pendingClipboardText = null;
     
-    // --- INIT ---
+    // Init
     if(HARDCODED_KEY.length > 5) { 
         els.apiKey.value = HARDCODED_KEY; 
         document.querySelector('.api-box').style.display='none'; 
     } else { 
-        els.apiKey.value = localStorage.getItem("key_v27") || "";
-        els.apiKey.addEventListener('change', () => localStorage.setItem("key_v27", els.apiKey.value));
+        els.apiKey.value = localStorage.getItem("key_v28") || "";
+        els.apiKey.addEventListener('change', () => localStorage.setItem("key_v28", els.apiKey.value));
     }
 
-    if(localStorage.getItem("autodl_v27") === 'true') els.autoDl.checked = true;
-    els.autoDl.addEventListener('change', () => localStorage.setItem("autodl_v27", els.autoDl.checked));
+    if(localStorage.getItem("autodl_v28") === 'true') els.autoDl.checked = true;
+    els.autoDl.addEventListener('change', () => localStorage.setItem("autodl_v28", els.autoDl.checked));
 
     loadHistory();
 
     function resizeCanvas() {
-        // High Res Canvas
         els.canvas.width = els.canvas.offsetWidth * 1.5;
         els.canvas.height = els.canvas.offsetHeight * 1.5;
     }
     window.addEventListener('resize', resizeCanvas);
 
-    // --- ANIMATION: LIVING CLOUDS (ohne Filter-Tricks, native Gradients) ---
+    // --- VISUALIZER: VIVID LAVA (Farbe & Kontrast!) ---
     let smoothedVol = 0;
-    let phase = 0;
     
     function initVisualizer() {
         const ctx = els.canvas.getContext('2d');
@@ -299,6 +288,7 @@
             const cx = w/2; 
             const cy = h/2;
 
+            // Transparenter Hintergrund damit das Weiß der Stage durchscheint
             ctx.clearRect(0, 0, w, h);
 
             let vol = 0;
@@ -310,41 +300,39 @@
                 for(let i=0; i<len/2; i++) sum += dataArray[i];
                 vol = (sum / (len/2)); 
             } else {
-                vol = 8 + Math.sin(Date.now()/1200) * 5; // Idle Atmen
+                vol = 10 + Math.sin(Date.now()/1000) * 8; // Deutliches Idle Atmen
             }
 
             smoothedVol = smoothedVol * 0.9 + vol * 0.1;
-            const intensity = smoothedVol * 1.5; 
+            const intensity = smoothedVol * 2.0; // Stärkerer Effekt
             const t = Date.now() / 1500;
 
-            // Wir nutzen 'screen' blend mode für Leuchteffekt
-            ctx.globalCompositeOperation = 'screen';
-
-            // Blob 1 (Blau)
-            drawGlowBlob(ctx, cx + Math.cos(t)*40, cy + Math.sin(t*1.2)*30, 80 + intensity, 'rgba(142, 197, 252, 0.7)');
-            // Blob 2 (Pink)
-            drawGlowBlob(ctx, cx + Math.sin(t*0.8)*50, cy + Math.cos(t)*40, 90 + intensity, 'rgba(224, 195, 252, 0.7)');
-            // Blob 3 (Weiß Mitte)
-            drawGlowBlob(ctx, cx, cy + Math.sin(t*2)*10, 60 + intensity * 0.6, 'rgba(255, 255, 255, 0.8)');
-
+            // Wir nutzen KEIN 'screen' blending mehr, damit die Farben dunkel/satt bleiben
             ctx.globalCompositeOperation = 'source-over';
+
+            // Blob 1: KRAFTIGES PINK
+            // alpha = 0.8 damit sie sich mischen
+            drawSolidBlob(ctx, cx + Math.cos(t)*50, cy + Math.sin(t*1.2)*30, 90 + intensity, 'rgba(255, 20, 147, 0.8)'); 
+
+            // Blob 2: TIEFES BLAU
+            drawSolidBlob(ctx, cx + Math.sin(t*0.8)*60, cy + Math.cos(t)*40, 90 + intensity, 'rgba(30, 144, 255, 0.8)');
+
+            // Blob 3: LILA (Verbindung)
+            drawSolidBlob(ctx, cx, cy + Math.sin(t*2)*15, 70 + intensity * 0.6, 'rgba(148, 0, 211, 0.8)');
         }
         draw();
     }
 
-    function drawGlowBlob(ctx, x, y, r, color) {
-        const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
-        grad.addColorStop(0, color);
-        grad.addColorStop(1, 'rgba(255,255,255,0)');
-        ctx.fillStyle = grad;
+    function drawSolidBlob(ctx, x, y, r, color) {
         ctx.beginPath();
         ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fillStyle = color;
         ctx.fill();
     }
     
     initVisualizer();
 
-    // --- CONTROLS LOGIC ---
+    // --- CONTROLS ---
     els.btnMain.onclick = () => {
         if(!isRecording && !isPaused) startRec();
         else if (isRecording && !isPaused) pauseRec();
@@ -364,7 +352,6 @@
             els.timer.style.color = "#777";
         } 
         else if (state === 'recording') {
-            // Icon für Pause
             btn.innerHTML = '<span class="icon-lg">⏸</span>';
             btn.className = 'btn-circle state-recording';
             btn.title = "Pausieren";
@@ -372,7 +359,6 @@
             els.timer.style.color = "#ff6b6b";
         }
         else if (state === 'paused') {
-            // Icon für Resume (Play mit optischem Ausgleich)
             btn.innerHTML = '<span class="icon-md">▶</span>';
             btn.className = 'btn-circle state-paused';
             btn.title = "Weiter aufnehmen";
@@ -380,7 +366,7 @@
         }
     }
 
-    // --- RECORDER ---
+    // --- RECORDING ---
     async function startRec() {
         if(!els.apiKey.value) return showToast("API Key fehlt!", true);
         els.btnMain.disabled = true;
@@ -539,14 +525,14 @@
     window.addEventListener('touchstart', doPendingCopy);
 
     function saveToHistory(id, text) {
-        let h = JSON.parse(localStorage.getItem("hist_v27")||"[]");
+        let h = JSON.parse(localStorage.getItem("hist_v28")||"[]");
         h.unshift({ id, text, ts: new Date().toLocaleTimeString() });
         if(h.length > 20) h.pop();
-        localStorage.setItem("hist_v27", JSON.stringify(h));
+        localStorage.setItem("hist_v28", JSON.stringify(h));
     }
     
     function loadHistory() {
-        let h = JSON.parse(localStorage.getItem("hist_v27")||"[]");
+        let h = JSON.parse(localStorage.getItem("hist_v28")||"[]");
         h.forEach(e => createEntry(e.id, e.ts, e.text));
     }
 
@@ -577,7 +563,7 @@
     }
 
     window.doCopy = (id) => { navigator.clipboard.writeText(document.getElementById(`txt-${id}`).value); showToast("Manuell kopiert"); };
-    window.delEntry = (id) => { document.getElementById(`e-${id}`).remove(); let h = JSON.parse(localStorage.getItem("hist_v27")||"[]"); h = h.filter(x => x.id != id); localStorage.setItem("hist_v27", JSON.stringify(h)); };
+    window.delEntry = (id) => { document.getElementById(`e-${id}`).remove(); let h = JSON.parse(localStorage.getItem("hist_v28")||"[]"); h = h.filter(x => x.id != id); localStorage.setItem("hist_v28", JSON.stringify(h)); };
     window.dlTxt = (id) => { download(new Blob([document.getElementById(`txt-${id}`).value]), `transkript_${id}.txt`); };
     window.dlAudio = (id) => { const el = document.getElementById(`e-${id}`); if(el.audioBlob) { let ext = el.audioBlob.type.includes('mp4') ? 'mp4' : 'webm'; download(el.audioBlob, `rec_${id}.${ext}`); }};
     
