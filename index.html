@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Simple Transcription V34</title>
+    <title>Simple Transcription V35</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root {
-            /* Standardwerte (werden durch Dev-Panel überschrieben) */
             --bg-1: #a18cd1;
             --bg-2: #fbc2eb;
             --glass-bg: rgba(255, 255, 255, 0.75);
@@ -34,7 +33,7 @@
 
         /* HEADER */
         header {
-            display: flex; flex-direction: column; gap: 10px;
+            display: flex; flex-direction: column; gap: 15px;
             padding: 15px 20px; background: var(--glass-bg); 
             backdrop-filter: blur(20px); border-radius: 30px; margin-bottom: 20px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.05); border: 1px solid var(--glass-border);
@@ -43,27 +42,38 @@
         .top-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         
         h1 { 
-            margin: 0; font-size: 1.2rem; font-weight: 800; 
+            margin: 0; font-size: 1.3rem; font-weight: 800; 
             background: linear-gradient(90deg, #12c2e9, #c471ed, #f64f59);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             letter-spacing: -0.5px;
         }
 
-        .header-actions { display: flex; gap: 10px; }
+        .header-actions { display: flex; gap: 8px; }
 
-        .controls-row { 
-            display: flex; gap: 10px; align-items: center; 
-            background: rgba(255,255,255,0.5); padding: 8px; border-radius: 15px;
+        .icon-btn { 
+            background: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.8); 
+            border-radius: 50%; width: 40px; height: 40px;
+            font-size: 1.2rem; cursor: pointer; display:flex; align-items:center; justify-content:center;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy Transition */
         }
+        /* DER WIGGLE EFFEKT IST ZURÜCK */
+        .icon-btn:hover { 
+            background: white; 
+            transform: scale(1.1) rotate(15deg); 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .controls-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 
         .api-box { flex-grow: 1; }
         .api-box input {
-            background: transparent; border: none; color: #555;
-            padding: 5px; width: 100%; font-size: 0.9rem;
+            background: rgba(255,255,255,0.8); border: 1px solid #fff; color: #555;
+            padding: 10px; border-radius: 12px; width: 100%; box-sizing: border-box;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); transition: border 0.3s;
         }
-        .api-box input:focus { outline: none; }
+        .api-box input:focus { outline: none; border-color: var(--accent); background: white; }
 
-        /* DEV PANEL (Wieder da!) */
+        /* DEV PANEL */
         #devPanel {
             display: none; position: fixed; bottom: 20px; left: 20px; right: 20px;
             background: rgba(255,255,255,0.95); padding: 25px; border-radius: 30px;
@@ -79,34 +89,19 @@
         .dev-row input[type="color"] { border:none; width:40px; height:30px; cursor:pointer; background:none;}
         .dev-row input[type="range"] { accent-color: var(--accent); }
 
-        .icon-btn { 
-            background: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.8); 
-            border-radius: 50%; width: 40px; height: 40px;
-            font-size: 1.2rem; cursor: pointer; display:flex; align-items:center; justify-content:center;
-            transition:0.2s;
-        }
-        .icon-btn:hover { background: white; transform: scale(1.1); }
-
-        /* STAGE & VISUALIZER */
+        /* STAGE */
         .stage {
-            position: relative; background: rgba(255, 255, 255, 0.5);
+            position: relative; background: rgba(255, 255, 255, 0.4);
             border-radius: 35px; box-shadow: 0 20px 50px rgba(0,0,0,0.1);
             border: 1px solid rgba(255,255,255,0.8);
             margin-bottom: 20px; overflow: hidden; 
         }
 
-        .canvas-wrapper {
-            width: 100%; height: 300px;
-            background: transparent;
-            /* Das ist der Gooey Effekt */
-            filter: contrast(15); 
-            background-color: white; 
-        }
-
         canvas { 
-            width: 100%; height: 100%; display: block; 
-            /* Blur wird per JS gesteuert */
-            filter: blur(20px); 
+            width: 100%; height: 300px; display: block; 
+            /* Blur wird per JS gesteuert, Startwert hier */
+            filter: blur(30px); 
+            opacity: 0.9;
         }
 
         .stage-ui {
@@ -117,7 +112,10 @@
             position: relative; z-index: 10;
         }
 
-        .stats-col { text-align: center; color: #666; }
+        .stats-col {
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
+            font-family: monospace; color: #666;
+        }
         .timer { font-size: 1.8rem; font-weight: bold; letter-spacing: 2px; line-height: 1; }
         .size-info { font-size: 0.9rem; font-weight: normal; opacity: 0.7; }
 
@@ -131,11 +129,12 @@
         .btn-circle {
             border-radius: 50%; border: none; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
-            transition: all 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             background: white; color: #555; padding: 0;
         }
         .btn-circle:active { transform: scale(0.9); }
-        .btn-circle:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+        .btn-circle:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; transform: none; }
 
         .icon-lg { font-size: 2rem; line-height: 1; }
         .icon-md { font-size: 1.5rem; line-height: 1; margin-left: 3px; } 
@@ -153,17 +152,17 @@
         #btnFinish {
             grid-column: 3; justify-self: start; margin-left: 20px;
             width: 60px; height: 60px; background: white; color: var(--danger);
-            display: none; transition: 0.3s;
+            opacity: 0; pointer-events: none; transform: scale(0.5); 
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        #btnFinish.visible { display: flex; animation: popIn 0.3s ease; }
-        @keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        #btnFinish.visible { opacity: 1; pointer-events: all; transform: scale(1); }
 
         .placeholder-btn { grid-column: 1; width: 60px; }
 
         .btn-upload {
             background: white; border: 1px solid #e0e0e0; color: #888;
             padding: 10px 20px; border-radius: 20px; font-size: 0.85rem; cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: 0.2s;
         }
         
         /* FEED */
@@ -254,13 +253,11 @@
         <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
         <div class="dev-row"><span>Größe</span> <input type="range" id="pSize" min="20" max="150"></div>
         <div class="dev-row"><span>Reaktion</span> <input type="range" id="pGain" min="0" max="200"></div>
-        <div class="dev-row"><span>Blur</span> <input type="range" id="pBlur" min="0" max="50"></div>
+        <div class="dev-row"><span>Blur</span> <input type="range" id="pBlur" min="0" max="60"></div>
     </div>
 
     <div class="stage">
-        <div class="canvas-wrapper">
-            <canvas id="gooeyCanvas"></canvas>
-        </div>
+        <canvas id="cloudCanvas"></canvas>
         
         <div class="stage-ui">
             <div class="stats-col">
@@ -289,24 +286,22 @@
         btnFinish: document.getElementById('btnFinish'),
         timer: document.getElementById('timer'),
         size: document.getElementById('sizeDisplay'),
-        canvas: document.getElementById('gooeyCanvas'),
+        canvas: document.getElementById('cloudCanvas'),
         feed: document.getElementById('feed'),
         apiKey: document.getElementById('apiKey'),
         fileUpload: document.getElementById('fileUpload'),
         toast: document.getElementById('toast'),
         autoDl: document.getElementById('autoDl'),
         devPanel: document.getElementById('devPanel'),
-        // Params
         col1: document.getElementById('col1'), col2: document.getElementById('col2'),
         blob1: document.getElementById('blob1'), blob2: document.getElementById('blob2'), blob3: document.getElementById('blob3'),
         pSize: document.getElementById('pSize'), pGain: document.getElementById('pGain'), pBlur: document.getElementById('pBlur')
     };
 
-    // --- DEV TOOLS (Defaults) ---
-    const defaults = { c1: '#a18cd1', c2: '#fbc2eb', b1: '#8ec5fc', b2: '#e0c3fc', b3: '#99ddff', sz: 70, gn: 100, bl: 20 };
+    // --- DEV TOOLS ---
+    const defaults = { c1: '#a18cd1', c2: '#fbc2eb', b1: '#8ec5fc', b2: '#e0c3fc', b3: '#99ddff', sz: 70, gn: 100, bl: 30 };
 
     function toggleDev() { els.devPanel.classList.toggle('visible'); }
-    
     function loadDev() {
         els.col1.value = localStorage.getItem('d_c1') || defaults.c1;
         els.col2.value = localStorage.getItem('d_c2') || defaults.c2;
@@ -318,11 +313,9 @@
         els.pBlur.value = localStorage.getItem('d_bl') || defaults.bl;
         updateDev();
     }
-    
     function updateDev() {
         document.body.style.backgroundImage = `linear-gradient(135deg, ${els.col1.value} 0%, ${els.col2.value} 100%)`;
         els.canvas.style.filter = `blur(${els.pBlur.value}px)`;
-        
         localStorage.setItem('d_c1', els.col1.value); localStorage.setItem('d_c2', els.col2.value);
         localStorage.setItem('d_b1', els.blob1.value); localStorage.setItem('d_b2', els.blob2.value);
         localStorage.setItem('d_b3', els.blob3.value);
@@ -342,12 +335,12 @@
         els.apiKey.value = HARDCODED_KEY; 
         document.querySelector('.api-box').style.display='none'; 
     } else { 
-        els.apiKey.value = localStorage.getItem("key_v34") || "";
-        els.apiKey.addEventListener('change', () => localStorage.setItem("key_v34", els.apiKey.value));
+        els.apiKey.value = localStorage.getItem("key_v35") || "";
+        els.apiKey.addEventListener('change', () => localStorage.setItem("key_v35", els.apiKey.value));
     }
 
-    if(localStorage.getItem("autodl_v34") === 'true') els.autoDl.checked = true;
-    els.autoDl.addEventListener('change', () => localStorage.setItem("autodl_v34", els.autoDl.checked));
+    if(localStorage.getItem("autodl_v35") === 'true') els.autoDl.checked = true;
+    els.autoDl.addEventListener('change', () => localStorage.setItem("autodl_v35", els.autoDl.checked));
 
     loadHistory();
 
@@ -366,8 +359,8 @@
             requestAnimationFrame(draw);
             const w = els.canvas.width; const h = els.canvas.height; const cx = w/2; const cy = h/2;
             
-            ctx.fillStyle = '#ffffff'; 
-            ctx.fillRect(0, 0, w, h);
+            // WICHTIG: ClearRect statt fillRect weiß!
+            ctx.clearRect(0, 0, w, h);
 
             let vol = 0;
             if(analyser && isRecording && !isPaused) {
@@ -384,9 +377,14 @@
             const intensity = smoothedVol * gain; 
             const t = Date.now() / 2000;
 
+            // Transparente Blobs für Überlagerung
+            ctx.globalAlpha = 0.8;
+            
             drawBlob(ctx, cx + Math.cos(t)*50, cy + Math.sin(t*1.2)*30, baseSize + intensity*1.5, els.blob1.value);
             drawBlob(ctx, cx + Math.sin(t*0.8)*60, cy + Math.cos(t)*40, baseSize + intensity*1.5, els.blob2.value);
             drawBlob(ctx, cx, cy + Math.sin(t*2)*10, (baseSize*0.8) + intensity * 0.8, els.blob3.value);
+            
+            ctx.globalAlpha = 1.0;
         }
         draw();
     }
@@ -460,11 +458,8 @@
     els.fileUpload.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if(!file) return;
-        // Expanded list for WhatsApp
         const allowed = ['flac','m4a','mp3','mp4','mpeg','mpga','oga','ogg','wav','webm','opus','amr'];
         const ext = file.name.split('.').pop().toLowerCase();
-        
-        // Relaxed check (warning instead of block)
         if(!allowed.includes(ext)) { 
             if(!confirm(`Format .${ext} ist evtl. nicht unterstützt. Trotzdem versuchen?`)) { els.fileUpload.value=''; return; }
         }
@@ -497,7 +492,6 @@
         document.getElementById(`retry-${id}`).style.display = 'none';
         
         const fd = new FormData();
-        // Fallback extension logic
         let ext = 'webm';
         if(blob.type.includes('mp4')) ext = 'mp4';
         else if(blob.type.includes('wav')) ext = 'wav';
@@ -513,16 +507,17 @@
                 method: "POST", headers: { "Authorization": `Bearer ${els.apiKey.value}` }, body: fd
             });
             const data = await res.json();
+            
             if(res.ok) {
-                document.getElementById(`txt-${id}`).value = data.text;
+                textArea.value = data.text;
                 saveToHistory(id, data.text, ts);
                 smartCopy(data.text);
             } else {
-                document.getElementById(`txt-${id}`).value = "Error: " + (data.error?.message || "Unknown");
+                textArea.value = "Error: " + (data.error?.message || "Unknown");
                 document.getElementById(`retry-${id}`).style.display = 'flex';
             }
         } catch(e) {
-            document.getElementById(`txt-${id}`).value = "Netzwerk Fehler: " + e.message;
+            textArea.value = "Netzwerk Fehler: " + e.message;
             document.getElementById(`retry-${id}`).style.display = 'flex';
         }
     }
@@ -535,18 +530,22 @@
     window.addEventListener('focus', doPendingCopy); window.addEventListener('click', doPendingCopy); window.addEventListener('touchstart', doPendingCopy);
 
     function saveToHistory(id, text, ts) {
-        let h = JSON.parse(localStorage.getItem("hist_v34")||"[]");
+        let h = JSON.parse(localStorage.getItem("hist_v35")||"[]");
         const idx = h.findIndex(e => e.id == id);
         if(idx > -1) h[idx].text = text; else h.unshift({ id, text, ts });
         if(h.length > 30) h.pop();
-        localStorage.setItem("hist_v34", JSON.stringify(h));
+        localStorage.setItem("hist_v35", JSON.stringify(h));
     }
     function loadHistory() {
-        let h = JSON.parse(localStorage.getItem("hist_v34")||"[]");
+        let h = JSON.parse(localStorage.getItem("hist_v35")||"[]");
         h.forEach(e => createEntry(e.id, e.ts, e.text));
     }
     function clearAll() {
-        if(confirm("Wirklich ALLES löschen?")) { localStorage.removeItem("hist_v34"); els.feed.innerHTML = ""; showToast("Verlauf gelöscht."); }
+        if(confirm("Wirklich ALLES löschen?")) {
+            localStorage.removeItem("hist_v35");
+            els.feed.innerHTML = "";
+            showToast("Verlauf gelöscht.");
+        }
     }
 
     function createEntry(id, ts, text, blob) {
@@ -574,11 +573,10 @@
     }
 
     window.doCopy = (id) => { navigator.clipboard.writeText(document.getElementById(`txt-${id}`).value); showToast("Kopiert"); };
-    window.delEntry = (id) => { document.getElementById(`e-${id}`).remove(); let h = JSON.parse(localStorage.getItem("hist_v34")||"[]"); h = h.filter(x => x.id != id); localStorage.setItem("hist_v34", JSON.stringify(h)); };
+    window.delEntry = (id) => { document.getElementById(`e-${id}`).remove(); let h = JSON.parse(localStorage.getItem("hist_v35")||"[]"); h = h.filter(x => x.id != id); localStorage.setItem("hist_v35", JSON.stringify(h)); };
     window.dlTxt = (id) => { download(new Blob([document.getElementById(`txt-${id}`).value]), `transkript_${id}.txt`); };
     window.dlAudio = (id) => { const el = document.getElementById(`e-${id}`); if(el.audioBlob) { let ext = el.audioBlob.type.includes('mp4') ? 'mp4' : 'webm'; download(el.audioBlob, `rec_${id}.${ext}`); }};
     
-    // RETRY FIX
     window.retry = (id) => {
         const el = document.getElementById(`e-${id}`);
         if(el.audioBlob) { processAudio(el.audioBlob, "Retry", id); } 
