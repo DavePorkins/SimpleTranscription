@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Simple Transcription</title>
+    <title>Simple Transcription V38</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎙️</text></svg>">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root {
-            --c1: #a18cd1; --c2: #fbc2eb; /* Default */
+            --c1: #a18cd1; --c2: #fbc2eb;
             --glass-bg: rgba(255, 255, 255, 0.75);
             --glass-border: rgba(255, 255, 255, 0.8);
             --text: #444;
@@ -68,9 +68,7 @@
             background: rgba(255,255,255,0.8); padding: 5px 10px; border-radius: 12px;
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);
         }
-        .api-wrapper input {
-            border: none; background: transparent; color: #555; width: 100%; font-size: 0.9rem;
-        }
+        .api-wrapper input { border: none; background: transparent; color: #555; width: 100%; font-size: 0.9rem; }
         .api-wrapper input:focus { outline: none; }
         
         .info-btn {
@@ -78,7 +76,7 @@
             font-size: 0.8rem; font-weight: bold; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
         }
 
-        /* MODALS (Settings & Info) */
+        /* MODALS */
         .modal {
             display: none; position: fixed; bottom: 0; left: 0; right: 0; top: 0;
             background: rgba(0,0,0,0.4); z-index: 1000;
@@ -95,7 +93,7 @@
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .modal-title { font-weight: 800; font-size: 1.2rem; color: #333; }
         
-        /* PRESET GRID */
+        /* PRESETS */
         .preset-grid { display: flex; gap: 12px; overflow-x: auto; padding: 5px; margin-bottom: 20px; }
         .preset-btn {
             width: 45px; height: 45px; border-radius: 50%; border: 3px solid white;
@@ -105,7 +103,13 @@
         .preset-btn:hover { transform: scale(1.15); }
 
         .dev-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 0.9rem; font-weight: 600; color:#555;}
-        .dev-row input[type="color"] { border:none; width:40px; height:30px; cursor:pointer; background:none; border-radius:5px;}
+        
+        /* Verbesserte Color Inputs */
+        .dev-row input[type="color"] { 
+            border: 2px solid white; width: 50px; height: 35px; cursor: pointer; 
+            background: none; border-radius: 8px; padding: 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
         .dev-row input[type="range"] { accent-color: var(--accent); }
 
         /* STAGE */
@@ -114,7 +118,8 @@
             border-radius: 35px; box-shadow: 0 20px 50px rgba(162, 162, 255, 0.15);
             border: 1px solid rgba(255,255,255,0.8); margin-bottom: 20px; overflow: hidden; 
         }
-        canvas { width: 100%; height: 300px; display: block; filter: blur(35px); opacity: 0.9; }
+        /* Blur wird per JS gesteuert */
+        canvas { width: 100%; height: 300px; display: block; opacity: 0.9; }
 
         .stage-ui {
             padding: 20px; background: rgba(255,255,255,0.85); backdrop-filter: blur(15px);
@@ -126,7 +131,6 @@
         .timer { font-size: 2rem; font-weight: bold; letter-spacing: 2px; line-height: 1; transition: color 1s; }
         .size-info { font-size: 0.9rem; font-weight: normal; opacity: 0.7; }
 
-        /* CONTROLS */
         .rec-controls { 
             display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; justify-items: center;
             width: 100%; max-width: 400px; height: 90px;
@@ -146,7 +150,7 @@
 
         #btnMain {
             grid-column: 2; width: 80px; height: 80px; 
-            background: linear-gradient(135deg, var(--c2), var(--c1)); /* Match Title */
+            background: linear-gradient(135deg, var(--c2), var(--c1)); 
             box-shadow: 0 10px 25px rgba(0,0,0, 0.15); color: white; z-index: 5;
             transition: background 0.5s;
         }
@@ -168,7 +172,6 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: 0.2s;
         }
         
-        /* FEED */
         #feed { display: flex; flex-direction: column; gap: 20px; }
         .entry {
             background: var(--glass-bg); backdrop-filter: blur(15px);
@@ -199,7 +202,6 @@
         }
         .btn-del { flex: 0; color: #ff8888; }
 
-        /* TOAST */
         #toast {
             position: fixed; top: 20px; left: 50%; transform: translate(-50%, -150%);
             background: white; color: #333; padding: 12px 30px; border-radius: 50px;
@@ -210,7 +212,6 @@
         #toast.visible { transform: translate(-50%, 0); }
         #toast.error { border-color: var(--danger); color: var(--danger); }
 
-        /* INFO BOX CONTENT */
         .info-content p { margin-bottom: 10px; line-height: 1.5; color: #555; font-size:0.95rem;}
         .info-content a { color: var(--accent); text-decoration: none; font-weight: bold; }
     </style>
@@ -228,15 +229,10 @@
             <button class="icon-btn" onclick="toggleInfo()">✕</button>
         </div>
         <div class="info-content">
-            <p>Um die Audio-Dateien in Text zu verwandeln, nutzt diese App die <strong>OpenAI Whisper API</strong>.</p>
-            <p>Das bedeutet, du brauchst einen eigenen "Schlüssel" (Key), damit OpenAI weiß, wer die Anfrage stellt.</p>
-            <p><strong>Kostet das was?</strong><br>Ja, aber extrem wenig. Ca. <strong>$0.006 pro Minute</strong>. Eine Stunde Aufnahme kostet also nur ca. 35 Cent.</p>
-            <p><strong>Woher bekomme ich den Key?</strong><br>
-                1. Gehe zu <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com</a><br>
-                2. Erstelle einen Account & lade z.B. 5€ auf.<br>
-                3. Erstelle einen "New Secret Key" und kopiere ihn hier rein.
-            </p>
-            <p style="font-size:0.8rem; color:#888;">Dein Key wird nur lokal in deinem Browser gespeichert.</p>
+            <p>Diese App nutzt die <strong>OpenAI Whisper API</strong> für die Transkription.</p>
+            <p>Du brauchst einen API Key von OpenAI. Dieser wird nur lokal in deinem Browser gespeichert.</p>
+            <p><strong>Kosten:</strong> Ca. $0.006 pro Minute (sehr günstig).</p>
+            <p><a href="https://platform.openai.com/api-keys" target="_blank">👉 Hier Key erstellen (OpenAI)</a></p>
         </div>
     </div>
 </div>
@@ -249,7 +245,7 @@
         </div>
 
         <div class="dev-section">
-            <div style="font-size:0.85rem; font-weight:bold; color:#888; margin-bottom:10px;">PRESETS (KLICK MICH!)</div>
+            <div style="font-size:0.85rem; font-weight:bold; color:#888; margin-bottom:10px;">PRESETS</div>
             <div class="preset-grid">
                 <div class="preset-btn" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb)" onclick="applyPreset('#a18cd1','#fbc2eb')"></div>
                 <div class="preset-btn" style="background: linear-gradient(135deg, #84fab0, #8fd3f4)" onclick="applyPreset('#84fab0','#8fd3f4')"></div>
@@ -273,6 +269,7 @@
             <div class="dev-row"><span>Blob 3</span> <input type="color" id="blob3"></div>
             <div class="dev-row"><span>Größe</span> <input type="range" id="pSize" min="20" max="150"></div>
             <div class="dev-row"><span>Reaktion</span> <input type="range" id="pGain" min="0" max="200"></div>
+            <div class="dev-row"><span>Weichzeichner (Blur)</span> <input type="range" id="pBlur" min="0" max="60"></div>
         </div>
     </div>
 </div>
@@ -342,7 +339,7 @@
         // Params
         col1: document.getElementById('col1'), col2: document.getElementById('col2'),
         blob1: document.getElementById('blob1'), blob2: document.getElementById('blob2'), blob3: document.getElementById('blob3'),
-        pSize: document.getElementById('pSize'), pGain: document.getElementById('pGain')
+        pSize: document.getElementById('pSize'), pGain: document.getElementById('pGain'), pBlur: document.getElementById('pBlur')
     };
 
     // --- MODALS ---
@@ -350,12 +347,12 @@
     function toggleInfo() { els.infoModal.classList.toggle('visible'); }
 
     // --- DEV TOOLS & PRESETS ---
-    const defaults = { c1: '#a18cd1', c2: '#fbc2eb', b1: '#8ec5fc', b2: '#e0c3fc', b3: '#99ddff', sz: 70, gn: 100 };
+    const defaults = { c1: '#a18cd1', c2: '#fbc2eb', b1: '#8ec5fc', b2: '#e0c3fc', b3: '#99ddff', sz: 70, gn: 100, bl: 35 };
 
     function applyPreset(c1, c2) {
         els.col1.value = c1;
         els.col2.value = c2;
-        // Automatisch passende Blob Farben (leicht heller)
+        // Auto-Set Blobs to match
         els.blob1.value = c1;
         els.blob2.value = c2;
         els.blob3.value = '#ffffff'; 
@@ -370,6 +367,7 @@
         els.blob3.value = localStorage.getItem('d_b3') || defaults.b3;
         els.pSize.value = localStorage.getItem('d_sz') || defaults.sz;
         els.pGain.value = localStorage.getItem('d_gn') || defaults.gn;
+        els.pBlur.value = localStorage.getItem('d_bl') || defaults.bl;
         updateDev();
     }
     
@@ -379,18 +377,18 @@
         
         document.documentElement.style.setProperty('--c1', c1);
         document.documentElement.style.setProperty('--c2', c2);
-        
         document.body.style.backgroundImage = `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`;
+        els.canvas.style.filter = `blur(${els.pBlur.value}px)`;
         
         localStorage.setItem('d_c1', c1); localStorage.setItem('d_c2', c2);
         localStorage.setItem('d_b1', els.blob1.value); localStorage.setItem('d_b2', els.blob2.value);
         localStorage.setItem('d_b3', els.blob3.value);
         localStorage.setItem('d_sz', els.pSize.value); localStorage.setItem('d_gn', els.pGain.value);
+        localStorage.setItem('d_bl', els.pBlur.value);
     }
     
-    [els.col1, els.col2, els.blob1, els.blob2, els.blob3, els.pSize, els.pGain].forEach(el => el.addEventListener('input', updateDev));
-    loadDev();
-
+    [els.col1, els.col2, els.blob1, els.blob2, els.blob3, els.pSize, els.pGain, els.pBlur].forEach(el => el.addEventListener('input', updateDev));
+    
     // --- CORE ---
     let globalStream, mediaRecorder, chunks = [], audioCtx, analyser, dataArray;
     let isRecording = false, isPaused = false;
@@ -401,14 +399,16 @@
         els.apiKey.value = HARDCODED_KEY; 
         document.querySelector('.api-wrapper').style.display='none'; 
     } else { 
-        els.apiKey.value = localStorage.getItem("key_v37") || "";
-        els.apiKey.addEventListener('change', () => localStorage.setItem("key_v37", els.apiKey.value));
+        els.apiKey.value = localStorage.getItem("key_v38") || "";
+        els.apiKey.addEventListener('change', () => localStorage.setItem("key_v38", els.apiKey.value));
     }
 
-    if(localStorage.getItem("autodl_v37") === 'true') els.autoDl.checked = true;
-    els.autoDl.addEventListener('change', () => localStorage.setItem("autodl_v37", els.autoDl.checked));
+    if(localStorage.getItem("autodl_v38") === 'true') els.autoDl.checked = true;
+    els.autoDl.addEventListener('change', () => localStorage.setItem("autodl_v38", els.autoDl.checked));
 
     loadHistory();
+    // Load Dev Settings after history to apply colors
+    loadDev();
 
     function resizeCanvas() {
         els.canvas.width = els.canvas.offsetWidth * 1.5;
@@ -602,25 +602,24 @@
     window.addEventListener('focus', doPendingCopy); window.addEventListener('click', doPendingCopy); window.addEventListener('touchstart', doPendingCopy);
 
     function saveToHistory(id, text, ts) {
-        let h = JSON.parse(localStorage.getItem("hist_v37")||"[]");
+        let h = JSON.parse(localStorage.getItem("hist_v38")||"[]");
         const idx = h.findIndex(e => e.id == id);
         if(idx > -1) h[idx].text = text; else h.unshift({ id, text, ts });
         if(h.length > 30) h.pop();
-        localStorage.setItem("hist_v37", JSON.stringify(h));
+        localStorage.setItem("hist_v38", JSON.stringify(h));
     }
     function loadHistory() {
-        let h = JSON.parse(localStorage.getItem("hist_v37")||"[]");
+        let h = JSON.parse(localStorage.getItem("hist_v38")||"[]");
         h.forEach(e => createEntry(e.id, e.ts, e.text));
     }
     function clearAll() {
         if(confirm("Wirklich ALLES löschen?")) {
-            localStorage.removeItem("hist_v37");
+            localStorage.removeItem("hist_v38");
             els.feed.innerHTML = "";
             showToast("Verlauf gelöscht.");
         }
     }
 
-    // Fix Audio Player Duration on Load
     function fixDuration(audio) {
         audio.currentTime = 1e101;
         audio.ontimeupdate = function() {
@@ -654,7 +653,7 @@
     }
 
     window.doCopy = (id) => { navigator.clipboard.writeText(document.getElementById(`txt-${id}`).value); showToast("Kopiert"); };
-    window.delEntry = (id) => { document.getElementById(`e-${id}`).remove(); let h = JSON.parse(localStorage.getItem("hist_v37")||"[]"); h = h.filter(x => x.id != id); localStorage.setItem("hist_v37", JSON.stringify(h)); };
+    window.delEntry = (id) => { document.getElementById(`e-${id}`).remove(); let h = JSON.parse(localStorage.getItem("hist_v38")||"[]"); h = h.filter(x => x.id != id); localStorage.setItem("hist_v38", JSON.stringify(h)); };
     window.dlTxt = (id) => { download(new Blob([document.getElementById(`txt-${id}`).value]), `transkript_${id}.txt`); };
     window.dlAudio = (id) => { const el = document.getElementById(`e-${id}`); if(el.audioBlob) { let ext = el.audioBlob.type.includes('mp4') ? 'mp4' : 'webm'; download(el.audioBlob, `rec_${id}.${ext}`); }};
     
