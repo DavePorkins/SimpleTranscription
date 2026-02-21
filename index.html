@@ -3,42 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Simple Transcription V43</title>
+    <title>Simple Transcription V44</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#a18cd1">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎙️</text></svg>">
     
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%99%EF%B8%8F%3C/text%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23a18cd1'/%3E%3Ctext x='50' y='50' font-size='60' text-anchor='middle' dominant-baseline='central'%3E%F0%9F%8E%99%EF%B8%8F%3C/text%3E%3C/svg%3E">
+    
+    <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Simple%20Transcription%22%2C%22short_name%22%3A%22Transcribe%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23a18cd1%22%2C%22theme_color%22%3A%22%23a18cd1%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%253E%253Crect%20width%3D%27100%27%20height%3D%27100%27%20rx%3D%2720%27%20fill%3D%27%2523a18cd1%27%2F%253E%253Ctext%20x%3D%2750%27%20y%3D%2750%27%20font-size%3D%2760%27%20text-anchor%3D%27middle%27%20dominant-baseline%3D%27central%27%253E%25F0%259F%258E%2599%25EF%25B8%258F%253C%2Ftext%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root {
             --c1: #a18cd1; --c2: #fbc2eb;
-            --glass-bg: rgba(255, 255, 255, 0.65);
+            --glass-bg: rgba(255, 255, 255, 0.7);
             --glass-border: rgba(255, 255, 255, 0.6);
+            --stage-bg: rgba(255, 255, 255, 0.4);
             --text: #333;
             --text-muted: #666;
-            --input-bg: rgba(255, 255, 255, 0.7);
+            --input-bg: rgba(255, 255, 255, 0.8);
             --btn-bg: white;
             --accent: #c471ed;
             --danger: #ff5252;
             --warn: #ffb142;
-            --safe: #218c74;
-            --badge-bg: rgba(0, 0, 0, 0.06);
+            --safe: #2ecc71; /* Modernes Grün wiederhergestellt */
+            --badge-bg: rgba(0, 0, 0, 0.05);
         }
 
         body[data-theme="dark"] {
-            --glass-bg: rgba(20, 20, 25, 0.65);
+            --glass-bg: rgba(25, 25, 30, 0.85); /* Deutlich dunkler für besseren Kontrast */
             --glass-border: rgba(255, 255, 255, 0.1);
+            --stage-bg: rgba(0, 0, 0, 0.4);
             --text: #f0f0f0;
             --text-muted: #aaa;
-            --input-bg: rgba(0, 0, 0, 0.4);
+            --input-bg: rgba(0, 0, 0, 0.5);
             --btn-bg: #2d2d35;
             --badge-bg: rgba(255, 255, 255, 0.1);
         }
 
-        /* FIX: Mobiler Scroll-Balken & Overscroll */
-        html { overscroll-behavior-y: none; background: #000; }
+        html { overscroll-behavior-y: none; background: #111; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             color: var(--text); margin: 0;
@@ -47,63 +52,67 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* FIX: Hintergrund als separater Layer für sauberen Dark Mode Switch */
         .bg-layer {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: -1;
             background-image: linear-gradient(135deg, var(--c1), var(--c2));
             transition: filter 0.5s ease, background-image 0.5s ease;
         }
-        body[data-theme="dark"] .bg-layer { filter: brightness(0.35) saturate(1.2); }
+        body[data-theme="dark"] .bg-layer { filter: brightness(0.4) saturate(1.2); }
 
         .app-container { width: 100%; max-width: 800px; position: relative; z-index: 2; padding-bottom: 80px; display: flex; flex-direction: column; gap: 20px;}
 
-        /* V43: UNIFIED MAIN PANEL */
+        /* MAIN PANEL */
         .main-panel {
             background: var(--glass-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
             border-radius: 35px; border: 1px solid var(--glass-border);
             box-shadow: 0 15px 40px rgba(0,0,0,0.1); overflow: hidden;
             transition: all 0.3s ease; display: flex; flex-direction: column;
+            padding: 20px 25px 30px 25px;
         }
 
-        .header-section { padding: 20px 25px 0 25px; display: flex; flex-direction: column; gap: 15px; }
-        
-        .top-row { display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 10px; }
+        /* HEADER & ICONS */
+        .top-row { display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;}
         h1 { margin: 0; font-size: 1.4rem; font-weight: 900; background: linear-gradient(90deg, var(--c2), var(--c1)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; display: flex; align-items: baseline; gap: 8px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));}
-        .version-tag { font-size: 0.55em; opacity: 0.7; font-weight: 700; color: var(--text); -webkit-text-fill-color: initial; }
+        body[data-theme="dark"] h1 { background: none; -webkit-text-fill-color: var(--text); color: var(--text); } /* Lesbar im Dark Mode */
+        .version-tag { font-size: 0.55em; opacity: 0.7; font-weight: 700; color: var(--text-muted); -webkit-text-fill-color: initial; background: none;}
 
         .header-actions { display: flex; gap: 8px; }
         .icon-btn { background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text); border-radius: 50%; width: 38px; height: 38px; cursor: pointer; display:flex; align-items:center; justify-content:center; transition: 0.2s; padding: 8px;}
         .icon-btn svg { width: 100%; height: 100%; }
-        .icon-btn:hover { transform: scale(1.1); background: var(--btn-bg); }
+        .icon-btn:hover { transform: scale(1.1); background: var(--btn-bg); box-shadow: 0 5px 15px rgba(0,0,0,0.1);}
 
-        .controls-row { display: flex; gap: 10px; align-items: center; width: 100%; flex-wrap: wrap; }
-        .api-wrapper { flex: 1; display: flex; align-items: center; gap: 8px; background: var(--input-bg); padding: 5px 15px; border-radius: 20px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); min-width: 150px; border: 1px solid var(--glass-border);}
+        /* COMPACT SETTINGS GRID */
+        .settings-grid {
+            display: flex; flex-wrap: wrap; gap: 10px; width: 100%; margin-bottom: 20px;
+        }
+        .settings-grid > * { flex: 1 1 auto; min-width: 140px; }
+        
+        .api-wrapper { display: flex; align-items: center; gap: 8px; background: var(--input-bg); padding: 5px 15px; border-radius: 16px; border: 1px solid var(--glass-border);}
         .api-wrapper input { border: none; background: transparent; color: var(--text); width: 100%; font-size: 0.85rem; }
         .api-wrapper input:focus { outline: none; }
         .eye-btn { background: none; border: none; cursor: pointer; padding: 0 5px; color: var(--text-muted); display:flex; align-items:center;}
         
-        .auto-save-label { font-size: 0.75rem; font-weight: 600; display:flex; gap:6px; color:var(--text-muted); align-items:center; cursor: pointer; background: var(--input-bg); padding: 8px 15px; border-radius: 20px; border: 1px solid var(--glass-border);}
+        .toggle-btn { display:flex; gap:6px; color:var(--text); align-items:center; justify-content: center; cursor: pointer; background: var(--input-bg); padding: 8px 15px; border-radius: 16px; border: 1px solid var(--glass-border); font-size: 0.8rem; font-weight: 600; text-align: center; transition: 0.2s;}
+        .toggle-btn:hover { background: var(--btn-bg); }
+        .mic-select { background: transparent; border: none; color: inherit; font-family: inherit; font-size: inherit; font-weight: inherit; outline: none; width: 100%; cursor: pointer; -webkit-appearance: none; text-align: center;}
 
-        /* V43: SOFT CANVAS FADE */
-        .canvas-container { width: 100%; height: 180px; position: relative; margin-top: -10px; }
-        canvas { 
-            width: 100%; height: 100%; display: block; opacity: 0.85;
-            mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 80%);
-            -webkit-mask-image: -webkit-radial-gradient(center, ellipse cover, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 80%);
+        /* STAGE & ANIMATION - Mehr Platz, nicht mehr squished */
+        .canvas-container { 
+            width: 100%; height: 220px; border-radius: 24px; 
+            background: var(--stage-bg); overflow: hidden; 
+            border: 1px solid var(--glass-border); position: relative;
+            margin-bottom: 25px; box-shadow: inset 0 5px 20px rgba(0,0,0,0.03);
         }
+        canvas { width: 100%; height: 100%; display: block; opacity: 0.9; }
 
-        .stage-ui { padding: 0 25px 30px 25px; display: flex; flex-direction: column; align-items: center; gap: 15px; position: relative; z-index: 10; margin-top: -20px;}
-
-        .mic-row { display: flex; gap: 10px; width: 100%; justify-content: center; flex-wrap: wrap;}
-        .mic-select, .btn-upload { background: var(--input-bg); border: 1px solid var(--glass-border); border-radius: 20px; padding: 8px 15px; font-size: 0.8rem; font-weight: 500; color: var(--text); outline: none; text-align: center; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.02); -webkit-appearance: none; }
-        .btn-upload { display: flex; align-items: center; gap: 6px; }
-        .btn-upload svg { width: 16px; height: 16px; }
+        /* CONTROLS */
+        .controls-area { display: flex; flex-direction: column; align-items: center; gap: 15px; }
 
         .stats-col { display: flex; flex-direction: column; align-items: center; gap: 0px; color: var(--text-muted); }
-        .timer { font-size: 2.5rem; font-weight: 900; letter-spacing: 1px; line-height: 1; transition: color 0.5s; font-variant-numeric: tabular-nums; }
-        .size-info { font-size: 0.8rem; font-weight: 500; opacity: 0.7; margin-top: 4px;}
+        .timer { font-size: 2.8rem; font-weight: 900; letter-spacing: 1px; line-height: 1; transition: color 0.5s; font-variant-numeric: tabular-nums; }
+        .size-info { font-size: 0.85rem; font-weight: 500; opacity: 0.7; margin-top: 4px;}
 
-        .rec-controls { display: flex; justify-content: center; align-items: center; gap: 15px; width: 100%; height: 80px; }
+        .rec-controls { display: flex; justify-content: center; align-items: center; gap: 20px; width: 100%; height: 80px; }
         
         .btn-circle { border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 8px 20px rgba(0,0,0,0.1); background: var(--btn-bg); color: var(--text); padding: 0; }
         .btn-circle:active { transform: scale(0.9); }
@@ -116,19 +125,25 @@
 
         .side-btn { width: 50px; height: 50px; border-radius: 50%; flex-shrink: 0; opacity: 0; pointer-events: none; transform: scale(0.5); width: 0; margin: 0; }
         .side-btn.visible { opacity: 1; pointer-events: all; transform: scale(1); width: 50px; margin: 0 5px; }
-        #btnCancel svg { stroke: var(--danger); }
+        
+        /* Farbliche Hinterlegung der aktiven Nebenbuttons */
+        .side-btn.visible#btnCancel { background: rgba(255, 82, 82, 0.1); }
+        .side-btn.visible#btnCancel svg { stroke: var(--danger); }
+        .side-btn.visible#btnPause { background: rgba(255, 177, 66, 0.1); }
+        .side-btn.visible#btnPause svg { fill: var(--warn); stroke: var(--warn); }
         #btnPause.state-paused { background: var(--warn); }
         #btnPause.state-paused svg { fill: white; stroke: white; }
 
         /* FEED & TEXT PILLS */
         #feed { display: flex; flex-direction: column; gap: 20px; width: 100%; }
-        .entry { background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 30px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); animation: slideIn 0.4s ease-out; border: 1px solid var(--glass-border); }
+        .entry { background: var(--glass-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-radius: 30px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); animation: slideIn 0.4s ease-out; border: 1px solid var(--glass-border); }
         @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: 0; } }
 
         .entry-meta { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 15px; }
         .date-badge { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; display:flex; align-items:center; gap:5px;}
         
-        .stats-badges { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; flex: 1; min-width: 200px;}
+        /* FIX: Kein Treppen-Effekt mehr */
+        .stats-badges { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-start; flex: 1; min-width: 200px;}
         .stat-pill { background: var(--badge-bg); padding: 5px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; color: var(--text); border: 1px solid var(--glass-border); display:flex; align-items:center; gap:4px; white-space: nowrap;}
         
         textarea { width: 100%; background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text); padding: 18px; border-radius: 20px; font-family: inherit; resize: none; min-height: 100px; box-sizing: border-box; display: block; line-height: 1.6; font-size: 15px; transition: 0.2s; box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);}
@@ -143,7 +158,7 @@
         .btn-del { flex: 0; color: var(--danger); }
         .btn-del svg { stroke: var(--danger); }
 
-        /* MODALS (Verkürzt) */
+        /* MODALS */
         .modal { display: none; position: fixed; bottom: 0; left: 0; right: 0; top: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .modal.visible { display: flex; animation: fadeIn 0.3s; }
         .modal-box { background: var(--btn-bg); padding: 25px; border-radius: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.4); width: 90%; max-width: 400px; border: 1px solid var(--glass-border); max-height: 80vh; overflow-y: auto; color: var(--text); }
@@ -177,6 +192,7 @@
                 <div class="preset-btn" style="background: linear-gradient(135deg, #e0c3fc, #8ec5fc)" onclick="applyPreset('#e0c3fc','#8ec5fc')"></div>
                 <div class="preset-btn" style="background: linear-gradient(135deg, #ff9a9e, #fecfef)" onclick="applyPreset('#ff9a9e','#fecfef')"></div>
                 <div class="preset-btn" style="background: linear-gradient(135deg, #30cfd0, #330867)" onclick="applyPreset('#30cfd0','#330867')"></div>
+                
                 <div class="preset-btn" style="background: linear-gradient(135deg, #4facfe, #00f2fe)" onclick="applyPreset('#4facfe','#00f2fe')"></div>
                 <div class="preset-btn" style="background: linear-gradient(135deg, #43e97b, #38f9d7)" onclick="applyPreset('#43e97b','#38f9d7')"></div>
                 <div class="preset-btn" style="background: linear-gradient(135deg, #fa709a, #fee140)" onclick="applyPreset('#fa709a','#fee140')"></div>
@@ -199,42 +215,44 @@
 <div class="app-container">
     
     <div class="main-panel">
-        <div class="header-section">
-            <div class="top-row">
-                <h1>Simple Transcription <span class="version-tag">V43</span></h1>
-                <div class="header-actions">
-                    <button class="icon-btn" onclick="toggleTheme()" title="Dark Mode"><svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path></svg></button>
-                    <button class="icon-btn" onclick="dlZip()" title="ZIP Download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></button>
-                    <button class="icon-btn" onclick="clearAll()" title="Alles löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg></button>
-                    <button class="icon-btn" onclick="toggleDev()" title="Design"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 000 20 14.5 14.5 0 000-20z"></path><path d="M2 12h20"></path></svg></button>
-                </div>
+        <div class="top-row">
+            <h1>Simple Transcription <span class="version-tag">V44</span></h1>
+            <div class="header-actions">
+                <button class="icon-btn" onclick="toggleTheme()" title="Dark Mode"><svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></button>
+                <button class="icon-btn" onclick="dlZip()" title="ZIP Download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></button>
+                <button class="icon-btn" onclick="clearAll()" title="Alles löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                <button class="icon-btn" onclick="toggleDev()" title="Design"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg></button>
+            </div>
+        </div>
+        
+        <div class="settings-grid">
+            <div class="api-wrapper">
+                <svg style="width:16px;height:16px;color:var(--text-muted);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0110 0v4"></path></svg>
+                <input type="password" id="apiKey" placeholder="OpenAI Key">
+                <button class="eye-btn" onclick="toggleApiKey()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
             </div>
             
-            <div class="controls-row">
-                <div class="api-wrapper">
-                    <svg style="width:16px;height:16px;color:var(--text-muted);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0110 0v4"></path></svg>
-                    <input type="password" id="apiKey" placeholder="OpenAI Key (Lokal gespeichert)">
-                    <button class="eye-btn" onclick="toggleApiKey()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
-                </div>
-                <label class="auto-save-label">
-                    <input type="checkbox" id="autoDl" style="accent-color:var(--accent); width:16px; height:16px; margin:0;">
-                    Auto-Save (Audio & Text)
-                </label>
+            <label class="toggle-btn" style="cursor: pointer;">
+                <input type="checkbox" id="autoDl" style="accent-color:var(--accent); width:16px; height:16px; margin:0;">
+                Auto-Save
+            </label>
+
+            <div class="toggle-btn" style="padding: 0;">
+                <select id="micSelect" class="mic-select" style="padding: 8px 15px; height: 100%;">
+                    <option value="default">🎙️ Mikrofon wählen</option>
+                </select>
             </div>
+
+            <button class="toggle-btn" onclick="document.getElementById('fileUpload').click()">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"></path></svg> Upload
+            </button>
         </div>
 
         <div class="canvas-container">
             <canvas id="cloudCanvas"></canvas>
         </div>
 
-        <div class="stage-ui">
-            <div class="mic-row">
-                <select id="micSelect" class="mic-select"><option value="default">🎙️ Mikrofon (Laden...)</option></select>
-                <button id="btnUpload" class="btn-upload" onclick="document.getElementById('fileUpload').click()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"></path></svg> Upload
-                </button>
-            </div>
-
+        <div class="controls-area">
             <div class="stats-col">
                 <div class="timer" id="timer" style="color:var(--safe);">00:00</div>
                 <div class="size-info" id="sizeDisplay">(~0.0 MB)</div>
@@ -268,7 +286,7 @@
         timer: document.getElementById('timer'), size: document.getElementById('sizeDisplay'),
         canvas: document.getElementById('cloudCanvas'), feed: document.getElementById('feed'),
         apiKey: document.getElementById('apiKey'), fileUpload: document.getElementById('fileUpload'),
-        toast: document.getElementById('toast'), autoDl: document.getElementById('autoDl'), themeBtn: document.getElementById('themeBtn'),
+        toast: document.getElementById('toast'), autoDl: document.getElementById('autoDl'),
         devPanel: document.getElementById('devPanel'), micSelect: document.getElementById('micSelect'),
         col1: document.getElementById('col1'), col2: document.getElementById('col2'),
         blob1: document.getElementById('blob1'), blob2: document.getElementById('blob2'), blob3: document.getElementById('blob3'),
@@ -278,25 +296,22 @@
     function toggleDev() { els.devPanel.classList.toggle('visible'); }
     function toggleApiKey() { els.apiKey.type = els.apiKey.type === 'password' ? 'text' : 'password'; }
 
-    // WAKE LOCK API
     let wakeLock = null;
     async function requestWakeLock() { try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {} }
     function releaseWakeLock() { if (wakeLock !== null) { wakeLock.release().then(() => wakeLock = null); } }
 
-    // DARK MODE mit SVG Update
     function toggleTheme() {
         const isDark = document.body.getAttribute('data-theme') === 'dark';
         if(isDark) { 
-            document.body.removeAttribute('data-theme'); localStorage.setItem('theme_v43', 'light'); 
+            document.body.removeAttribute('data-theme'); localStorage.setItem('theme_v44', 'light'); 
             els.themeIcon.innerHTML = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>';
         } else { 
-            document.body.setAttribute('data-theme', 'dark'); localStorage.setItem('theme_v43', 'dark'); 
+            document.body.setAttribute('data-theme', 'dark'); localStorage.setItem('theme_v44', 'dark'); 
             els.themeIcon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
         }
     }
-    if(localStorage.getItem('theme_v43') === 'dark') { toggleTheme(); toggleTheme(); } // Init
+    if(localStorage.getItem('theme_v44') === 'dark') { toggleTheme(); toggleTheme(); } 
 
-    // KOSTEN
     window.fixDuration = function(audio, id) {
         const updateCost = (sec) => {
             const el = document.getElementById(`cost-${id}`);
@@ -493,7 +508,7 @@
                 <button class="btn-action" onclick="doCopy(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg> Copy</button>
                 <button class="btn-action" onclick="dlTxt(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Text</button>
                 ${blob ? `<button class="btn-action" onclick="dlAudio(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg> Audio</button>` : ''}
-                <button class="btn-action btn-del" onclick="delEntry(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg></button>
+                <button class="btn-action btn-del" onclick="delEntry(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
                 <button class="btn-action" id="retry-${id}" style="display:none; color:var(--warn);" onclick="retry(${id})">🔄 Retry</button>
             </div>`;
         els.feed.prepend(d); if(blob) d.audioBlob = blob; updateTextStats(id);
