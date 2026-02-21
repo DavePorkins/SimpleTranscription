@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Simple Transcription V45</title>
+    <title>Simple Transcription V46</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -26,7 +26,6 @@
             --accent: #c471ed;
             --danger: #ff5252;
             --warn: #ffb142;
-            --safe: #2ecc71;
             --badge-bg: rgba(0, 0, 0, 0.05);
         }
 
@@ -54,11 +53,11 @@
             background-image: linear-gradient(135deg, var(--c1), var(--c2));
             transition: filter 0.5s ease, background-image 0.5s ease;
         }
-        body[data-theme="dark"] .bg-layer { filter: brightness(0.4) saturate(1.2); }
+        body[data-theme="dark"] .bg-layer { filter: brightness(0.35) saturate(1.2); }
 
         .app-container { width: 100%; max-width: 800px; position: relative; z-index: 2; padding-bottom: 80px; display: flex; flex-direction: column; gap: 20px;}
 
-        /* V45: FULL IMMERSION PANEL */
+        /* MAIN PANEL */
         .main-panel {
             position: relative; border-radius: 35px; border: 1px solid var(--glass-border);
             box-shadow: 0 15px 40px rgba(0,0,0,0.1); overflow: hidden;
@@ -66,63 +65,60 @@
             transition: all 0.3s ease;
         }
 
+        /* EDGE FLARE ANIMATION CANVAS */
         #cloudCanvas {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
-            pointer-events: none; /* Klicks gehen durch das Canvas durch */
-            opacity: 0.8;
-            transition: filter 0.5s ease;
+            pointer-events: none; opacity: 0.8; transition: filter 0.5s ease;
         }
-        /* V45: Animation im Dark Mode stark abdunkeln */
-        body[data-theme="dark"] #cloudCanvas { filter: brightness(0.3) saturate(1.5); opacity: 0.6; }
+        body[data-theme="dark"] #cloudCanvas { filter: brightness(0.5) saturate(1.5); opacity: 0.6; }
 
         .panel-content {
-            position: relative; z-index: 1; padding: 25px;
-            display: flex; flex-direction: column; gap: 20px;
+            position: relative; z-index: 1; padding: 30px 25px;
+            display: flex; flex-direction: column; gap: 25px;
         }
 
-        /* HEADER */
-        .top-row { display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 10px;}
-        h1 { margin: 0; font-size: 1.4rem; font-weight: 900; background: linear-gradient(90deg, var(--c2), var(--c1)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; display: flex; align-items: baseline; gap: 8px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));}
-        .version-tag { font-size: 0.55em; opacity: 0.7; font-weight: 700; color: var(--text-muted); -webkit-text-fill-color: initial; }
+        /* ZENTRIERTER HEADER */
+        .top-row { display: flex; flex-direction: column; align-items: center; gap: 15px; width: 100%; }
+        h1 { margin: 0; font-size: 1.6rem; font-weight: 900; background: linear-gradient(90deg, var(--c2), var(--c1)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; display: flex; align-items: baseline; gap: 8px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1)); text-align: center;}
+        .version-tag { font-size: 0.5em; opacity: 0.7; font-weight: 700; color: var(--text-muted); -webkit-text-fill-color: initial; background: none;}
 
-        .header-actions { display: flex; gap: 8px; }
-        .icon-btn { background: var(--input-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid var(--glass-border); color: var(--text); border-radius: 50%; width: 38px; height: 38px; cursor: pointer; display:flex; align-items:center; justify-content:center; transition: 0.2s; padding: 8px;}
+        .header-actions { display: flex; justify-content: center; gap: 12px; width: 100%; }
+        .icon-btn { background: var(--input-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid var(--glass-border); color: var(--c1); border-radius: 50%; width: 42px; height: 42px; cursor: pointer; display:flex; align-items:center; justify-content:center; transition: 0.2s; padding: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.03);}
         .icon-btn svg { width: 100%; height: 100%; }
-        .icon-btn:hover { transform: scale(1.1); background: var(--btn-bg); box-shadow: 0 5px 15px rgba(0,0,0,0.1);}
+        .icon-btn:hover { transform: scale(1.1); background: var(--btn-bg); color: var(--accent); box-shadow: 0 5px 15px rgba(0,0,0,0.1);}
 
-        /* SETTINGS GRID */
-        .settings-grid { display: flex; flex-wrap: wrap; gap: 10px; width: 100%; }
-        .settings-grid > * { flex: 1 1 auto; min-width: 140px; }
+        /* COMPACT SETTINGS ROW */
+        .settings-row { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; width: 100%; }
         
-        .api-wrapper { display: flex; align-items: center; gap: 8px; background: var(--input-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 5px 15px; border-radius: 16px; border: 1px solid var(--glass-border);}
+        .api-wrapper { display: flex; align-items: center; gap: 8px; background: var(--input-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 5px 15px; border-radius: 16px; border: 1px solid var(--glass-border); flex: 0 1 auto; width: 150px;}
         .api-wrapper input { border: none; background: transparent; color: var(--text); width: 100%; font-size: 0.85rem; }
         .api-wrapper input:focus { outline: none; }
-        .eye-btn { background: none; border: none; cursor: pointer; padding: 0 5px; color: var(--text-muted); display:flex; align-items:center;}
+        .eye-btn { background: none; border: none; cursor: pointer; padding: 0; color: var(--text-muted); display:flex; align-items:center;}
         
-        .toggle-btn { display:flex; gap:6px; color:var(--text); align-items:center; justify-content: center; cursor: pointer; background: var(--input-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 8px 15px; border-radius: 16px; border: 1px solid var(--glass-border); font-size: 0.8rem; font-weight: 600; text-align: center; transition: 0.2s;}
+        .toggle-btn { display:flex; gap:6px; color:var(--text); align-items:center; justify-content: center; cursor: pointer; background: var(--input-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 8px 15px; border-radius: 16px; border: 1px solid var(--glass-border); font-size: 0.8rem; font-weight: 600; text-align: center; transition: 0.2s; flex: 0 1 auto;}
         .toggle-btn:hover { background: var(--btn-bg); }
         .mic-select { background: transparent; border: none; color: inherit; font-family: inherit; font-size: inherit; font-weight: inherit; outline: none; width: 100%; cursor: pointer; -webkit-appearance: none; text-align: center;}
 
-        /* CONTROLS AREA */
+        /* CONTROLS AREA (MODERN THIN TIMER) */
         .controls-area { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-top: 10px; }
 
-        .stats-col { display: flex; flex-direction: column; align-items: center; gap: 0px; color: var(--text-muted); }
-        .timer { font-size: 3.2rem; font-weight: 900; letter-spacing: 1px; line-height: 1; transition: color 0.5s; font-variant-numeric: tabular-nums; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.1));}
-        .size-info { font-size: 0.85rem; font-weight: 600; opacity: 0.8; margin-top: 5px;}
+        .stats-col { display: flex; flex-direction: column; align-items: center; gap: 0px; color: var(--text); }
+        .timer { font-size: 4rem; font-weight: 300; letter-spacing: 2px; line-height: 1; transition: color 0.5s; font-variant-numeric: tabular-nums; text-shadow: 0 2px 10px rgba(0,0,0,0.05);}
+        .size-info { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-top: 8px;}
 
-        .rec-controls { display: flex; justify-content: center; align-items: center; gap: 20px; width: 100%; height: 80px; }
+        .rec-controls { display: flex; justify-content: center; align-items: center; gap: 20px; width: 100%; height: 90px; }
         
         .btn-circle { border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 8px 20px rgba(0,0,0,0.1); background: var(--btn-bg); color: var(--text); padding: 0; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);}
         .btn-circle:active { transform: scale(0.9); }
         .btn-circle:disabled { opacity: 0.4; cursor: not-allowed; }
         .btn-circle svg { width: 45%; height: 45%; }
 
-        #btnMain { width: 80px; height: 80px; border-radius: 50%; z-index: 5; background: linear-gradient(135deg, var(--c2), var(--c1)); box-shadow: 0 10px 25px rgba(0,0,0, 0.2); color: white; flex-shrink: 0; }
-        #btnMain.state-recording { background: var(--btn-bg); border-radius: 25px; transform: scale(0.9); }
+        #btnMain { width: 85px; height: 85px; border-radius: 50%; z-index: 5; background: linear-gradient(135deg, var(--c2), var(--c1)); color: white; flex-shrink: 0; box-shadow: 0 10px 30px var(--c1); }
+        #btnMain.state-recording { background: var(--btn-bg); border-radius: 28px; transform: scale(0.9); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
         #btnMain.state-recording svg { fill: var(--danger); }
 
-        .side-btn { width: 50px; height: 50px; border-radius: 50%; flex-shrink: 0; opacity: 0; pointer-events: none; transform: scale(0.5); width: 0; margin: 0; }
-        .side-btn.visible { opacity: 1; pointer-events: all; transform: scale(1); width: 50px; margin: 0 5px; }
+        .side-btn { width: 55px; height: 55px; border-radius: 50%; flex-shrink: 0; opacity: 0; pointer-events: none; transform: scale(0.5); width: 0; margin: 0; }
+        .side-btn.visible { opacity: 1; pointer-events: all; transform: scale(1); width: 55px; margin: 0 5px; }
         
         .side-btn.visible#btnCancel { background: rgba(255, 82, 82, 0.15); }
         .side-btn.visible#btnCancel svg { stroke: var(--danger); }
@@ -136,7 +132,6 @@
         .entry { background: var(--glass-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-radius: 30px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); animation: slideIn 0.4s ease-out; border: 1px solid var(--glass-border); }
         @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: 0; } }
 
-        /* V45: FIX TREPPEN-LAYOUT */
         .entry-meta { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; margin-bottom: 15px; }
         .date-badge { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; display:flex; align-items:center; gap:5px;}
         .stats-badges { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; }
@@ -147,8 +142,8 @@
 
         audio { width: 100%; height: 40px; border-radius: 10px; margin-top: 15px; }
 
-        /* V45: GRID LAYOUT FÜR BUTTONS (Verhindert einzelne Buttons in neuer Zeile) */
-        .actions { margin-top: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; }
+        /* BUTTONS GRID (OHNE TEILEN) */
+        .actions { margin-top: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 8px; }
         .btn-action { padding: 12px; border: none; border-radius: 16px; background: var(--btn-bg); color: var(--text); font-size: 0.85rem; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.03); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--glass-border); transition: 0.2s; width: 100%;}
         .btn-action:hover { background: var(--input-bg); transform: translateY(-2px); }
         .btn-action svg { width: 16px; height: 16px; }
@@ -210,12 +205,12 @@
 </div>
 
 <div class="app-container">
-    
     <div class="main-panel">
         <canvas id="cloudCanvas"></canvas>
+        
         <div class="panel-content">
             <div class="top-row">
-                <h1>Simple Transcription <span class="version-tag">V45</span></h1>
+                <h1>Simple Transcription <span class="version-tag">V46</span></h1>
                 <div class="header-actions">
                     <button class="icon-btn" onclick="toggleTheme()" title="Dark Mode"><svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></button>
                     <button class="icon-btn" onclick="dlZip()" title="ZIP Download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></button>
@@ -224,7 +219,7 @@
                 </div>
             </div>
             
-            <div class="settings-grid">
+            <div class="settings-row">
                 <div class="api-wrapper">
                     <svg style="width:16px;height:16px;color:var(--text-muted);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0110 0v4"></path></svg>
                     <input type="password" id="apiKey" placeholder="OpenAI Key">
@@ -249,7 +244,7 @@
 
             <div class="controls-area">
                 <div class="stats-col">
-                    <div class="timer" id="timer" style="color:var(--safe);">00:00</div>
+                    <div class="timer" id="timer">00:00</div>
                     <div class="size-info" id="sizeDisplay">(~0.0 MB)</div>
                 </div>
                 
@@ -299,14 +294,14 @@
     function toggleTheme() {
         const isDark = document.body.getAttribute('data-theme') === 'dark';
         if(isDark) { 
-            document.body.removeAttribute('data-theme'); localStorage.setItem('theme_v45', 'light'); 
+            document.body.removeAttribute('data-theme'); localStorage.setItem('theme_v46', 'light'); 
             els.themeIcon.innerHTML = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>';
         } else { 
-            document.body.setAttribute('data-theme', 'dark'); localStorage.setItem('theme_v45', 'dark'); 
+            document.body.setAttribute('data-theme', 'dark'); localStorage.setItem('theme_v46', 'dark'); 
             els.themeIcon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
         }
     }
-    if(localStorage.getItem('theme_v45') === 'dark') { toggleTheme(); toggleTheme(); } 
+    if(localStorage.getItem('theme_v46') === 'dark') { toggleTheme(); toggleTheme(); } 
 
     window.fixDuration = function(audio, id) {
         const updateCost = (sec) => {
@@ -354,6 +349,8 @@
     window.addEventListener('resize', resizeCanvas);
 
     let smoothedVol = 0;
+    let timeAccum = 0; // V46: Eigene Zeitachse für Idle-Kontrolle
+    
     function initVisualizer() {
         const ctx = els.canvas.getContext('2d'); resizeCanvas();
         function draw() {
@@ -363,17 +360,25 @@
 
             let vol = 0;
             if(analyser && isRecording && !isPaused) {
+                timeAccum += 0.015; // Animation läuft nur bei Aufnahme
                 const len = analyser.frequencyBinCount; if(!dataArray) dataArray = new Uint8Array(len);
                 analyser.getByteFrequencyData(dataArray); let sum = 0; for(let i=0; i<len; i++) sum += dataArray[i]; vol = (sum / len); 
-            } else { vol = 5 + Math.sin(Date.now()/1500) * 5; }
+            }
 
             smoothedVol = smoothedVol * 0.9 + vol * 0.1;
-            const baseSize = parseInt(els.pSize.value); const gain = parseInt(els.pGain.value) / 100;
-            const intensity = smoothedVol * gain; const t = Date.now() / 2000;
+            const gain = parseInt(els.pGain.value) / 100;
+            const intensity = smoothedVol * gain * 2.5; 
 
-            drawBlob(ctx, cx + Math.cos(t)*50, cy + Math.sin(t*1.2)*30, baseSize + intensity*1.5, els.blob1.value);
-            drawBlob(ctx, cx + Math.sin(t*0.8)*60, cy + Math.cos(t)*40, baseSize + intensity*1.5, els.blob2.value);
-            drawBlob(ctx, cx, cy + Math.sin(t*2)*10, (baseSize*0.8) + intensity * 0.8, els.blob3.value);
+            // V46: Edge Flare Logik (Orbit außen am Rand, drückt nach innen wenn laut)
+            const maxDim = Math.max(w, h);
+            const dist = maxDim * 0.55; 
+            const baseSize = parseInt(els.pSize.value) * 1.8; 
+            const activeR = baseSize + (maxDim * 0.25) + intensity * 4; 
+
+            drawBlob(ctx, cx + Math.cos(timeAccum) * dist, cy + Math.sin(timeAccum*0.8) * dist, activeR + Math.sin(timeAccum*5)*20, els.blob1.value);
+            drawBlob(ctx, cx + Math.cos(timeAccum + 1.57) * dist, cy + Math.sin(timeAccum*0.9 + 1.57) * dist, activeR + Math.cos(timeAccum*4.5)*20, els.blob2.value);
+            drawBlob(ctx, cx + Math.cos(timeAccum + 3.14) * dist, cy + Math.sin(timeAccum*1.1 + 3.14) * dist, activeR + Math.sin(timeAccum*6)*20, els.blob3.value);
+            drawBlob(ctx, cx + Math.cos(timeAccum + 4.71) * dist, cy + Math.sin(timeAccum*1.2 + 4.71) * dist, activeR + Math.cos(timeAccum*5.5)*20, els.col1.value);
         }
         draw();
     }
@@ -402,11 +407,11 @@
     function setMainButtonState(state) {
         if(state === 'idle') {
             els.iconMain.innerHTML = '<circle cx="12" cy="12" r="6"></circle>'; els.btnMain.className = 'btn-circle'; 
-            els.btnPause.classList.remove('visible'); els.btnCancel.classList.remove('visible'); els.timer.style.color = "var(--safe)";
+            els.btnPause.classList.remove('visible'); els.btnCancel.classList.remove('visible'); els.timer.style.color = "var(--text)";
         } else if (state === 'recording') {
             els.iconMain.innerHTML = '<rect x="6" y="6" width="12" height="12" rx="2" ry="2"></rect>'; els.btnMain.className = 'btn-circle state-recording';
             els.iconPause.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>'; els.btnPause.className = 'btn-circle side-btn visible';
-            els.btnCancel.className = 'btn-circle side-btn visible'; els.timer.style.color = "var(--safe)";
+            els.btnCancel.className = 'btn-circle side-btn visible'; els.timer.style.color = "var(--text)";
         } else if (state === 'paused') {
             els.iconPause.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"></polygon>'; els.btnPause.className = 'btn-circle side-btn visible state-paused';
             els.timer.style.color = "var(--warn)"; 
@@ -443,7 +448,8 @@
         if(isPaused) return; const totalSec = Math.floor((Date.now() - startTime - pauseDelta)/1000);
         els.timer.innerText = `${Math.floor(totalSec/60).toString().padStart(2,'0')}:${(totalSec%60).toString().padStart(2,'0')}`;
         els.size.innerText = `(~${((totalSec * 4000) / (1024 * 1024)).toFixed(2)} MB)`;
-        els.timer.style.color = totalSec < 300 ? "var(--safe)" : totalSec < 600 ? "var(--warn)" : "var(--danger)";
+        // Timer wird erst ab 5 Min. orange, ab 10 Min. rot. Sonst bleibt er modern neutral (text-color)
+        els.timer.style.color = totalSec < 300 ? "var(--text)" : totalSec < 600 ? "var(--warn)" : "var(--danger)";
     }
 
     function resetUI() { isRecording=false; isPaused=false; clearInterval(timerInt); setMainButtonState('idle'); els.timer.innerText="00:00"; els.size.innerText="(~0.0 MB)"; els.btnMain.disabled=false; releaseWakeLock(); if(globalStream) globalStream.getTracks().forEach(t=>t.stop()); }
@@ -500,7 +506,6 @@
             </div>
             <textarea id="txt-${id}" oninput="updateTextStats(${id})">${text}</textarea> ${player}
             <div class="actions">
-                <button class="btn-action" onclick="shareEntry(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg> Teilen</button>
                 <button class="btn-action" onclick="doCopy(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg> Copy</button>
                 <button class="btn-action" onclick="dlTxt(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Text</button>
                 ${blob ? `<button class="btn-action" onclick="dlAudio(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg> Audio</button>` : ''}
@@ -516,23 +521,6 @@
     window.dlAudio = (id) => { const el = document.getElementById(`e-${id}`); if(el.audioBlob) download(el.audioBlob, `rec_${id}.${el.audioBlob.type.includes('mp4') ? 'mp4' : 'webm'}`); };
     window.retry = (id) => { const el = document.getElementById(`e-${id}`); if(el.audioBlob) processAudio(el.audioBlob, "Retry", id); else showToast("Kein Audio", true); };
     
-    // V45 FIX: Teilen-Button mit robustem Fallback
-    window.shareEntry = async (id) => {
-        const el = document.getElementById(`e-${id}`); const txt = document.getElementById(`txt-${id}`).value;
-        try {
-            if(navigator.share) {
-                if(el.audioBlob && navigator.canShare) {
-                    const f = new File([el.audioBlob], `audio.${el.audioBlob.type.includes('mp4') ? 'mp4' : 'webm'}`, {type: el.audioBlob.type});
-                    if(navigator.canShare({files: [f]})) { await navigator.share({files:[f], text: txt}); return; }
-                }
-                await navigator.share({text: txt});
-            } else { throw new Error("Share API not supported"); }
-        } catch(e) { 
-            navigator.clipboard.writeText(txt);
-            showToast("📋 Text kopiert (Teilen am PC blockiert)", true); 
-        }
-    };
-
     window.dlZip = async () => {
         if(!window.JSZip) return; const zip = new JSZip(); const fAud = zip.folder("audio"); let allTxt = "--- PROTOKOLL ---\n\n";
         document.querySelectorAll('.entry').forEach(e => {
