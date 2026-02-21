@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Simple Transcription V44</title>
+    <title>Simple Transcription V45</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -11,35 +11,32 @@
     
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%99%EF%B8%8F%3C/text%3E%3C/svg%3E">
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23a18cd1'/%3E%3Ctext x='50' y='50' font-size='60' text-anchor='middle' dominant-baseline='central'%3E%F0%9F%8E%99%EF%B8%8F%3C/text%3E%3C/svg%3E">
-    
     <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Simple%20Transcription%22%2C%22short_name%22%3A%22Transcribe%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23a18cd1%22%2C%22theme_color%22%3A%22%23a18cd1%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%253E%253Crect%20width%3D%27100%27%20height%3D%27100%27%20rx%3D%2720%27%20fill%3D%27%2523a18cd1%27%2F%253E%253Ctext%20x%3D%2750%27%20y%3D%2750%27%20font-size%3D%2760%27%20text-anchor%3D%27middle%27%20dominant-baseline%3D%27central%27%253E%25F0%259F%258E%2599%25EF%25B8%258F%253C%2Ftext%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root {
             --c1: #a18cd1; --c2: #fbc2eb;
-            --glass-bg: rgba(255, 255, 255, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.6);
-            --stage-bg: rgba(255, 255, 255, 0.4);
+            --glass-bg: rgba(255, 255, 255, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.5);
             --text: #333;
             --text-muted: #666;
-            --input-bg: rgba(255, 255, 255, 0.8);
-            --btn-bg: white;
+            --input-bg: rgba(255, 255, 255, 0.45);
+            --btn-bg: rgba(255, 255, 255, 0.8);
             --accent: #c471ed;
             --danger: #ff5252;
             --warn: #ffb142;
-            --safe: #2ecc71; /* Modernes Grün wiederhergestellt */
+            --safe: #2ecc71;
             --badge-bg: rgba(0, 0, 0, 0.05);
         }
 
         body[data-theme="dark"] {
-            --glass-bg: rgba(25, 25, 30, 0.85); /* Deutlich dunkler für besseren Kontrast */
+            --glass-bg: rgba(20, 20, 25, 0.7);
             --glass-border: rgba(255, 255, 255, 0.1);
-            --stage-bg: rgba(0, 0, 0, 0.4);
             --text: #f0f0f0;
             --text-muted: #aaa;
-            --input-bg: rgba(0, 0, 0, 0.5);
-            --btn-bg: #2d2d35;
+            --input-bg: rgba(0, 0, 0, 0.3);
+            --btn-bg: rgba(45, 45, 53, 0.9);
             --badge-bg: rgba(255, 255, 255, 0.1);
         }
 
@@ -61,63 +58,64 @@
 
         .app-container { width: 100%; max-width: 800px; position: relative; z-index: 2; padding-bottom: 80px; display: flex; flex-direction: column; gap: 20px;}
 
-        /* MAIN PANEL */
+        /* V45: FULL IMMERSION PANEL */
         .main-panel {
-            background: var(--glass-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-            border-radius: 35px; border: 1px solid var(--glass-border);
+            position: relative; border-radius: 35px; border: 1px solid var(--glass-border);
             box-shadow: 0 15px 40px rgba(0,0,0,0.1); overflow: hidden;
-            transition: all 0.3s ease; display: flex; flex-direction: column;
-            padding: 20px 25px 30px 25px;
+            background: var(--glass-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            transition: all 0.3s ease;
         }
 
-        /* HEADER & ICONS */
-        .top-row { display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;}
+        #cloudCanvas {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
+            pointer-events: none; /* Klicks gehen durch das Canvas durch */
+            opacity: 0.8;
+            transition: filter 0.5s ease;
+        }
+        /* V45: Animation im Dark Mode stark abdunkeln */
+        body[data-theme="dark"] #cloudCanvas { filter: brightness(0.3) saturate(1.5); opacity: 0.6; }
+
+        .panel-content {
+            position: relative; z-index: 1; padding: 25px;
+            display: flex; flex-direction: column; gap: 20px;
+        }
+
+        /* HEADER */
+        .top-row { display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 10px;}
         h1 { margin: 0; font-size: 1.4rem; font-weight: 900; background: linear-gradient(90deg, var(--c2), var(--c1)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; display: flex; align-items: baseline; gap: 8px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));}
-        body[data-theme="dark"] h1 { background: none; -webkit-text-fill-color: var(--text); color: var(--text); } /* Lesbar im Dark Mode */
-        .version-tag { font-size: 0.55em; opacity: 0.7; font-weight: 700; color: var(--text-muted); -webkit-text-fill-color: initial; background: none;}
+        .version-tag { font-size: 0.55em; opacity: 0.7; font-weight: 700; color: var(--text-muted); -webkit-text-fill-color: initial; }
 
         .header-actions { display: flex; gap: 8px; }
-        .icon-btn { background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text); border-radius: 50%; width: 38px; height: 38px; cursor: pointer; display:flex; align-items:center; justify-content:center; transition: 0.2s; padding: 8px;}
+        .icon-btn { background: var(--input-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid var(--glass-border); color: var(--text); border-radius: 50%; width: 38px; height: 38px; cursor: pointer; display:flex; align-items:center; justify-content:center; transition: 0.2s; padding: 8px;}
         .icon-btn svg { width: 100%; height: 100%; }
         .icon-btn:hover { transform: scale(1.1); background: var(--btn-bg); box-shadow: 0 5px 15px rgba(0,0,0,0.1);}
 
-        /* COMPACT SETTINGS GRID */
-        .settings-grid {
-            display: flex; flex-wrap: wrap; gap: 10px; width: 100%; margin-bottom: 20px;
-        }
+        /* SETTINGS GRID */
+        .settings-grid { display: flex; flex-wrap: wrap; gap: 10px; width: 100%; }
         .settings-grid > * { flex: 1 1 auto; min-width: 140px; }
         
-        .api-wrapper { display: flex; align-items: center; gap: 8px; background: var(--input-bg); padding: 5px 15px; border-radius: 16px; border: 1px solid var(--glass-border);}
+        .api-wrapper { display: flex; align-items: center; gap: 8px; background: var(--input-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 5px 15px; border-radius: 16px; border: 1px solid var(--glass-border);}
         .api-wrapper input { border: none; background: transparent; color: var(--text); width: 100%; font-size: 0.85rem; }
         .api-wrapper input:focus { outline: none; }
         .eye-btn { background: none; border: none; cursor: pointer; padding: 0 5px; color: var(--text-muted); display:flex; align-items:center;}
         
-        .toggle-btn { display:flex; gap:6px; color:var(--text); align-items:center; justify-content: center; cursor: pointer; background: var(--input-bg); padding: 8px 15px; border-radius: 16px; border: 1px solid var(--glass-border); font-size: 0.8rem; font-weight: 600; text-align: center; transition: 0.2s;}
+        .toggle-btn { display:flex; gap:6px; color:var(--text); align-items:center; justify-content: center; cursor: pointer; background: var(--input-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 8px 15px; border-radius: 16px; border: 1px solid var(--glass-border); font-size: 0.8rem; font-weight: 600; text-align: center; transition: 0.2s;}
         .toggle-btn:hover { background: var(--btn-bg); }
         .mic-select { background: transparent; border: none; color: inherit; font-family: inherit; font-size: inherit; font-weight: inherit; outline: none; width: 100%; cursor: pointer; -webkit-appearance: none; text-align: center;}
 
-        /* STAGE & ANIMATION - Mehr Platz, nicht mehr squished */
-        .canvas-container { 
-            width: 100%; height: 220px; border-radius: 24px; 
-            background: var(--stage-bg); overflow: hidden; 
-            border: 1px solid var(--glass-border); position: relative;
-            margin-bottom: 25px; box-shadow: inset 0 5px 20px rgba(0,0,0,0.03);
-        }
-        canvas { width: 100%; height: 100%; display: block; opacity: 0.9; }
-
-        /* CONTROLS */
-        .controls-area { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        /* CONTROLS AREA */
+        .controls-area { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-top: 10px; }
 
         .stats-col { display: flex; flex-direction: column; align-items: center; gap: 0px; color: var(--text-muted); }
-        .timer { font-size: 2.8rem; font-weight: 900; letter-spacing: 1px; line-height: 1; transition: color 0.5s; font-variant-numeric: tabular-nums; }
-        .size-info { font-size: 0.85rem; font-weight: 500; opacity: 0.7; margin-top: 4px;}
+        .timer { font-size: 3.2rem; font-weight: 900; letter-spacing: 1px; line-height: 1; transition: color 0.5s; font-variant-numeric: tabular-nums; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.1));}
+        .size-info { font-size: 0.85rem; font-weight: 600; opacity: 0.8; margin-top: 5px;}
 
         .rec-controls { display: flex; justify-content: center; align-items: center; gap: 20px; width: 100%; height: 80px; }
         
-        .btn-circle { border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 8px 20px rgba(0,0,0,0.1); background: var(--btn-bg); color: var(--text); padding: 0; }
+        .btn-circle { border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 8px 20px rgba(0,0,0,0.1); background: var(--btn-bg); color: var(--text); padding: 0; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);}
         .btn-circle:active { transform: scale(0.9); }
         .btn-circle:disabled { opacity: 0.4; cursor: not-allowed; }
-        .btn-circle svg { width: 50%; height: 50%; }
+        .btn-circle svg { width: 45%; height: 45%; }
 
         #btnMain { width: 80px; height: 80px; border-radius: 50%; z-index: 5; background: linear-gradient(135deg, var(--c2), var(--c1)); box-shadow: 0 10px 25px rgba(0,0,0, 0.2); color: white; flex-shrink: 0; }
         #btnMain.state-recording { background: var(--btn-bg); border-radius: 25px; transform: scale(0.9); }
@@ -126,10 +124,9 @@
         .side-btn { width: 50px; height: 50px; border-radius: 50%; flex-shrink: 0; opacity: 0; pointer-events: none; transform: scale(0.5); width: 0; margin: 0; }
         .side-btn.visible { opacity: 1; pointer-events: all; transform: scale(1); width: 50px; margin: 0 5px; }
         
-        /* Farbliche Hinterlegung der aktiven Nebenbuttons */
-        .side-btn.visible#btnCancel { background: rgba(255, 82, 82, 0.1); }
+        .side-btn.visible#btnCancel { background: rgba(255, 82, 82, 0.15); }
         .side-btn.visible#btnCancel svg { stroke: var(--danger); }
-        .side-btn.visible#btnPause { background: rgba(255, 177, 66, 0.1); }
+        .side-btn.visible#btnPause { background: rgba(255, 177, 66, 0.15); }
         .side-btn.visible#btnPause svg { fill: var(--warn); stroke: var(--warn); }
         #btnPause.state-paused { background: var(--warn); }
         #btnPause.state-paused svg { fill: white; stroke: white; }
@@ -139,23 +136,23 @@
         .entry { background: var(--glass-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-radius: 30px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); animation: slideIn 0.4s ease-out; border: 1px solid var(--glass-border); }
         @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: 0; } }
 
-        .entry-meta { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 15px; }
-        .date-badge { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; display:flex; align-items:center; gap:5px;}
-        
-        /* FIX: Kein Treppen-Effekt mehr */
-        .stats-badges { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-start; flex: 1; min-width: 200px;}
-        .stat-pill { background: var(--badge-bg); padding: 5px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; color: var(--text); border: 1px solid var(--glass-border); display:flex; align-items:center; gap:4px; white-space: nowrap;}
+        /* V45: FIX TREPPEN-LAYOUT */
+        .entry-meta { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; margin-bottom: 15px; }
+        .date-badge { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; display:flex; align-items:center; gap:5px;}
+        .stats-badges { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; }
+        .stat-pill { background: var(--badge-bg); padding: 6px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; color: var(--text); border: 1px solid var(--glass-border); display:flex; align-items:center; gap:4px; white-space: nowrap;}
         
         textarea { width: 100%; background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text); padding: 18px; border-radius: 20px; font-family: inherit; resize: none; min-height: 100px; box-sizing: border-box; display: block; line-height: 1.6; font-size: 15px; transition: 0.2s; box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);}
         textarea:focus { outline: none; border-color: var(--accent); background: var(--btn-bg); }
 
         audio { width: 100%; height: 40px; border-radius: 10px; margin-top: 15px; }
 
-        .actions { margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
-        .btn-action { flex: 1; padding: 12px; border: none; border-radius: 16px; background: var(--btn-bg); color: var(--text); font-size: 0.85rem; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.03); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--glass-border); min-width: 80px; transition: 0.2s;}
+        /* V45: GRID LAYOUT FÜR BUTTONS (Verhindert einzelne Buttons in neuer Zeile) */
+        .actions { margin-top: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; }
+        .btn-action { padding: 12px; border: none; border-radius: 16px; background: var(--btn-bg); color: var(--text); font-size: 0.85rem; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.03); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--glass-border); transition: 0.2s; width: 100%;}
         .btn-action:hover { background: var(--input-bg); transform: translateY(-2px); }
         .btn-action svg { width: 16px; height: 16px; }
-        .btn-del { flex: 0; color: var(--danger); }
+        .btn-del { color: var(--danger); }
         .btn-del svg { stroke: var(--danger); }
 
         /* MODALS */
@@ -215,61 +212,60 @@
 <div class="app-container">
     
     <div class="main-panel">
-        <div class="top-row">
-            <h1>Simple Transcription <span class="version-tag">V44</span></h1>
-            <div class="header-actions">
-                <button class="icon-btn" onclick="toggleTheme()" title="Dark Mode"><svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></button>
-                <button class="icon-btn" onclick="dlZip()" title="ZIP Download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></button>
-                <button class="icon-btn" onclick="clearAll()" title="Alles löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
-                <button class="icon-btn" onclick="toggleDev()" title="Design"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg></button>
-            </div>
-        </div>
-        
-        <div class="settings-grid">
-            <div class="api-wrapper">
-                <svg style="width:16px;height:16px;color:var(--text-muted);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0110 0v4"></path></svg>
-                <input type="password" id="apiKey" placeholder="OpenAI Key">
-                <button class="eye-btn" onclick="toggleApiKey()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
+        <canvas id="cloudCanvas"></canvas>
+        <div class="panel-content">
+            <div class="top-row">
+                <h1>Simple Transcription <span class="version-tag">V45</span></h1>
+                <div class="header-actions">
+                    <button class="icon-btn" onclick="toggleTheme()" title="Dark Mode"><svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></button>
+                    <button class="icon-btn" onclick="dlZip()" title="ZIP Download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></button>
+                    <button class="icon-btn" onclick="clearAll()" title="Alles löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                    <button class="icon-btn" onclick="toggleDev()" title="Design"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c1.06 0 2-.94 2-2 0-.53-.21-1.04-.59-1.41-.36-.36-.59-.86-.59-1.4 0-1.06.94-2 2-2h1.5c2.76 0 5.5-2.24 5.5-5.5C22 7.36 17.52 2 12 2z"></path></svg></button>
+                </div>
             </div>
             
-            <label class="toggle-btn" style="cursor: pointer;">
-                <input type="checkbox" id="autoDl" style="accent-color:var(--accent); width:16px; height:16px; margin:0;">
-                Auto-Save
-            </label>
+            <div class="settings-grid">
+                <div class="api-wrapper">
+                    <svg style="width:16px;height:16px;color:var(--text-muted);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0110 0v4"></path></svg>
+                    <input type="password" id="apiKey" placeholder="OpenAI Key">
+                    <button class="eye-btn" onclick="toggleApiKey()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
+                </div>
+                
+                <label class="toggle-btn">
+                    <input type="checkbox" id="autoDl" style="accent-color:var(--accent); width:16px; height:16px; margin:0;">
+                    Auto-Save (Audio & Text)
+                </label>
 
-            <div class="toggle-btn" style="padding: 0;">
-                <select id="micSelect" class="mic-select" style="padding: 8px 15px; height: 100%;">
-                    <option value="default">🎙️ Mikrofon wählen</option>
-                </select>
+                <div class="toggle-btn" style="padding: 0;">
+                    <select id="micSelect" class="mic-select" style="padding: 8px 15px; height: 100%;">
+                        <option value="default">🎙️ Mikrofon wählen</option>
+                    </select>
+                </div>
+
+                <button class="toggle-btn" onclick="document.getElementById('fileUpload').click()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"></path></svg> Upload
+                </button>
             </div>
 
-            <button class="toggle-btn" onclick="document.getElementById('fileUpload').click()">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"></path></svg> Upload
-            </button>
-        </div>
-
-        <div class="canvas-container">
-            <canvas id="cloudCanvas"></canvas>
-        </div>
-
-        <div class="controls-area">
-            <div class="stats-col">
-                <div class="timer" id="timer" style="color:var(--safe);">00:00</div>
-                <div class="size-info" id="sizeDisplay">(~0.0 MB)</div>
-            </div>
-            
-            <div class="rec-controls">
-                <button id="btnCancel" class="btn-circle side-btn" title="Verwerfen" onclick="cancelRec()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"></path></svg>
-                </button>
+            <div class="controls-area">
+                <div class="stats-col">
+                    <div class="timer" id="timer" style="color:var(--safe);">00:00</div>
+                    <div class="size-info" id="sizeDisplay">(~0.0 MB)</div>
+                </div>
                 
-                <button id="btnMain" class="btn-circle" title="Aufnahme / Stop">
-                    <svg id="iconMain" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="6"></circle></svg>
-                </button>
-                
-                <button id="btnPause" class="btn-circle side-btn" title="Pause / Weiter">
-                    <svg id="iconPause" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
-                </button>
+                <div class="rec-controls">
+                    <button id="btnCancel" class="btn-circle side-btn" title="Verwerfen" onclick="cancelRec()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+                    </button>
+                    
+                    <button id="btnMain" class="btn-circle" title="Aufnahme / Stop">
+                        <svg id="iconMain" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="6"></circle></svg>
+                    </button>
+                    
+                    <button id="btnPause" class="btn-circle side-btn" title="Pause / Weiter">
+                        <svg id="iconPause" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -303,14 +299,14 @@
     function toggleTheme() {
         const isDark = document.body.getAttribute('data-theme') === 'dark';
         if(isDark) { 
-            document.body.removeAttribute('data-theme'); localStorage.setItem('theme_v44', 'light'); 
+            document.body.removeAttribute('data-theme'); localStorage.setItem('theme_v45', 'light'); 
             els.themeIcon.innerHTML = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>';
         } else { 
-            document.body.setAttribute('data-theme', 'dark'); localStorage.setItem('theme_v44', 'dark'); 
+            document.body.setAttribute('data-theme', 'dark'); localStorage.setItem('theme_v45', 'dark'); 
             els.themeIcon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
         }
     }
-    if(localStorage.getItem('theme_v44') === 'dark') { toggleTheme(); toggleTheme(); } 
+    if(localStorage.getItem('theme_v45') === 'dark') { toggleTheme(); toggleTheme(); } 
 
     window.fixDuration = function(audio, id) {
         const updateCost = (sec) => {
@@ -519,15 +515,24 @@
     window.dlTxt = (id) => { download(new Blob([document.getElementById(`txt-${id}`).value]), `transkript_${id}.txt`); };
     window.dlAudio = (id) => { const el = document.getElementById(`e-${id}`); if(el.audioBlob) download(el.audioBlob, `rec_${id}.${el.audioBlob.type.includes('mp4') ? 'mp4' : 'webm'}`); };
     window.retry = (id) => { const el = document.getElementById(`e-${id}`); if(el.audioBlob) processAudio(el.audioBlob, "Retry", id); else showToast("Kein Audio", true); };
+    
+    // V45 FIX: Teilen-Button mit robustem Fallback
     window.shareEntry = async (id) => {
         const el = document.getElementById(`e-${id}`); const txt = document.getElementById(`txt-${id}`).value;
         try {
-            if(el.audioBlob && navigator.canShare) {
-                const f = new File([el.audioBlob], `audio.${el.audioBlob.type.includes('mp4') ? 'mp4' : 'webm'}`, {type: el.audioBlob.type});
-                if(navigator.canShare({files: [f]})) await navigator.share({files:[f], text: txt}); else await navigator.share({text: txt});
-            } else if (navigator.share) await navigator.share({text: txt}); else showToast("Nicht unterstützt.", true);
-        } catch(e) {}
+            if(navigator.share) {
+                if(el.audioBlob && navigator.canShare) {
+                    const f = new File([el.audioBlob], `audio.${el.audioBlob.type.includes('mp4') ? 'mp4' : 'webm'}`, {type: el.audioBlob.type});
+                    if(navigator.canShare({files: [f]})) { await navigator.share({files:[f], text: txt}); return; }
+                }
+                await navigator.share({text: txt});
+            } else { throw new Error("Share API not supported"); }
+        } catch(e) { 
+            navigator.clipboard.writeText(txt);
+            showToast("📋 Text kopiert (Teilen am PC blockiert)", true); 
+        }
     };
+
     window.dlZip = async () => {
         if(!window.JSZip) return; const zip = new JSZip(); const fAud = zip.folder("audio"); let allTxt = "--- PROTOKOLL ---\n\n";
         document.querySelectorAll('.entry').forEach(e => {
