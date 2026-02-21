@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Simple Transcription V48</title>
+    <title>Simple Transcription V50</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -221,7 +221,7 @@
         
         <div class="panel-content">
             <div class="top-row">
-                <h1>Simple Transcription <span class="version-tag">V48</span></h1>
+                <h1>Simple Transcription <span class="version-tag">V50 🎉</span></h1>
                 <div class="header-actions">
                     <button class="icon-btn" onclick="toggleTheme()" title="Dark Mode"><svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></button>
                     <button class="icon-btn" onclick="dlZip()" title="ZIP Download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></button>
@@ -374,12 +374,12 @@
     let smoothedVol = 0;
     let timeAccum = 0;
     
-    // V48: AURORA GLOW ANIMATION
+    // V50: LIQUID CORE ANIMATION
     function initVisualizer() {
         const ctx = els.canvas.getContext('2d'); resizeCanvas();
         function draw() {
             requestAnimationFrame(draw);
-            const w = els.canvas.width; const h = els.canvas.height;
+            const w = els.canvas.width; const h = els.canvas.height; const cx = w/2; const cy = h/2;
             ctx.clearRect(0, 0, w, h); 
 
             let vol = 0;
@@ -387,46 +387,38 @@
                 const len = analyser.frequencyBinCount; if(!dataArray) dataArray = new Uint8Array(len);
                 analyser.getByteFrequencyData(dataArray); let sum = 0; for(let i=0; i<len; i++) sum += dataArray[i]; 
                 vol = (sum / len); 
-                timeAccum += 0.003 + (vol * 0.0001); // Fließt etwas schneller bei Lautstärke
+                timeAccum += 0.005 + (vol * 0.0001); // Dreht sich etwas agiler bei Sprache
             } else {
-                timeAccum += 0.001; // Langsames Wabern im Hintergrund
+                timeAccum += 0.002; // Sanftes Atmen im Idle-Modus
             }
 
+            // Weichere Glättung
             smoothedVol = smoothedVol * 0.85 + vol * 0.15; 
             const gain = parseInt(els.pGain.value) / 100;
             const intensity = smoothedVol * gain; 
 
             const maxDim = Math.max(w, h);
-            const baseRadius = (parseInt(els.pSize.value) / 100) * maxDim * 0.8;
+            // V50: Viel kleinere Basis (15% statt 80%), damit es ein kompakter Kern bleibt
+            const baseRadius = (parseInt(els.pSize.value) / 100) * maxDim * 0.15; 
+            // Pulsieren nach außen, aber limitiert
+            const pulse = intensity * maxDim * 0.18; 
             
             const drawGlow = (x, y, r, color) => {
-                ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); 
+                ctx.beginPath(); ctx.arc(x, y, Math.max(0, r), 0, Math.PI * 2); 
                 ctx.fillStyle = color; ctx.fill();
             };
 
-            // Plasma 1
-            const r1 = baseRadius + intensity * maxDim * 0.02;
-            const x1 = w * 0.5 + Math.sin(timeAccum * 0.7) * w * 0.3;
-            const y1 = h * 0.5 + Math.cos(timeAccum * 0.5) * h * 0.3;
-            drawGlow(x1, y1, r1, els.blob1.value);
+            // V50: Enger Orbit um das Zentrum, dehnt sich bei Sprache leicht aus
+            const orbit = maxDim * 0.08 + (intensity * maxDim * 0.04);
 
-            // Plasma 2
-            const r2 = baseRadius + intensity * maxDim * 0.025;
-            const x2 = w * 0.5 + Math.cos(timeAccum * 0.8) * w * 0.35;
-            const y2 = h * 0.5 + Math.sin(timeAccum * 0.6) * h * 0.35;
-            drawGlow(x2, y2, r2, els.blob2.value);
-
-            // Plasma 3
-            const r3 = baseRadius * 0.8 + intensity * maxDim * 0.03;
-            const x3 = w * 0.5 + Math.sin(timeAccum * 0.9 + Math.PI) * w * 0.25;
-            const y3 = h * 0.5 + Math.cos(timeAccum * 1.1 + Math.PI) * h * 0.25;
-            drawGlow(x3, y3, r3, els.blob3.value);
-            
-            // Plasma 4 (Nutzt Hintergrundfarbe zur Harmonie)
-            const r4 = baseRadius * 1.1 + intensity * maxDim * 0.02;
-            const x4 = w * 0.5 + Math.cos(timeAccum * 0.6 + Math.PI/2) * w * 0.4;
-            const y4 = h * 0.5 + Math.sin(timeAccum * 0.7 + Math.PI/2) * h * 0.4;
-            drawGlow(x4, y4, r4, els.col2.value); 
+            // Core 1 (Oben links)
+            drawGlow(cx + Math.sin(timeAccum) * orbit, cy + Math.cos(timeAccum * 0.8) * orbit, baseRadius + pulse, els.blob1.value);
+            // Core 2 (Unten rechts)
+            drawGlow(cx + Math.sin(timeAccum * 1.2 + 2) * orbit, cy + Math.cos(timeAccum * 1.1 + 2) * orbit, (baseRadius * 0.9) + pulse, els.blob2.value);
+            // Core 3 (Oben rechts)
+            drawGlow(cx + Math.sin(timeAccum * 0.9 + 4) * orbit, cy + Math.cos(timeAccum * 1.3 + 4) * orbit, (baseRadius * 1.1) + pulse, els.blob3.value);
+            // Core 4 (Unten links, nutzt Theme-Background für perfekte Mischung)
+            drawGlow(cx + Math.sin(timeAccum * 1.1 + 5) * orbit, cy + Math.cos(timeAccum * 0.9 + 5) * orbit, baseRadius + (pulse * 1.2), els.col2.value); 
         }
         draw();
     }
