@@ -3,236 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Simple Transcription V42</title>
+    <title>Simple Transcription V43</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#a18cd1">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎙️</text></svg>">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23a18cd1%22/><text x=%2250%22 y=%2250%22 font-size=%2260%22 text-anchor=%22middle%22 dominant-baseline=%22central%22>🎙️</text></svg>">
-    <link rel="manifest" href='data:application/manifest+json,{"name":"Simple Transcription","short_name":"Transcribe","display":"standalone","background_color":"#a18cd1","theme_color":"#a18cd1"}'>
-
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root {
-            /* Light Theme Defaults */
             --c1: #a18cd1; --c2: #fbc2eb;
-            --glass-bg: rgba(255, 255, 255, 0.75);
-            --glass-border: rgba(255, 255, 255, 0.8);
-            --stage-bg: rgba(0, 0, 0, 0.03);
-            --text: #444;
-            --text-muted: #777;
-            --input-bg: rgba(255, 255, 255, 0.8);
+            --glass-bg: rgba(255, 255, 255, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --text: #333;
+            --text-muted: #666;
+            --input-bg: rgba(255, 255, 255, 0.7);
             --btn-bg: white;
             --accent: #c471ed;
-            --danger: #ff6b6b;
-            --warn: #f39c12;
-            --safe: #2ecc71;
+            --danger: #ff5252;
+            --warn: #ffb142;
+            --safe: #218c74;
+            --badge-bg: rgba(0, 0, 0, 0.06);
         }
 
         body[data-theme="dark"] {
-            --glass-bg: rgba(30, 30, 35, 0.75);
+            --glass-bg: rgba(20, 20, 25, 0.65);
             --glass-border: rgba(255, 255, 255, 0.1);
-            --stage-bg: rgba(0, 0, 0, 0.3);
-            --text: #eee;
+            --text: #f0f0f0;
             --text-muted: #aaa;
-            --input-bg: rgba(0, 0, 0, 0.3);
-            --btn-bg: #2a2a30;
+            --input-bg: rgba(0, 0, 0, 0.4);
+            --btn-bg: #2d2d35;
+            --badge-bg: rgba(255, 255, 255, 0.1);
         }
 
+        /* FIX: Mobiler Scroll-Balken & Overscroll */
+        html { overscroll-behavior-y: none; background: #000; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             color: var(--text); margin: 0;
             display: flex; flex-direction: column; align-items: center;
             min-height: 100vh; padding: 15px;
-            background-image: linear-gradient(135deg, var(--c1), var(--c2));
-            background-attachment: fixed;
             -webkit-tap-highlight-color: transparent;
-            transition: background-image 0.5s ease, color 0.3s ease;
         }
 
-        .app-container { width: 100%; max-width: 800px; position: relative; z-index: 2; padding-bottom: 80px; }
+        /* FIX: Hintergrund als separater Layer für sauberen Dark Mode Switch */
+        .bg-layer {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: -1;
+            background-image: linear-gradient(135deg, var(--c1), var(--c2));
+            transition: filter 0.5s ease, background-image 0.5s ease;
+        }
+        body[data-theme="dark"] .bg-layer { filter: brightness(0.35) saturate(1.2); }
 
-        /* HEADER */
-        header {
-            display: flex; flex-direction: column; gap: 15px;
-            padding: 15px 20px; background: var(--glass-bg); 
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 30px; margin-bottom: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.05); border: 1px solid var(--glass-border);
-            transition: background 0.3s ease, border 0.3s ease;
+        .app-container { width: 100%; max-width: 800px; position: relative; z-index: 2; padding-bottom: 80px; display: flex; flex-direction: column; gap: 20px;}
+
+        /* V43: UNIFIED MAIN PANEL */
+        .main-panel {
+            background: var(--glass-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            border-radius: 35px; border: 1px solid var(--glass-border);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1); overflow: hidden;
+            transition: all 0.3s ease; display: flex; flex-direction: column;
         }
 
-        .top-row { display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 10px; }
+        .header-section { padding: 20px 25px 0 25px; display: flex; flex-direction: column; gap: 15px; }
         
-        h1 { 
-            margin: 0; font-size: 1.3rem; font-weight: 900; 
-            background: linear-gradient(90deg, var(--c2), var(--c1));
-            -webkit-background-clip: text; background-clip: text; 
-            -webkit-text-fill-color: transparent; color: transparent;
-            letter-spacing: -0.5px; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.1));
-            display: flex; align-items: baseline; gap: 8px;
-        }
-        .version-tag { font-size: 0.55em; opacity: 0.6; font-weight: 600; letter-spacing: 0.5px; color: var(--text); -webkit-text-fill-color: initial; }
+        .top-row { display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 10px; }
+        h1 { margin: 0; font-size: 1.4rem; font-weight: 900; background: linear-gradient(90deg, var(--c2), var(--c1)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; display: flex; align-items: baseline; gap: 8px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));}
+        .version-tag { font-size: 0.55em; opacity: 0.7; font-weight: 700; color: var(--text); -webkit-text-fill-color: initial; }
 
-        .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-
-        .icon-btn { 
-            background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text);
-            border-radius: 50%; width: 40px; height: 40px;
-            font-size: 1.2rem; cursor: pointer; display:flex; align-items:center; justify-content:center;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .icon-btn:hover { transform: scale(1.1) rotate(10deg); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .header-actions { display: flex; gap: 8px; }
+        .icon-btn { background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text); border-radius: 50%; width: 38px; height: 38px; cursor: pointer; display:flex; align-items:center; justify-content:center; transition: 0.2s; padding: 8px;}
+        .icon-btn svg { width: 100%; height: 100%; }
+        .icon-btn:hover { transform: scale(1.1); background: var(--btn-bg); }
 
         .controls-row { display: flex; gap: 10px; align-items: center; width: 100%; flex-wrap: wrap; }
-
-        .api-wrapper { 
-            flex-grow: 1; display: flex; align-items: center; gap: 8px;
-            background: var(--input-bg); padding: 5px 10px; border-radius: 12px;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); min-width: 200px;
-        }
-        .api-wrapper input { border: none; background: transparent; color: var(--text); width: 100%; font-size: 0.9rem; }
+        .api-wrapper { flex: 1; display: flex; align-items: center; gap: 8px; background: var(--input-bg); padding: 5px 15px; border-radius: 20px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); min-width: 150px; border: 1px solid var(--glass-border);}
+        .api-wrapper input { border: none; background: transparent; color: var(--text); width: 100%; font-size: 0.85rem; }
         .api-wrapper input:focus { outline: none; }
+        .eye-btn { background: none; border: none; cursor: pointer; padding: 0 5px; color: var(--text-muted); display:flex; align-items:center;}
         
-        .info-btn { background: var(--accent); color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 0.8rem; font-weight: bold; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .eye-btn { background: none; border: none; cursor: pointer; font-size: 1.1rem; padding: 0 5px; color: var(--text-muted); }
-        .eye-btn:hover { color: var(--text); }
+        .auto-save-label { font-size: 0.75rem; font-weight: 600; display:flex; gap:6px; color:var(--text-muted); align-items:center; cursor: pointer; background: var(--input-bg); padding: 8px 15px; border-radius: 20px; border: 1px solid var(--glass-border);}
 
-        /* MODALS */
-        .modal { display: none; position: fixed; bottom: 0; left: 0; right: 0; top: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .modal.visible { display: flex; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-        .modal-box { background: var(--btn-bg); padding: 25px; border-radius: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.4); width: 90%; max-width: 400px; border: 1px solid var(--glass-border); max-height: 80vh; overflow-y: auto; color: var(--text); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .modal-title { font-weight: 800; font-size: 1.2rem; }
+        /* V43: SOFT CANVAS FADE */
+        .canvas-container { width: 100%; height: 180px; position: relative; margin-top: -10px; }
+        canvas { 
+            width: 100%; height: 100%; display: block; opacity: 0.85;
+            mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 80%);
+            -webkit-mask-image: -webkit-radial-gradient(center, ellipse cover, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 80%);
+        }
+
+        .stage-ui { padding: 0 25px 30px 25px; display: flex; flex-direction: column; align-items: center; gap: 15px; position: relative; z-index: 10; margin-top: -20px;}
+
+        .mic-row { display: flex; gap: 10px; width: 100%; justify-content: center; flex-wrap: wrap;}
+        .mic-select, .btn-upload { background: var(--input-bg); border: 1px solid var(--glass-border); border-radius: 20px; padding: 8px 15px; font-size: 0.8rem; font-weight: 500; color: var(--text); outline: none; text-align: center; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.02); -webkit-appearance: none; }
+        .btn-upload { display: flex; align-items: center; gap: 6px; }
+        .btn-upload svg { width: 16px; height: 16px; }
+
+        .stats-col { display: flex; flex-direction: column; align-items: center; gap: 0px; color: var(--text-muted); }
+        .timer { font-size: 2.5rem; font-weight: 900; letter-spacing: 1px; line-height: 1; transition: color 0.5s; font-variant-numeric: tabular-nums; }
+        .size-info { font-size: 0.8rem; font-weight: 500; opacity: 0.7; margin-top: 4px;}
+
+        .rec-controls { display: flex; justify-content: center; align-items: center; gap: 15px; width: 100%; height: 80px; }
         
-        /* PRESETS & DEV */
-        .preset-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 20px; }
-        .preset-btn { width: 100%; aspect-ratio: 1; border-radius: 50%; border: 2px solid var(--glass-border); box-shadow: 0 4px 10px rgba(0,0,0,0.15); cursor: pointer; transition: transform 0.2s; }
-        .preset-btn:hover { transform: scale(1.15); }
-        .dev-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 0.9rem; font-weight: 600; color:var(--text-muted);}
-        .dev-row input[type="color"] { border: 2px solid var(--glass-border); width: 50px; height: 35px; cursor: pointer; background: none; border-radius: 8px; padding: 0; }
-        .dev-row input[type="range"] { accent-color: var(--accent); }
-
-        /* STAGE */
-        .stage {
-            position: relative; background: var(--stage-bg);
-            border-radius: 35px; box-shadow: 0 20px 50px rgba(0,0,0, 0.1);
-            border: 1px solid var(--glass-border); margin-bottom: 20px; overflow: hidden; 
-        }
-        canvas { width: 100%; height: 260px; display: block; opacity: 0.9; }
-
-        .stage-ui {
-            padding: 20px; background: var(--glass-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            border-top: 1px solid var(--glass-border); display: flex; flex-direction: column; align-items: center; gap: 15px;
-            position: relative; z-index: 10;
-        }
-
-        .mic-select { 
-            background: var(--input-bg); border: 1px solid var(--glass-border); 
-            border-radius: 20px; padding: 8px 15px; font-size: 0.85rem; color: var(--text); 
-            max-width: 100%; outline: none; text-align: center; cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.02); transition: all 0.2s ease;
-            -webkit-appearance: none; -moz-appearance: none; appearance: none;
-        }
-
-        .stats-col { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-muted); }
-        .timer { font-size: 2.2rem; font-weight: bold; letter-spacing: 2px; line-height: 1; transition: color 1s; }
-        .size-info { font-size: 0.85rem; font-weight: normal; opacity: 0.7; }
-
-        .rec-controls { 
-            display: flex; justify-content: center; align-items: center; gap: 20px;
-            width: 100%; height: 80px;
-        }
-        
-        .btn-circle {
-            border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1); background: var(--btn-bg); color: var(--text); padding: 0;
-        }
+        .btn-circle { border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 8px 20px rgba(0,0,0,0.1); background: var(--btn-bg); color: var(--text); padding: 0; }
         .btn-circle:active { transform: scale(0.9); }
         .btn-circle:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-circle svg { width: 50%; height: 50%; }
 
-        .icon-lg { font-size: 2.5rem; line-height: 1; margin-top:-2px;}
-        .icon-md { font-size: 1.5rem; line-height: 1; }
+        #btnMain { width: 80px; height: 80px; border-radius: 50%; z-index: 5; background: linear-gradient(135deg, var(--c2), var(--c1)); box-shadow: 0 10px 25px rgba(0,0,0, 0.2); color: white; flex-shrink: 0; }
+        #btnMain.state-recording { background: var(--btn-bg); border-radius: 25px; transform: scale(0.9); }
+        #btnMain.state-recording svg { fill: var(--danger); }
 
-        #btnMain {
-            width: 80px; height: 80px; border-radius: 50%; z-index: 5;
-            background: linear-gradient(135deg, var(--c2), var(--c1)); 
-            box-shadow: 0 10px 25px rgba(0,0,0, 0.15); color: white; flex-shrink: 0;
-        }
-        #btnMain.state-recording { 
-            background: var(--btn-bg); color: var(--danger); 
-            border-radius: 25px; transform: scale(0.9);
-        }
-
-        /* Neben-Buttons: Abbrechen und Pause */
-        .side-btn {
-            width: 50px; height: 50px; border-radius: 50%; flex-shrink: 0;
-            opacity: 0; pointer-events: none; transform: scale(0.5); width: 0; margin: 0;
-        }
+        .side-btn { width: 50px; height: 50px; border-radius: 50%; flex-shrink: 0; opacity: 0; pointer-events: none; transform: scale(0.5); width: 0; margin: 0; }
         .side-btn.visible { opacity: 1; pointer-events: all; transform: scale(1); width: 50px; margin: 0 5px; }
-        #btnCancel { color: var(--danger); }
-        #btnPause.state-paused { background: var(--warn); color: white; }
+        #btnCancel svg { stroke: var(--danger); }
+        #btnPause.state-paused { background: var(--warn); }
+        #btnPause.state-paused svg { fill: white; stroke: white; }
 
-        .btn-upload { background: var(--btn-bg); border: 1px solid var(--glass-border); color: var(--text-muted); padding: 10px 20px; border-radius: 20px; font-size: 0.85rem; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: 0.2s; }
-        
-        /* FEED */
-        #feed { display: flex; flex-direction: column; gap: 20px; }
-        .entry { background: var(--glass-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-radius: 24px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); animation: slideIn 0.4s ease-out; border: 1px solid var(--glass-border); }
+        /* FEED & TEXT PILLS */
+        #feed { display: flex; flex-direction: column; gap: 20px; width: 100%; }
+        .entry { background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 30px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); animation: slideIn 0.4s ease-out; border: 1px solid var(--glass-border); }
         @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: 0; } }
 
-        .entry-meta { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-        .text-stats { font-size: 0.75rem; color: var(--text); opacity: 0.8; font-weight: 600; text-transform: none; letter-spacing: 0; display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end;}
+        .entry-meta { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 15px; }
+        .date-badge { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; display:flex; align-items:center; gap:5px;}
         
-        textarea {
-            width: 100%; background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text);
-            padding: 15px; border-radius: 16px; font-family: inherit; resize: none; min-height: 90px;
-            box-sizing: border-box; display: block; line-height: 1.6; font-size: 16px; transition: 0.2s;
-        }
-        textarea:focus { outline: none; border-color: var(--accent); }
+        .stats-badges { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; flex: 1; min-width: 200px;}
+        .stat-pill { background: var(--badge-bg); padding: 5px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; color: var(--text); border: 1px solid var(--glass-border); display:flex; align-items:center; gap:4px; white-space: nowrap;}
+        
+        textarea { width: 100%; background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text); padding: 18px; border-radius: 20px; font-family: inherit; resize: none; min-height: 100px; box-sizing: border-box; display: block; line-height: 1.6; font-size: 15px; transition: 0.2s; box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);}
+        textarea:focus { outline: none; border-color: var(--accent); background: var(--btn-bg); }
 
-        .audio-wrapper { margin-top: 15px; width: 100%; }
-        audio { width: 100%; height: 40px; border-radius: 10px; }
+        audio { width: 100%; height: 40px; border-radius: 10px; margin-top: 15px; }
 
         .actions { margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
-        .btn-action { flex: 1; padding: 12px; border: none; border-radius: 14px; background: var(--btn-bg); color: var(--text); font-size: 0.9rem; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.03); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--glass-border); min-width: 80px;}
-        .btn-action:hover { background: var(--input-bg); }
+        .btn-action { flex: 1; padding: 12px; border: none; border-radius: 16px; background: var(--btn-bg); color: var(--text); font-size: 0.85rem; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.03); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--glass-border); min-width: 80px; transition: 0.2s;}
+        .btn-action:hover { background: var(--input-bg); transform: translateY(-2px); }
+        .btn-action svg { width: 16px; height: 16px; }
         .btn-del { flex: 0; color: var(--danger); }
+        .btn-del svg { stroke: var(--danger); }
+
+        /* MODALS (Verkürzt) */
+        .modal { display: none; position: fixed; bottom: 0; left: 0; right: 0; top: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal.visible { display: flex; animation: fadeIn 0.3s; }
+        .modal-box { background: var(--btn-bg); padding: 25px; border-radius: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.4); width: 90%; max-width: 400px; border: 1px solid var(--glass-border); max-height: 80vh; overflow-y: auto; color: var(--text); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-weight: 800; font-size: 1.2rem; }
+        .preset-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 20px; }
+        .preset-btn { width: 100%; aspect-ratio: 1; border-radius: 50%; border: 2px solid var(--glass-border); cursor: pointer; transition: 0.2s; }
+        .preset-btn:hover { transform: scale(1.15); }
+        .dev-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 0.9rem; font-weight: 600; color:var(--text-muted);}
+        .dev-row input[type="color"] { border: 2px solid var(--glass-border); width: 50px; height: 35px; border-radius: 8px; padding: 0; }
+        .dev-row input[type="range"] { accent-color: var(--accent); }
 
         #toast { position: fixed; top: 20px; left: 50%; transform: translate(-50%, -150%); background: var(--btn-bg); color: var(--text); padding: 12px 30px; border-radius: 50px; font-weight: 700; transition: 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border: 2px solid var(--accent); }
         #toast.visible { transform: translate(-50%, 0); }
-        #toast.error { border-color: var(--danger); color: var(--danger); }
-        .info-content p { margin-bottom: 10px; line-height: 1.5; color: var(--text-muted); font-size:0.95rem;}
-        .info-content a { color: var(--accent); text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
 
+<div class="bg-layer"></div>
+
 <script> const HARDCODED_KEY = ""; </script>
-
 <div id="toast">Nachricht</div>
-
-<div id="infoModal" class="modal">
-    <div class="modal-box">
-        <div class="modal-header">
-            <span class="modal-title">ℹ️ Über API Keys</span>
-            <button class="icon-btn" onclick="toggleInfo()">✕</button>
-        </div>
-        <div class="info-content">
-            <p>Diese App nutzt die <strong>OpenAI Whisper API</strong> für die Transkription.</p>
-            <p>Du brauchst einen API Key von OpenAI. Dieser wird nur lokal in deinem Browser gespeichert.</p>
-            <p><strong>Kosten:</strong> Ca. 0,6 Cent pro Minute (sehr günstig).</p>
-            <p><a href="https://platform.openai.com/api-keys" target="_blank">👉 Hier Key erstellen (OpenAI)</a></p>
-        </div>
-    </div>
-</div>
 
 <div id="devPanel" class="modal">
     <div class="modal-box">
-        <div class="modal-header"><span class="modal-title">🎨 Design Studio</span><button class="icon-btn" onclick="toggleDev()">✕</button></div>
+        <div class="modal-header"><span>🎨 Design Studio</span><button class="icon-btn" onclick="toggleDev()" style="width:30px;height:30px;padding:5px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg></button></div>
         <div class="dev-section">
-            <div style="font-size:0.85rem; font-weight:bold; color:var(--text-muted); margin-bottom:10px;">PRESETS</div>
             <div class="preset-grid">
                 <div class="preset-btn" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb)" onclick="applyPreset('#a18cd1','#fbc2eb')"></div>
                 <div class="preset-btn" style="background: linear-gradient(135deg, #84fab0, #8fd3f4)" onclick="applyPreset('#84fab0','#8fd3f4')"></div>
@@ -240,7 +177,6 @@
                 <div class="preset-btn" style="background: linear-gradient(135deg, #e0c3fc, #8ec5fc)" onclick="applyPreset('#e0c3fc','#8ec5fc')"></div>
                 <div class="preset-btn" style="background: linear-gradient(135deg, #ff9a9e, #fecfef)" onclick="applyPreset('#ff9a9e','#fecfef')"></div>
                 <div class="preset-btn" style="background: linear-gradient(135deg, #30cfd0, #330867)" onclick="applyPreset('#30cfd0','#330867')"></div>
-                
                 <div class="preset-btn" style="background: linear-gradient(135deg, #4facfe, #00f2fe)" onclick="applyPreset('#4facfe','#00f2fe')"></div>
                 <div class="preset-btn" style="background: linear-gradient(135deg, #43e97b, #38f9d7)" onclick="applyPreset('#43e97b','#38f9d7')"></div>
                 <div class="preset-btn" style="background: linear-gradient(135deg, #fa709a, #fee140)" onclick="applyPreset('#fa709a','#fee140')"></div>
@@ -248,53 +184,56 @@
                 <div class="preset-btn" style="background: linear-gradient(135deg, #13547a, #80d0c7)" onclick="applyPreset('#13547a','#80d0c7')"></div>
                 <div class="preset-btn" style="background: linear-gradient(135deg, #ff0844, #ffb199)" onclick="applyPreset('#ff0844','#ffb199')"></div>
             </div>
-        </div>
-        <div class="dev-section">
             <div class="dev-row"><span>Hintergrund 1</span> <input type="color" id="col1"></div>
             <div class="dev-row"><span>Hintergrund 2</span> <input type="color" id="col2"></div>
-        </div>
-        <hr style="border:0; border-top:1px solid var(--glass-border); margin:15px 0;">
-        <div class="dev-section">
             <div class="dev-row"><span>Blob 1</span> <input type="color" id="blob1"></div>
             <div class="dev-row"><span>Blob 2</span> <input type="color" id="blob2"></div>
             <div class="dev-row"><span>Blob 3</span> <input type="color" id="blob3"></div>
             <div class="dev-row"><span>Größe</span> <input type="range" id="pSize" min="20" max="150"></div>
             <div class="dev-row"><span>Reaktion</span> <input type="range" id="pGain" min="0" max="200"></div>
-            <div class="dev-row"><span>Weichzeichner (Blur)</span> <input type="range" id="pBlur" min="0" max="60"></div>
+            <div class="dev-row"><span>Weichzeichner</span> <input type="range" id="pBlur" min="0" max="60"></div>
         </div>
     </div>
 </div>
 
 <div class="app-container">
-    <header>
-        <div class="top-row">
-            <h1>Simple Transcription <span class="version-tag">V42</span></h1>
-            <div class="header-actions">
-                <button class="icon-btn" onclick="toggleTheme()" title="Dark Mode umschalten" id="themeBtn">🌙</button>
-                <button class="icon-btn" onclick="dlZip()" title="ZIP Download">📦</button>
-                <button class="icon-btn" onclick="clearAll()" title="Alles löschen">🗑️</button>
-                <button class="icon-btn" onclick="toggleDev()" title="Design anpassen">🎨</button>
+    
+    <div class="main-panel">
+        <div class="header-section">
+            <div class="top-row">
+                <h1>Simple Transcription <span class="version-tag">V43</span></h1>
+                <div class="header-actions">
+                    <button class="icon-btn" onclick="toggleTheme()" title="Dark Mode"><svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path></svg></button>
+                    <button class="icon-btn" onclick="dlZip()" title="ZIP Download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></button>
+                    <button class="icon-btn" onclick="clearAll()" title="Alles löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg></button>
+                    <button class="icon-btn" onclick="toggleDev()" title="Design"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 000 20 14.5 14.5 0 000-20z"></path><path d="M2 12h20"></path></svg></button>
+                </div>
+            </div>
+            
+            <div class="controls-row">
+                <div class="api-wrapper">
+                    <svg style="width:16px;height:16px;color:var(--text-muted);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0110 0v4"></path></svg>
+                    <input type="password" id="apiKey" placeholder="OpenAI Key (Lokal gespeichert)">
+                    <button class="eye-btn" onclick="toggleApiKey()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
+                </div>
+                <label class="auto-save-label">
+                    <input type="checkbox" id="autoDl" style="accent-color:var(--accent); width:16px; height:16px; margin:0;">
+                    Auto-Save (Audio & Text)
+                </label>
             </div>
         </div>
-        
-        <div class="controls-row">
-            <div class="api-wrapper">
-                <input type="password" id="apiKey" placeholder="🔑 API Key (Optional)">
-                <button class="eye-btn" onclick="toggleApiKey()" title="Key anzeigen/verstecken">👁️</button>
-                <button class="info-btn" onclick="toggleInfo()">?</button>
-            </div>
-            <label style="font-size:0.8rem; font-weight:bold; white-space:nowrap; display:flex; gap:5px; color:var(--text-muted); align-items:center;">
-                <input type="checkbox" id="autoDl" style="accent-color:var(--accent); width:16px; height:16px;"> Auto-Save
-            </label>
-        </div>
-    </header>
 
-    <div class="stage">
-        <canvas id="cloudCanvas"></canvas>
+        <div class="canvas-container">
+            <canvas id="cloudCanvas"></canvas>
+        </div>
+
         <div class="stage-ui">
-            <select id="micSelect" class="mic-select">
-                <option value="default">🎙️ Mikrofon (Laden...)</option>
-            </select>
+            <div class="mic-row">
+                <select id="micSelect" class="mic-select"><option value="default">🎙️ Mikrofon (Laden...)</option></select>
+                <button id="btnUpload" class="btn-upload" onclick="document.getElementById('fileUpload').click()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"></path></svg> Upload
+                </button>
+            </div>
 
             <div class="stats-col">
                 <div class="timer" id="timer" style="color:var(--safe);">00:00</div>
@@ -302,12 +241,18 @@
             </div>
             
             <div class="rec-controls">
-                <button id="btnCancel" class="btn-circle side-btn" title="Abbrechen & Löschen" onclick="cancelRec()"><span class="icon-md">🗑️</span></button>
-                <button id="btnMain" class="btn-circle" title="Aufnahme / Stop"><span class="icon-lg">●</span></button>
-                <button id="btnPause" class="btn-circle side-btn" title="Pause / Weiter"><span class="icon-md">⏸</span></button>
+                <button id="btnCancel" class="btn-circle side-btn" title="Verwerfen" onclick="cancelRec()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+                </button>
+                
+                <button id="btnMain" class="btn-circle" title="Aufnahme / Stop">
+                    <svg id="iconMain" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="6"></circle></svg>
+                </button>
+                
+                <button id="btnPause" class="btn-circle side-btn" title="Pause / Weiter">
+                    <svg id="iconPause" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                </button>
             </div>
-
-            <button id="btnUpload" class="btn-upload" onclick="document.getElementById('fileUpload').click()">📂 Audio hochladen</button>
         </div>
     </div>
 
@@ -319,52 +264,46 @@
 <script>
     const els = {
         btnMain: document.getElementById('btnMain'), btnPause: document.getElementById('btnPause'), btnCancel: document.getElementById('btnCancel'),
+        iconMain: document.getElementById('iconMain'), iconPause: document.getElementById('iconPause'), themeIcon: document.getElementById('themeIcon'),
         timer: document.getElementById('timer'), size: document.getElementById('sizeDisplay'),
         canvas: document.getElementById('cloudCanvas'), feed: document.getElementById('feed'),
         apiKey: document.getElementById('apiKey'), fileUpload: document.getElementById('fileUpload'),
         toast: document.getElementById('toast'), autoDl: document.getElementById('autoDl'), themeBtn: document.getElementById('themeBtn'),
-        devPanel: document.getElementById('devPanel'), infoModal: document.getElementById('infoModal'), micSelect: document.getElementById('micSelect'),
+        devPanel: document.getElementById('devPanel'), micSelect: document.getElementById('micSelect'),
         col1: document.getElementById('col1'), col2: document.getElementById('col2'),
         blob1: document.getElementById('blob1'), blob2: document.getElementById('blob2'), blob3: document.getElementById('blob3'),
         pSize: document.getElementById('pSize'), pGain: document.getElementById('pGain'), pBlur: document.getElementById('pBlur')
     };
 
     function toggleDev() { els.devPanel.classList.toggle('visible'); }
-    function toggleInfo() { els.infoModal.classList.toggle('visible'); }
     function toggleApiKey() { els.apiKey.type = els.apiKey.type === 'password' ? 'text' : 'password'; }
 
     // WAKE LOCK API
     let wakeLock = null;
-    async function requestWakeLock() {
-        try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } 
-        catch (err) { console.log("Wake Lock verweigert:", err); }
-    }
-    function releaseWakeLock() {
-        if (wakeLock !== null) { wakeLock.release().then(() => wakeLock = null); }
-    }
+    async function requestWakeLock() { try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {} }
+    function releaseWakeLock() { if (wakeLock !== null) { wakeLock.release().then(() => wakeLock = null); } }
 
-    // DARK MODE
+    // DARK MODE mit SVG Update
     function toggleTheme() {
         const isDark = document.body.getAttribute('data-theme') === 'dark';
-        if(isDark) { document.body.removeAttribute('data-theme'); localStorage.setItem('theme_v42', 'light'); els.themeBtn.innerText = '🌙'; }
-        else { document.body.setAttribute('data-theme', 'dark'); localStorage.setItem('theme_v42', 'dark'); els.themeBtn.innerText = '☀️'; }
+        if(isDark) { 
+            document.body.removeAttribute('data-theme'); localStorage.setItem('theme_v43', 'light'); 
+            els.themeIcon.innerHTML = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>';
+        } else { 
+            document.body.setAttribute('data-theme', 'dark'); localStorage.setItem('theme_v43', 'dark'); 
+            els.themeIcon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+        }
     }
-    if(localStorage.getItem('theme_v42') === 'dark') { document.body.setAttribute('data-theme', 'dark'); els.themeBtn.innerText = '☀️'; }
+    if(localStorage.getItem('theme_v43') === 'dark') { toggleTheme(); toggleTheme(); } // Init
 
-    // KOSTEN BERECHNUNG (In Cents)
+    // KOSTEN
     window.fixDuration = function(audio, id) {
         const updateCost = (sec) => {
             const el = document.getElementById(`cost-${id}`);
-            if(el && sec > 0) {
-                const costCents = (sec / 60) * 0.6; // $0.006 = 0.6 Cent
-                el.innerText = `| 🪙 ~${costCents.toFixed(1)} ct`;
-            }
+            if(el && sec > 0) { el.innerHTML = `💵 ~${((sec / 60) * 0.6).toFixed(1)} ct`; }
         };
         if(audio.duration === Infinity || isNaN(audio.duration)) {
-            audio.currentTime = 1e101;
-            audio.ontimeupdate = function() {
-                this.ontimeupdate = null; this.currentTime = 0; updateCost(this.duration);
-            }
+            audio.currentTime = 1e101; audio.ontimeupdate = function() { this.ontimeupdate = null; this.currentTime = 0; updateCost(this.duration); }
         } else { updateCost(audio.duration); }
     }
 
@@ -382,7 +321,6 @@
     function updateDev() {
         const c1 = els.col1.value; const c2 = els.col2.value;
         document.documentElement.style.setProperty('--c1', c1); document.documentElement.style.setProperty('--c2', c2);
-        document.body.style.backgroundImage = `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`;
         els.canvas.style.filter = `blur(${els.pBlur.value}px)`;
         localStorage.setItem('d_c1', c1); localStorage.setItem('d_c2', c2);
         localStorage.setItem('d_b1', els.blob1.value); localStorage.setItem('d_b2', els.blob2.value); localStorage.setItem('d_b3', els.blob3.value);
@@ -393,7 +331,7 @@
     let globalStream, mediaRecorder, chunks = [], audioCtx, analyser, dataArray;
     let isRecording = false, isPaused = false, isCancelled = false;
     let startTime = 0, pauseDelta = 0, pauseStart = 0, timerInt;
-    let pendingClipboardText = null; let micsLoaded = false;
+    let micsLoaded = false;
     
     if(HARDCODED_KEY.length > 5) { els.apiKey.value = HARDCODED_KEY; document.querySelector('.api-wrapper').style.display='none'; } 
     else { els.apiKey.value = localStorage.getItem("key_v38") || ""; els.apiKey.addEventListener('change', () => localStorage.setItem("key_v38", els.apiKey.value)); }
@@ -401,7 +339,6 @@
     els.autoDl.addEventListener('change', () => localStorage.setItem("autodl_v38", els.autoDl.checked));
 
     loadHistory(); loadDev();
-
     function resizeCanvas() { els.canvas.width = els.canvas.offsetWidth * 1.5; els.canvas.height = els.canvas.offsetHeight * 1.5; }
     window.addEventListener('resize', resizeCanvas);
 
@@ -411,14 +348,12 @@
         function draw() {
             requestAnimationFrame(draw);
             const w = els.canvas.width; const h = els.canvas.height; const cx = w/2; const cy = h/2;
-            ctx.clearRect(0, 0, w, h); // Clear anstatt fill, damit der Background-Fade wirkt
+            ctx.clearRect(0, 0, w, h); 
 
             let vol = 0;
             if(analyser && isRecording && !isPaused) {
                 const len = analyser.frequencyBinCount; if(!dataArray) dataArray = new Uint8Array(len);
-                analyser.getByteFrequencyData(dataArray);
-                let sum = 0; for(let i=0; i<len; i++) sum += dataArray[i];
-                vol = (sum / len); 
+                analyser.getByteFrequencyData(dataArray); let sum = 0; for(let i=0; i<len; i++) sum += dataArray[i]; vol = (sum / len); 
             } else { vol = 5 + Math.sin(Date.now()/1500) * 5; }
 
             smoothedVol = smoothedVol * 0.9 + vol * 0.1;
@@ -437,43 +372,32 @@
     async function loadMicrophones() {
         if(micsLoaded) return;
         try {
-            const devices = await navigator.mediaDevices.enumerateDevices();
-            const audioDevs = devices.filter(d => d.kind === 'audioinput');
+            const devices = await navigator.mediaDevices.enumerateDevices(); const audioDevs = devices.filter(d => d.kind === 'audioinput');
             if(audioDevs.length > 0) {
                 els.micSelect.innerHTML = '';
                 audioDevs.forEach((d, i) => {
                     let cleanName = d.label.replace(/\s*\([a-fA-F0-9]{4}:[a-fA-F0-9]{4}\)\s*/g, '').replace(/Default - /i, '').trim();
-                    const opt = document.createElement('option');
-                    opt.value = d.deviceId; opt.text = `🎙️ ` + (cleanName || `Mikrofon ${i + 1}`);
+                    const opt = document.createElement('option'); opt.value = d.deviceId; opt.text = `🎙️ ` + (cleanName || `Mikrofon ${i + 1}`);
                     els.micSelect.appendChild(opt);
-                });
-                micsLoaded = true;
+                }); micsLoaded = true;
             }
-        } catch(e) { console.log("Mic error", e); }
+        } catch(e) {}
     }
 
     els.btnMain.onclick = () => { if(!isRecording) startRec(); else stopRec(); };
     els.btnPause.onclick = () => { if(isRecording && !isPaused) pauseRec(); else if(isPaused) resumeRec(); };
-    
-    window.cancelRec = () => {
-        if(confirm("Aufnahme wirklich abbrechen und verwerfen?")) {
-            isCancelled = true;
-            if(mediaRecorder) mediaRecorder.stop();
-        }
-    };
+    window.cancelRec = () => { if(confirm("Aufnahme verwerfen?")) { isCancelled = true; if(mediaRecorder) mediaRecorder.stop(); } };
 
     function setMainButtonState(state) {
         if(state === 'idle') {
-            els.btnMain.innerHTML = '<span class="icon-lg">●</span>'; els.btnMain.className = 'btn-circle'; 
-            els.btnPause.classList.remove('visible'); els.btnCancel.classList.remove('visible');
-            els.timer.style.color = "var(--safe)";
+            els.iconMain.innerHTML = '<circle cx="12" cy="12" r="6"></circle>'; els.btnMain.className = 'btn-circle'; 
+            els.btnPause.classList.remove('visible'); els.btnCancel.classList.remove('visible'); els.timer.style.color = "var(--safe)";
         } else if (state === 'recording') {
-            els.btnMain.innerHTML = '<span class="icon-md">■</span>'; els.btnMain.className = 'btn-circle state-recording';
-            els.btnPause.innerHTML = '<span class="icon-md">⏸</span>'; els.btnPause.className = 'btn-circle side-btn visible';
-            els.btnCancel.className = 'btn-circle side-btn visible';
-            els.timer.style.color = "var(--safe)";
+            els.iconMain.innerHTML = '<rect x="6" y="6" width="12" height="12" rx="2" ry="2"></rect>'; els.btnMain.className = 'btn-circle state-recording';
+            els.iconPause.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>'; els.btnPause.className = 'btn-circle side-btn visible';
+            els.btnCancel.className = 'btn-circle side-btn visible'; els.timer.style.color = "var(--safe)";
         } else if (state === 'paused') {
-            els.btnPause.innerHTML = '<span class="icon-md" style="margin-left:3px;">▶</span>'; els.btnPause.className = 'btn-circle side-btn visible state-paused';
+            els.iconPause.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"></polygon>'; els.btnPause.className = 'btn-circle side-btn visible state-paused';
             els.timer.style.color = "var(--warn)"; 
         }
     }
@@ -481,33 +405,23 @@
     async function startRec() {
         els.btnMain.disabled = true;
         try {
-            const constraints = { audio: els.micSelect.value !== 'default' ? { deviceId: { exact: els.micSelect.value } } : true };
-            const stream = await navigator.mediaDevices.getUserMedia(constraints);
-            loadMicrophones(); globalStream = stream; requestWakeLock(); // Wake Lock ON
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            analyser = audioCtx.createAnalyser(); analyser.fftSize = 64; 
-            const src = audioCtx.createMediaStreamSource(stream); src.connect(analyser);
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: els.micSelect.value !== 'default' ? { deviceId: { exact: els.micSelect.value } } : true });
+            loadMicrophones(); globalStream = stream; requestWakeLock();
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)(); analyser = audioCtx.createAnalyser(); analyser.fftSize = 64; 
+            audioCtx.createMediaStreamSource(stream).connect(analyser);
 
-            chunks = []; isCancelled = false;
-            let options = { bitsPerSecond: 32000 };
+            chunks = []; isCancelled = false; let options = { bitsPerSecond: 32000 };
             if(MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) options.mimeType='audio/webm;codecs=opus';
             
             mediaRecorder = new MediaRecorder(stream, options);
             mediaRecorder.ondataavailable = e => { if(e.data.size > 0) chunks.push(e.data); };
             mediaRecorder.onstop = () => {
-                if(isCancelled) { resetUI(); showToast("Aufnahme verworfen."); return; }
-                const blob = new Blob(chunks, { type: chunks[0].type });
-                processAudio(blob, "Memo");
-                resetUI();
+                if(isCancelled) { resetUI(); showToast("Verworfen."); return; }
+                processAudio(new Blob(chunks, { type: chunks[0].type }), "Memo"); resetUI();
             };
-
-            mediaRecorder.start();
-            isRecording = true; isPaused = false; startTime = Date.now(); pauseDelta=0;
-            timerInt = setInterval(updateTimer, 1000);
-            setMainButtonState('recording');
-
-        } catch(e) { console.error(e); showToast("Mikrofon Fehler!", true); resetUI(); } 
-        finally { els.btnMain.disabled = false; }
+            mediaRecorder.start(); isRecording = true; isPaused = false; startTime = Date.now(); pauseDelta=0;
+            timerInt = setInterval(updateTimer, 1000); setMainButtonState('recording');
+        } catch(e) { showToast("Mikrofon Fehler!", true); resetUI(); } finally { els.btnMain.disabled = false; }
     }
 
     function pauseRec() { if(mediaRecorder && mediaRecorder.state === "recording") { mediaRecorder.pause(); isPaused=true; pauseStart=Date.now(); setMainButtonState('paused'); } }
@@ -515,146 +429,98 @@
     function stopRec() { if(mediaRecorder) { mediaRecorder.stop(); els.btnMain.disabled=true; els.btnPause.classList.remove('visible'); els.btnCancel.classList.remove('visible'); } }
 
     function updateTimer() {
-        if(isPaused) return;
-        const totalSec = Math.floor((Date.now() - startTime - pauseDelta)/1000);
-        const m = Math.floor(totalSec/60).toString().padStart(2,'0');
-        const s = (totalSec%60).toString().padStart(2,'0');
-        els.timer.innerText = `${m}:${s}`;
-        
-        const estMB = (totalSec * 4000) / (1024 * 1024);
-        els.size.innerText = `(~${estMB.toFixed(2)} MB)`;
-
-        if(totalSec < 300) els.timer.style.color = "var(--safe)";
-        else if(totalSec < 600) els.timer.style.color = "var(--warn)";
-        else if(totalSec < 900) els.timer.style.color = "var(--danger)";
-        else els.timer.style.color = "#a30000";
+        if(isPaused) return; const totalSec = Math.floor((Date.now() - startTime - pauseDelta)/1000);
+        els.timer.innerText = `${Math.floor(totalSec/60).toString().padStart(2,'0')}:${(totalSec%60).toString().padStart(2,'0')}`;
+        els.size.innerText = `(~${((totalSec * 4000) / (1024 * 1024)).toFixed(2)} MB)`;
+        els.timer.style.color = totalSec < 300 ? "var(--safe)" : totalSec < 600 ? "var(--warn)" : "var(--danger)";
     }
 
-    function resetUI() { isRecording=false; isPaused=false; clearInterval(timerInt); setMainButtonState('idle'); els.timer.innerText="00:00"; els.size.innerText="(~0.0 MB)"; els.btnMain.disabled=false; releaseWakeLock(); if(globalStream) globalStream.getTracks().forEach(track=>track.stop()); }
+    function resetUI() { isRecording=false; isPaused=false; clearInterval(timerInt); setMainButtonState('idle'); els.timer.innerText="00:00"; els.size.innerText="(~0.0 MB)"; els.btnMain.disabled=false; releaseWakeLock(); if(globalStream) globalStream.getTracks().forEach(t=>t.stop()); }
 
     els.fileUpload.addEventListener('change', (e) => {
         const file = e.target.files[0]; if(!file) return;
-        const allowed = ['flac','m4a','mp3','mp4','mpeg','mpga','oga','ogg','wav','webm','opus','amr'];
-        const ext = file.name.split('.').pop().toLowerCase();
-        if(!allowed.includes(ext)) { if(!confirm(`Format .${ext} ist evtl. nicht unterstützt. Trotzdem versuchen?`)) { els.fileUpload.value=''; return; } }
+        if(!['flac','m4a','mp3','mp4','mpeg','mpga','oga','ogg','wav','webm','opus','amr'].includes(file.name.split('.').pop().toLowerCase())) { if(!confirm(`Format evtl. nicht unterstützt. Versuchen?`)) { els.fileUpload.value=''; return; } }
         processAudio(file, file.name); els.fileUpload.value='';
     });
 
     async function processAudio(blob, name, retryId) {
-        const id = retryId || Date.now();
-        const ts = new Date().toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'medium' });
-        
-        if(els.autoDl.checked && !retryId) {
-            let ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
-            if(name!=="Memo" && name.includes('.')) ext=name.split('.').pop();
-            download(blob, `rec_${id}.${ext}`);
-        }
-
+        const id = retryId || Date.now(); const ts = new Date().toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' });
+        if(els.autoDl.checked && !retryId) { download(blob, `rec_${id}.${blob.type.includes('mp4') ? 'mp4' : 'webm'}`); }
         if(!retryId) createEntry(id, ts, "", blob);
         const textArea = document.getElementById(`txt-${id}`);
         
-        if(!els.apiKey.value) {
-            textArea.value = "(Wartet auf API Key... Aufnahme gespeichert.)"; document.getElementById(`retry-${id}`).style.display = 'flex';
-            showToast("Gespeichert. Key eingeben & Retry.", true); saveToHistory(id, "", ts); return;
-        }
-
+        if(!els.apiKey.value) { textArea.value = "(Wartet auf API Key...)"; document.getElementById(`retry-${id}`).style.display = 'flex'; showToast("Gespeichert. Key eingeben.", true); saveToHistory(id, "", ts); return; }
         textArea.value = "Transkribiere..."; document.getElementById(`retry-${id}`).style.display = 'none';
         
         const fd = new FormData();
-        let ext = 'webm';
-        if(blob.type.includes('mp4')) ext = 'mp4'; else if(blob.type.includes('wav')) ext = 'wav'; else if(blob.type.includes('ogg') || blob.type.includes('opus')) ext = 'ogg';
+        let ext = blob.type.includes('mp4') ? 'mp4' : blob.type.includes('wav') ? 'wav' : blob.type.includes('ogg') || blob.type.includes('opus') ? 'ogg' : 'webm';
         if(name && name.includes('.') && name !== "Retry") ext = name.split('.').pop();
-        
-        fd.append("file", blob, `audio.${ext}`);
-        fd.append("model", "whisper-1");
+        fd.append("file", blob, `audio.${ext}`); fd.append("model", "whisper-1");
 
         try {
             const res = await fetch("https://api.openai.com/v1/audio/transcriptions", { method: "POST", headers: { "Authorization": `Bearer ${els.apiKey.value}` }, body: fd });
             const data = await res.json();
             if(res.ok) {
-                textArea.value = data.text; saveToHistory(id, data.text, ts); updateTextStats(id); smartCopy(data.text);
+                textArea.value = data.text; saveToHistory(id, data.text, ts); updateTextStats(id);
+                if(document.hasFocus()) navigator.clipboard.writeText(data.text).then(()=>showToast("📋 Kopiert!")); else showToast("✅ Fertig!");
                 if(els.autoDl.checked && !retryId) setTimeout(() => dlTxt(id), 500);
             } else { textArea.value = "Error: " + (data.error?.message || "Unknown"); document.getElementById(`retry-${id}`).style.display = 'flex'; }
-        } catch(e) { textArea.value = "Netzwerk Fehler: " + e.message; document.getElementById(`retry-${id}`).style.display = 'flex'; }
+        } catch(e) { textArea.value = "Fehler: " + e.message; document.getElementById(`retry-${id}`).style.display = 'flex'; }
     }
 
-    function smartCopy(text) { if(document.hasFocus()) { navigator.clipboard.writeText(text).then(() => showToast("📋 Kopiert!")); } else { pendingClipboardText = text; showToast("✅ Fertig! Tippen zum Kopieren."); } }
-    const doPendingCopy = () => { if(pendingClipboardText) { navigator.clipboard.writeText(pendingClipboardText); showToast("📋 Jetzt kopiert!"); pendingClipboardText = null; } };
-    window.addEventListener('focus', doPendingCopy); window.addEventListener('click', doPendingCopy); window.addEventListener('touchstart', doPendingCopy);
-
     function updateTextStats(id) {
-        const el = document.getElementById(`txt-${id}`); const statsEl = document.getElementById(`stats-${id}`);
-        if(!el || !statsEl) return;
-        const txt = el.value.trim(); const words = txt ? txt.split(/\s+/).length : 0;
-        const tokens = Math.ceil(words * 1.33); const pages = (words / 250).toFixed(1);
-        
-        const costEl = document.getElementById(`cost-${id}`);
-        const costHtml = costEl ? costEl.outerHTML : `<span id="cost-${id}"></span>`;
-        
-        statsEl.innerHTML = `<span>📝 ${words} Wörter</span> <span>🪙 ~${tokens} Tokens</span> <span>📄 ~${pages} Seiten</span> ${costHtml}`;
+        const el = document.getElementById(`txt-${id}`); const statsEl = document.getElementById(`stats-${id}`); if(!el || !statsEl) return;
+        const words = el.value.trim() ? el.value.trim().split(/\s+/).length : 0;
+        const costHtml = document.getElementById(`cost-${id}`) ? document.getElementById(`cost-${id}`).outerHTML : `<span class="stat-pill" id="cost-${id}">💵 ~0.0 ct</span>`;
+        statsEl.innerHTML = `<span class="stat-pill">📝 ${words} W</span> <span class="stat-pill">🪙 ~${Math.ceil(words * 1.33)} T</span> <span class="stat-pill">📄 ~${(words / 250).toFixed(1)} S</span> ${costHtml}`;
     }
 
     function saveToHistory(id, text, ts) { let h = JSON.parse(localStorage.getItem("hist_v38")||"[]"); const idx = h.findIndex(e => e.id == id); if(idx > -1) h[idx].text = text; else h.unshift({ id, text, ts }); if(h.length > 30) h.pop(); localStorage.setItem("hist_v38", JSON.stringify(h)); }
-    function loadHistory() { let h = JSON.parse(localStorage.getItem("hist_v38")||"[]"); h.forEach(e => createEntry(e.id, e.ts, e.text)); }
+    function loadHistory() { JSON.parse(localStorage.getItem("hist_v38")||"[]").forEach(e => createEntry(e.id, e.ts, e.text)); }
     function clearAll() { if(confirm("Wirklich ALLES löschen?")) { localStorage.removeItem("hist_v38"); els.feed.innerHTML = ""; showToast("Verlauf gelöscht."); } }
 
     function createEntry(id, ts, text, blob) {
         const d = document.createElement('div'); d.className = 'entry'; d.id = `e-${id}`;
-        let player = "";
-        if(blob) {
-            const url = URL.createObjectURL(blob);
-            player = `<div class="audio-wrapper"><audio controls playsinline preload="metadata" src="${url}" onloadedmetadata="window.fixDuration(this, ${id})"></audio></div>`;
-        }
+        let player = blob ? `<audio controls playsinline preload="metadata" src="${URL.createObjectURL(blob)}" onloadedmetadata="window.fixDuration(this, ${id})"></audio>` : "";
         d.innerHTML = `
             <div class="entry-meta">
-                <span>📅 ${ts}</span>
-                <div id="stats-${id}" class="text-stats"><span>📝 0 Wörter</span> <span id="cost-${id}"></span></div>
+                <div class="date-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> ${ts}</div>
+                <div id="stats-${id}" class="stats-badges"><span class="stat-pill">📝 0 W</span><span class="stat-pill" id="cost-${id}">💵 ~0.0 ct</span></div>
             </div>
-            <textarea id="txt-${id}" oninput="updateTextStats(${id})">${text}</textarea>
-            ${player}
+            <textarea id="txt-${id}" oninput="updateTextStats(${id})">${text}</textarea> ${player}
             <div class="actions">
-                <button class="btn-action" onclick="shareEntry(${id})">☁️ Teilen</button>
-                <button class="btn-action" onclick="doCopy(${id})">📋 Copy</button>
-                <button class="btn-action" onclick="dlTxt(${id})">💾 Text</button>
-                ${blob ? `<button class="btn-action" onclick="dlAudio(${id})">🎵 Audio</button>` : ''}
-                <button class="btn-action btn-del" onclick="delEntry(${id})">X</button>
-                <button class="btn-action" id="retry-${id}" style="display:none; color:var(--warn); border-color:var(--warn);" onclick="retry(${id})">🔄 Retry</button>
+                <button class="btn-action" onclick="shareEntry(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg> Teilen</button>
+                <button class="btn-action" onclick="doCopy(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg> Copy</button>
+                <button class="btn-action" onclick="dlTxt(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Text</button>
+                ${blob ? `<button class="btn-action" onclick="dlAudio(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg> Audio</button>` : ''}
+                <button class="btn-action btn-del" onclick="delEntry(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg></button>
+                <button class="btn-action" id="retry-${id}" style="display:none; color:var(--warn);" onclick="retry(${id})">🔄 Retry</button>
             </div>`;
-        els.feed.prepend(d);
-        if(blob) d.audioBlob = blob;
-        updateTextStats(id);
+        els.feed.prepend(d); if(blob) d.audioBlob = blob; updateTextStats(id);
     }
 
     window.doCopy = (id) => { navigator.clipboard.writeText(document.getElementById(`txt-${id}`).value); showToast("Kopiert"); };
-    window.delEntry = (id) => { document.getElementById(`e-${id}`).remove(); let h = JSON.parse(localStorage.getItem("hist_v38")||"[]"); h = h.filter(x => x.id != id); localStorage.setItem("hist_v38", JSON.stringify(h)); };
+    window.delEntry = (id) => { document.getElementById(`e-${id}`).remove(); let h = JSON.parse(localStorage.getItem("hist_v38")||"[]"); localStorage.setItem("hist_v38", JSON.stringify(h.filter(x => x.id != id))); };
     window.dlTxt = (id) => { download(new Blob([document.getElementById(`txt-${id}`).value]), `transkript_${id}.txt`); };
-    window.dlAudio = (id) => { const el = document.getElementById(`e-${id}`); if(el.audioBlob) { let ext = el.audioBlob.type.includes('mp4') ? 'mp4' : 'webm'; download(el.audioBlob, `rec_${id}.${ext}`); }};
-    window.retry = (id) => { const el = document.getElementById(`e-${id}`); if(el.audioBlob) { processAudio(el.audioBlob, "Retry", id); } else { showToast("Audio nicht mehr im Speicher", true); } };
-
+    window.dlAudio = (id) => { const el = document.getElementById(`e-${id}`); if(el.audioBlob) download(el.audioBlob, `rec_${id}.${el.audioBlob.type.includes('mp4') ? 'mp4' : 'webm'}`); };
+    window.retry = (id) => { const el = document.getElementById(`e-${id}`); if(el.audioBlob) processAudio(el.audioBlob, "Retry", id); else showToast("Kein Audio", true); };
     window.shareEntry = async (id) => {
         const el = document.getElementById(`e-${id}`); const txt = document.getElementById(`txt-${id}`).value;
         try {
             if(el.audioBlob && navigator.canShare) {
-                let ext = el.audioBlob.type.includes('mp4') ? 'mp4' : 'webm';
-                const f = new File([el.audioBlob], `audio.${ext}`, {type: el.audioBlob.type});
-                if(navigator.canShare({files: [f]})) await navigator.share({files:[f], text: txt});
-                else await navigator.share({text: txt});
-            } else if (navigator.share) { await navigator.share({text: txt}); } 
-            else showToast("Teilen nicht unterstützt.", true);
-        } catch(e) { console.warn("Teilen abgebrochen", e); }
+                const f = new File([el.audioBlob], `audio.${el.audioBlob.type.includes('mp4') ? 'mp4' : 'webm'}`, {type: el.audioBlob.type});
+                if(navigator.canShare({files: [f]})) await navigator.share({files:[f], text: txt}); else await navigator.share({text: txt});
+            } else if (navigator.share) await navigator.share({text: txt}); else showToast("Nicht unterstützt.", true);
+        } catch(e) {}
     };
-
     window.dlZip = async () => {
-        if(!window.JSZip) return; const zip = new JSZip(); const fAud = zip.folder("audio");
-        let allTxt = "--- PROTOKOLL ---\n\n";
+        if(!window.JSZip) return; const zip = new JSZip(); const fAud = zip.folder("audio"); let allTxt = "--- PROTOKOLL ---\n\n";
         document.querySelectorAll('.entry').forEach(e => {
-            const id = e.id.replace('e-',''); const txt = e.querySelector('textarea').value; const ts = e.querySelector('.entry-meta > span').innerText;
-            allTxt += `[${ts}]\n${txt}\n\n---\n\n`;
-            if(e.audioBlob) { let ext = e.audioBlob.type.includes('mp4')?'mp4':'webm'; fAud.file(`rec_${id}.${ext}`, e.audioBlob); }
+            const id = e.id.replace('e-',''); const txt = e.querySelector('textarea').value; const ts = e.querySelector('.date-badge').innerText;
+            allTxt += `[${ts}]\n${txt}\n\n---\n\n`; if(e.audioBlob) fAud.file(`rec_${id}.${e.audioBlob.type.includes('mp4')?'mp4':'webm'}`, e.audioBlob);
         });
-        zip.file("Alle_Texte.txt", allTxt); const dateStr = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 16); download(await zip.generateAsync({type:"blob"}), `Session_${dateStr}.zip`);
+        zip.file("Alle_Texte.txt", allTxt); download(await zip.generateAsync({type:"blob"}), `Session_${new Date().toISOString().replace(/[:.]/g, '-').slice(0,16)}.zip`);
     };
-
     function download(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
     function showToast(txt, err=false) { els.toast.innerText = txt; els.toast.className = err ? 'visible error' : 'visible'; setTimeout(()=>els.toast.className='', 3000); }
 </script>
