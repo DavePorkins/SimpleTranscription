@@ -374,7 +374,6 @@
     let smoothedVol = 0;
     let timeAccum = 0;
     
-    // V50: LIQUID CORE ANIMATION
     function initVisualizer() {
         const ctx = els.canvas.getContext('2d'); resizeCanvas();
         function draw() {
@@ -382,43 +381,42 @@
             const w = els.canvas.width; const h = els.canvas.height; const cx = w/2; const cy = h/2;
             ctx.clearRect(0, 0, w, h); 
 
-            let vol = 0;
+            let rawVol = 0;
             if(analyser && isRecording && !isPaused) {
                 const len = analyser.frequencyBinCount; if(!dataArray) dataArray = new Uint8Array(len);
                 analyser.getByteFrequencyData(dataArray); let sum = 0; for(let i=0; i<len; i++) sum += dataArray[i]; 
-                vol = (sum / len); 
-                timeAccum += 0.005 + (vol * 0.0001); // Dreht sich etwas agiler bei Sprache
+                rawVol = (sum / len); 
+                timeAccum += 0.005 + (rawVol * 0.0001); // Drehung
             } else {
-                timeAccum += 0.002; // Sanftes Atmen im Idle-Modus
+                timeAccum += 0.002; // Idle-Atmen
             }
 
-            // Weichere Glättung
-            smoothedVol = smoothedVol * 0.85 + vol * 0.15; 
+            // DER FIX: Lautstärke normalisieren (0.0 bis 1.0), damit absolut nichts mehr explodieren kann!
+            let volNorm = Math.min(rawVol / 100, 1.0); 
+            smoothedVol = smoothedVol * 0.85 + volNorm * 0.15; 
+            
             const gain = parseInt(els.pGain.value) / 100;
-            const intensity = smoothedVol * gain; 
+            // Absolute Obergrenze für die Reaktion
+            const intensity = Math.min(smoothedVol * gain, 1.5); 
 
             const maxDim = Math.max(w, h);
-            // V50: Viel kleinere Basis (15% statt 80%), damit es ein kompakter Kern bleibt
-            const baseRadius = (parseInt(els.pSize.value) / 100) * maxDim * 0.15; 
-            // Pulsieren nach außen, aber limitiert
-            const pulse = intensity * maxDim * 0.18; 
+            // Basis-Größe moderat halten
+            const baseRadius = (parseInt(els.pSize.value) / 100) * maxDim * 0.12; 
+            // Der Puls nach außen ist nun hart limitiert
+            const pulse = intensity * maxDim * 0.12; 
             
             const drawGlow = (x, y, r, color) => {
                 ctx.beginPath(); ctx.arc(x, y, Math.max(0, r), 0, Math.PI * 2); 
                 ctx.fillStyle = color; ctx.fill();
             };
 
-            // V50: Enger Orbit um das Zentrum, dehnt sich bei Sprache leicht aus
-            const orbit = maxDim * 0.08 + (intensity * maxDim * 0.04);
+            // Sehr enger Orbit im Zentrum
+            const orbit = maxDim * 0.06 + (intensity * maxDim * 0.02);
 
-            // Core 1 (Oben links)
             drawGlow(cx + Math.sin(timeAccum) * orbit, cy + Math.cos(timeAccum * 0.8) * orbit, baseRadius + pulse, els.blob1.value);
-            // Core 2 (Unten rechts)
-            drawGlow(cx + Math.sin(timeAccum * 1.2 + 2) * orbit, cy + Math.cos(timeAccum * 1.1 + 2) * orbit, (baseRadius * 0.9) + pulse, els.blob2.value);
-            // Core 3 (Oben rechts)
-            drawGlow(cx + Math.sin(timeAccum * 0.9 + 4) * orbit, cy + Math.cos(timeAccum * 1.3 + 4) * orbit, (baseRadius * 1.1) + pulse, els.blob3.value);
-            // Core 4 (Unten links, nutzt Theme-Background für perfekte Mischung)
-            drawGlow(cx + Math.sin(timeAccum * 1.1 + 5) * orbit, cy + Math.cos(timeAccum * 0.9 + 5) * orbit, baseRadius + (pulse * 1.2), els.col2.value); 
+            drawGlow(cx + Math.sin(timeAccum * 1.2 + 2) * orbit, cy + Math.cos(timeAccum * 1.1 + 2) * orbit, (baseRadius * 0.9) + (pulse * 0.9), els.blob2.value);
+            drawGlow(cx + Math.sin(timeAccum * 0.9 + 4) * orbit, cy + Math.cos(timeAccum * 1.3 + 4) * orbit, (baseRadius * 1.1) + (pulse * 1.1), els.blob3.value);
+            drawGlow(cx + Math.sin(timeAccum * 1.1 + 5) * orbit, cy + Math.cos(timeAccum * 0.9 + 5) * orbit, baseRadius + pulse, els.col2.value); 
         }
         draw();
     }
