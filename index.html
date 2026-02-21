@@ -39,7 +39,7 @@
             --badge-bg: rgba(255, 255, 255, 0.1);
         }
 
-        html { overscroll-behavior-y: none; background: #111; }
+        html { background: var(--c1); }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             color: var(--text); margin: 0;
@@ -147,8 +147,9 @@
 
         audio { width: 100%; height: 40px; border-radius: 10px; margin-top: 15px; }
 
-        .actions { margin-top: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 8px; }
-        .btn-action { padding: 12px; border: none; border-radius: 16px; background: var(--btn-bg); color: var(--text); font-size: 0.85rem; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.03); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--glass-border); transition: 0.2s; width: 100%;}
+        /* ZENTRIERTE BUTTONS */
+        .actions { margin-top: 15px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+        .btn-action { padding: 10px 18px; border: none; border-radius: 16px; background: var(--btn-bg); color: var(--text); font-size: 0.85rem; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.03); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--glass-border); transition: 0.2s; flex: 0 1 auto; min-width: 80px;}
         .btn-action:hover { background: var(--input-bg); transform: translateY(-2px); }
         .btn-action svg { width: 16px; height: 16px; }
         .btn-del { color: var(--danger); }
@@ -354,9 +355,8 @@
     window.addEventListener('resize', resizeCanvas);
 
     let smoothedVol = 0;
-    let timeAccum = 0; // Separate Zeitachse für die Idle-Kontrolle
+    let timeAccum = 0;
     
-    // V47: EDGE FLARE ANIMATION (Spitzen von außen nach innen)
     function initVisualizer() {
         const ctx = els.canvas.getContext('2d'); resizeCanvas();
         function draw() {
@@ -365,37 +365,36 @@
             ctx.clearRect(0, 0, w, h); 
 
             let vol = 0;
-            // Animation läuft NUR, wenn aktiv aufgenommen wird (Nicht Idle, Nicht Pausiert)
             if(analyser && isRecording && !isPaused) {
                 const len = analyser.frequencyBinCount; if(!dataArray) dataArray = new Uint8Array(len);
                 analyser.getByteFrequencyData(dataArray); let sum = 0; for(let i=0; i<len; i++) sum += dataArray[i]; 
                 vol = (sum / len); 
-                timeAccum += 0.005 + (vol * 0.0002); // Rotiert langsam, leicht schneller wenn laut
+                timeAccum += 0.002 + (vol * 0.00005); // Sehr langsame Rotation
             }
 
-            smoothedVol = smoothedVol * 0.9 + vol * 0.1;
+            // Weicheres Spektrum (Logarithmisch gedämpft)
+            smoothedVol = smoothedVol * 0.90 + vol * 0.10; 
             const gain = parseInt(els.pGain.value) / 100;
-            const intensity = smoothedVol * gain; 
+            const intensity = Math.pow(smoothedVol, 0.85) * gain; 
 
-            // Die Basis der Spitzen liegt auf einem unsichtbaren Kreis AUSSERHALB des Bildschirms
             const maxDim = Math.max(w, h);
-            const radiusOut = maxDim * 0.7; 
-            const baseAngleW = 0.8; // Breite der Dreiecks-Basis
+            const radiusOut = maxDim * 1.5; // Zieht die Ecken extrem weit raus (keine Lücken!)
+            const baseAngleW = 1.3; // Viel breitere Dreiecke
 
             for(let i=0; i<4; i++) {
                 const angle = timeAccum + (i * Math.PI / 2);
-                const spikeStretch = intensity * 3.5; // Wie weit die Spitze nach innen schießt
+                const spikeStretch = intensity * 2.8; 
                 
-                // Ziel-Radius für die Spitze (Je kleiner, desto näher am Zentrum)
-                let tipRadius = maxDim * 0.5 - spikeStretch * maxDim * 0.01;
-                if (tipRadius < 0) tipRadius = 0; // Verhindert Überschneiden in der Mitte
+                let tipRadius = maxDim * 0.65 - spikeStretch * maxDim * 0.015;
+                if (tipRadius < 0) tipRadius = 0;
 
-                const color = [els.blob1.value, els.blob2.value, els.blob3.value, els.col1.value][i];
+                // 4. Farbe aus dem Hintergrund gezogen, um Duplikate zu vermeiden
+                const color = [els.blob1.value, els.blob2.value, els.blob3.value, els.col2.value][i];
                 
                 ctx.fillStyle = color;
                 ctx.beginPath();
-                ctx.moveTo(cx + Math.cos(angle - baseAngleW)*radiusOut, cy + Math.sin(angle - baseAngleW)*radiusOut);
-                ctx.lineTo(cx + Math.cos(angle + baseAngleW)*radiusOut, cy + Math.sin(angle + baseAngleW)*radiusOut);
+                // Zeichnet perfekte Keile (Pie Slices) statt harter Dreiecke
+                ctx.arc(cx, cy, radiusOut, angle - baseAngleW, angle + baseAngleW);
                 ctx.lineTo(cx + Math.cos(angle)*tipRadius, cy + Math.sin(angle)*tipRadius);
                 ctx.fill();
             }
@@ -527,14 +526,30 @@
                 <button class="btn-action" onclick="doCopy(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg> Copy</button>
                 <button class="btn-action" onclick="dlTxt(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Text</button>
                 ${blob ? `<button class="btn-action" onclick="dlAudio(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg> Audio</button>` : ''}
-                <button class="btn-action btn-del" onclick="delEntry(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                <button class="btn-action btn-del" onclick="delEntry(${id}, this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
                 <button class="btn-action" id="retry-${id}" style="display:none; color:var(--warn);" onclick="retry(${id})">🔄 Retry</button>
             </div>`;
         els.feed.prepend(d); if(blob) d.audioBlob = blob; updateTextStats(id);
     }
 
     window.doCopy = (id) => { navigator.clipboard.writeText(document.getElementById(`txt-${id}`).value); showToast("Kopiert"); };
-    window.delEntry = (id) => { document.getElementById(`e-${id}`).remove(); let h = JSON.parse(localStorage.getItem("hist_v38")||"[]"); localStorage.setItem("hist_v38", JSON.stringify(h.filter(x => x.id != id))); };
+    window.delEntry = (id, btn) => { 
+    if(!btn.classList.contains('confirm')) {
+        btn.classList.add('confirm');
+        btn.innerHTML = '🗑️ Sicher?';
+        btn.style.background = 'var(--danger)'; btn.style.color = 'white';
+        setTimeout(() => { 
+            if(document.getElementById(`e-${id}`)) {
+                btn.classList.remove('confirm'); btn.style.background = ''; btn.style.color = 'var(--danger)';
+                btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
+            }
+        }, 3000);
+        return;
+    }
+    document.getElementById(`e-${id}`).remove(); 
+    let h = JSON.parse(localStorage.getItem("hist_v38")||"[]"); 
+    localStorage.setItem("hist_v38", JSON.stringify(h.filter(x => x.id != id))); 
+};
     window.dlTxt = (id) => { download(new Blob([document.getElementById(`txt-${id}`).value]), `transkript_${id}.txt`); };
     window.dlAudio = (id) => { const el = document.getElementById(`e-${id}`); if(el.audioBlob) download(el.audioBlob, `rec_${id}.${el.audioBlob.type.includes('mp4') ? 'mp4' : 'webm'}`); };
     window.retry = (id) => { const el = document.getElementById(`e-${id}`); if(el.audioBlob) processAudio(el.audioBlob, "Retry", id); else showToast("Kein Audio", true); };
