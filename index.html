@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Simple Transcription V47</title>
+    <title>Simple Transcription V48</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -17,12 +17,12 @@
     <style>
         :root {
             --c1: #a18cd1; --c2: #fbc2eb;
-            --glass-bg: rgba(255, 255, 255, 0.6);
+            --glass-bg: rgba(255, 255, 255, 0.65);
             --glass-border: rgba(255, 255, 255, 0.5);
             --text: #333;
             --text-muted: #666;
-            --input-bg: rgba(255, 255, 255, 0.45);
-            --btn-bg: rgba(255, 255, 255, 0.8);
+            --input-bg: rgba(255, 255, 255, 0.5);
+            --btn-bg: rgba(255, 255, 255, 0.9);
             --accent: #c471ed;
             --danger: #ff5252;
             --warn: #ffb142;
@@ -30,7 +30,7 @@
         }
 
         body[data-theme="dark"] {
-            --glass-bg: rgba(20, 20, 25, 0.7);
+            --glass-bg: rgba(20, 20, 25, 0.75);
             --glass-border: rgba(255, 255, 255, 0.1);
             --text: #f0f0f0;
             --text-muted: #aaa;
@@ -39,7 +39,8 @@
             --badge-bg: rgba(255, 255, 255, 0.1);
         }
 
-        html { background: var(--c1); }
+        /* V48 FIX: Pull-to-refresh erlaubt, Hintergrundfarbe verhindert weiße Blitzer */
+        html { background: var(--c1); transition: background 0.5s ease; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             color: var(--text); margin: 0;
@@ -65,12 +66,12 @@
             transition: all 0.3s ease;
         }
 
-        /* V47: THE EDGE FLARE CANVAS */
+        /* V48: AURORA CANVAS */
         #cloudCanvas {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
-            pointer-events: none; opacity: 0.85; transition: filter 0.5s ease;
+            pointer-events: none; opacity: 0.9; transition: filter 0.5s ease, opacity 0.5s ease;
         }
-        body[data-theme="dark"] #cloudCanvas { filter: brightness(0.3) saturate(1.2); opacity: 0.6; }
+        body[data-theme="dark"] #cloudCanvas { filter: brightness(0.7) saturate(1.2); opacity: 0.45; }
 
         .panel-content {
             position: relative; z-index: 1; padding: 30px 25px;
@@ -88,7 +89,7 @@
         .icon-btn svg { width: 100%; height: 100%; }
         .icon-btn:hover { transform: scale(1.1); background: var(--btn-bg); color: var(--accent); box-shadow: 0 5px 15px rgba(0,0,0,0.1);}
 
-        /* V47: COMPACT 2-ROW SETTINGS GRID */
+        /* COMPACT SETTINGS ROW */
         .settings-group { display: flex; flex-direction: column; gap: 10px; width: 100%; }
         .settings-row { display: flex; gap: 10px; width: 100%; justify-content: center; align-items: stretch; flex-wrap: nowrap; }
         
@@ -136,7 +137,6 @@
         .entry { background: var(--glass-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-radius: 30px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); animation: slideIn 0.4s ease-out; border: 1px solid var(--glass-border); }
         @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: 0; } }
 
-        /* V47: ZENTRIERTE ENTRY META */
         .entry-meta { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 18px; width: 100%; }
         .date-badge { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; display:flex; align-items:center; gap:5px; justify-content: center;}
         .stats-badges { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; width: 100%; }
@@ -147,7 +147,7 @@
 
         audio { width: 100%; height: 40px; border-radius: 10px; margin-top: 15px; }
 
-        /* ZENTRIERTE BUTTONS */
+        /* V48 FIX: ZENTRIERTE BUTTONS UNTEN */
         .actions { margin-top: 15px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
         .btn-action { padding: 10px 18px; border: none; border-radius: 16px; background: var(--btn-bg); color: var(--text); font-size: 0.85rem; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.03); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--glass-border); transition: 0.2s; flex: 0 1 auto; min-width: 80px;}
         .btn-action:hover { background: var(--input-bg); transform: translateY(-2px); }
@@ -180,7 +180,13 @@
 
 <div id="devPanel" class="modal">
     <div class="modal-box">
-        <div class="modal-header"><span>🎨 Design Studio</span><button class="icon-btn" onclick="toggleDev()" style="width:30px;height:30px;padding:5px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg></button></div>
+        <div class="modal-header">
+            <span>🎨 Design Studio</span>
+            <div style="display:flex; gap:8px;">
+                <button class="icon-btn" onclick="resetDev()" style="width:auto; height:30px; padding:5px 12px; border-radius:10px; font-size:0.8rem; font-weight:bold;">Reset</button>
+                <button class="icon-btn" onclick="toggleDev()" style="width:30px;height:30px;padding:5px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg></button>
+            </div>
+        </div>
         <div class="dev-section">
             <div class="preset-grid">
                 <div class="preset-btn" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb)" onclick="applyPreset('#a18cd1','#fbc2eb')"></div>
@@ -199,9 +205,9 @@
             </div>
             <div class="dev-row"><span>Hintergrund 1</span> <input type="color" id="col1"></div>
             <div class="dev-row"><span>Hintergrund 2</span> <input type="color" id="col2"></div>
-            <div class="dev-row"><span>Spike 1</span> <input type="color" id="blob1"></div>
-            <div class="dev-row"><span>Spike 2</span> <input type="color" id="blob2"></div>
-            <div class="dev-row"><span>Spike 3</span> <input type="color" id="blob3"></div>
+            <div class="dev-row"><span>Plasma 1</span> <input type="color" id="blob1"></div>
+            <div class="dev-row"><span>Plasma 2</span> <input type="color" id="blob2"></div>
+            <div class="dev-row"><span>Plasma 3</span> <input type="color" id="blob3"></div>
             <div class="dev-row"><span>Größe</span> <input type="range" id="pSize" min="20" max="150"></div>
             <div class="dev-row"><span>Reaktion</span> <input type="range" id="pGain" min="0" max="200"></div>
             <div class="dev-row"><span>Weichzeichner</span> <input type="range" id="pBlur" min="0" max="60"></div>
@@ -215,7 +221,7 @@
         
         <div class="panel-content">
             <div class="top-row">
-                <h1>Simple Transcription <span class="version-tag">V47</span></h1>
+                <h1>Simple Transcription <span class="version-tag">V48</span></h1>
                 <div class="header-actions">
                     <button class="icon-btn" onclick="toggleTheme()" title="Dark Mode"><svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></button>
                     <button class="icon-btn" onclick="dlZip()" title="ZIP Download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></button>
@@ -300,14 +306,14 @@
     function toggleTheme() {
         const isDark = document.body.getAttribute('data-theme') === 'dark';
         if(isDark) { 
-            document.body.removeAttribute('data-theme'); localStorage.setItem('theme_v47', 'light'); 
+            document.body.removeAttribute('data-theme'); localStorage.setItem('theme_v48', 'light'); 
             els.themeIcon.innerHTML = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>';
         } else { 
-            document.body.setAttribute('data-theme', 'dark'); localStorage.setItem('theme_v47', 'dark'); 
+            document.body.setAttribute('data-theme', 'dark'); localStorage.setItem('theme_v48', 'dark'); 
             els.themeIcon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
         }
     }
-    if(localStorage.getItem('theme_v47') === 'dark') { toggleTheme(); toggleTheme(); } 
+    if(localStorage.getItem('theme_v48') === 'dark') { toggleTheme(); toggleTheme(); } 
 
     window.fixDuration = function(audio, id) {
         const updateCost = (sec) => {
@@ -319,8 +325,18 @@
         } else { updateCost(audio.duration); }
     }
 
-    const defaults = { c1: '#a18cd1', c2: '#fbc2eb', b1: '#8ec5fc', b2: '#e0c3fc', b3: '#99ddff', sz: 70, gn: 100, bl: 35 };
+    // V48: Standard-Werte für Aurora-Animation
+    const defaults = { c1: '#a18cd1', c2: '#fbc2eb', b1: '#8ec5fc', b2: '#e0c3fc', b3: '#99ddff', sz: 70, gn: 100, bl: 50 };
+    
     function applyPreset(c1, c2) { els.col1.value = c1; els.col2.value = c2; els.blob1.value = c1; els.blob2.value = c2; els.blob3.value = '#ffffff'; updateDev(); }
+
+    window.resetDev = () => {
+        applyPreset(defaults.c1, defaults.c2);
+        els.blob1.value = defaults.b1; els.blob2.value = defaults.b2; els.blob3.value = defaults.b3;
+        els.pSize.value = defaults.sz; els.pGain.value = defaults.gn; els.pBlur.value = defaults.bl;
+        updateDev();
+        showToast("Einstellungen zurückgesetzt");
+    };
 
     function loadDev() {
         els.col1.value = localStorage.getItem('d_c1') || defaults.c1; els.col2.value = localStorage.getItem('d_c2') || defaults.c2;
@@ -333,6 +349,7 @@
     function updateDev() {
         const c1 = els.col1.value; const c2 = els.col2.value;
         document.documentElement.style.setProperty('--c1', c1); document.documentElement.style.setProperty('--c2', c2);
+        document.querySelector('.bg-layer').style.backgroundImage = `linear-gradient(135deg, ${c1}, ${c2})`;
         els.canvas.style.filter = `blur(${els.pBlur.value}px)`;
         localStorage.setItem('d_c1', c1); localStorage.setItem('d_c2', c2);
         localStorage.setItem('d_b1', els.blob1.value); localStorage.setItem('d_b2', els.blob2.value); localStorage.setItem('d_b3', els.blob3.value);
@@ -351,17 +368,18 @@
     els.autoDl.addEventListener('change', () => localStorage.setItem("autodl_v38", els.autoDl.checked));
 
     loadHistory(); loadDev();
-    function resizeCanvas() { els.canvas.width = els.canvas.offsetWidth * 1.5; els.canvas.height = els.canvas.offsetHeight * 1.5; }
+    function resizeCanvas() { els.canvas.width = els.canvas.offsetWidth; els.canvas.height = els.canvas.offsetHeight; }
     window.addEventListener('resize', resizeCanvas);
 
     let smoothedVol = 0;
     let timeAccum = 0;
     
+    // V48: AURORA GLOW ANIMATION
     function initVisualizer() {
         const ctx = els.canvas.getContext('2d'); resizeCanvas();
         function draw() {
             requestAnimationFrame(draw);
-            const w = els.canvas.width; const h = els.canvas.height; const cx = w/2; const cy = h/2;
+            const w = els.canvas.width; const h = els.canvas.height;
             ctx.clearRect(0, 0, w, h); 
 
             let vol = 0;
@@ -369,35 +387,46 @@
                 const len = analyser.frequencyBinCount; if(!dataArray) dataArray = new Uint8Array(len);
                 analyser.getByteFrequencyData(dataArray); let sum = 0; for(let i=0; i<len; i++) sum += dataArray[i]; 
                 vol = (sum / len); 
-                timeAccum += 0.002 + (vol * 0.00005); // Sehr langsame Rotation
+                timeAccum += 0.003 + (vol * 0.0001); // Fließt etwas schneller bei Lautstärke
+            } else {
+                timeAccum += 0.001; // Langsames Wabern im Hintergrund
             }
 
-            // Weicheres Spektrum (Logarithmisch gedämpft)
-            smoothedVol = smoothedVol * 0.90 + vol * 0.10; 
+            smoothedVol = smoothedVol * 0.85 + vol * 0.15; 
             const gain = parseInt(els.pGain.value) / 100;
-            const intensity = Math.pow(smoothedVol, 0.85) * gain; 
+            const intensity = smoothedVol * gain; 
 
             const maxDim = Math.max(w, h);
-            const radiusOut = maxDim * 1.5; // Zieht die Ecken extrem weit raus (keine Lücken!)
-            const baseAngleW = 1.3; // Viel breitere Dreiecke
+            const baseRadius = (parseInt(els.pSize.value) / 100) * maxDim * 0.8;
+            
+            const drawGlow = (x, y, r, color) => {
+                ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); 
+                ctx.fillStyle = color; ctx.fill();
+            };
 
-            for(let i=0; i<4; i++) {
-                const angle = timeAccum + (i * Math.PI / 2);
-                const spikeStretch = intensity * 2.8; 
-                
-                let tipRadius = maxDim * 0.65 - spikeStretch * maxDim * 0.015;
-                if (tipRadius < 0) tipRadius = 0;
+            // Plasma 1
+            const r1 = baseRadius + intensity * maxDim * 0.02;
+            const x1 = w * 0.5 + Math.sin(timeAccum * 0.7) * w * 0.3;
+            const y1 = h * 0.5 + Math.cos(timeAccum * 0.5) * h * 0.3;
+            drawGlow(x1, y1, r1, els.blob1.value);
 
-                // 4. Farbe aus dem Hintergrund gezogen, um Duplikate zu vermeiden
-                const color = [els.blob1.value, els.blob2.value, els.blob3.value, els.col2.value][i];
-                
-                ctx.fillStyle = color;
-                ctx.beginPath();
-                // Zeichnet perfekte Keile (Pie Slices) statt harter Dreiecke
-                ctx.arc(cx, cy, radiusOut, angle - baseAngleW, angle + baseAngleW);
-                ctx.lineTo(cx + Math.cos(angle)*tipRadius, cy + Math.sin(angle)*tipRadius);
-                ctx.fill();
-            }
+            // Plasma 2
+            const r2 = baseRadius + intensity * maxDim * 0.025;
+            const x2 = w * 0.5 + Math.cos(timeAccum * 0.8) * w * 0.35;
+            const y2 = h * 0.5 + Math.sin(timeAccum * 0.6) * h * 0.35;
+            drawGlow(x2, y2, r2, els.blob2.value);
+
+            // Plasma 3
+            const r3 = baseRadius * 0.8 + intensity * maxDim * 0.03;
+            const x3 = w * 0.5 + Math.sin(timeAccum * 0.9 + Math.PI) * w * 0.25;
+            const y3 = h * 0.5 + Math.cos(timeAccum * 1.1 + Math.PI) * h * 0.25;
+            drawGlow(x3, y3, r3, els.blob3.value);
+            
+            // Plasma 4 (Nutzt Hintergrundfarbe zur Harmonie)
+            const r4 = baseRadius * 1.1 + intensity * maxDim * 0.02;
+            const x4 = w * 0.5 + Math.cos(timeAccum * 0.6 + Math.PI/2) * w * 0.4;
+            const y4 = h * 0.5 + Math.sin(timeAccum * 0.7 + Math.PI/2) * h * 0.4;
+            drawGlow(x4, y4, r4, els.col2.value); 
         }
         draw();
     }
@@ -533,23 +562,26 @@
     }
 
     window.doCopy = (id) => { navigator.clipboard.writeText(document.getElementById(`txt-${id}`).value); showToast("Kopiert"); };
+    
+    // V48: Doppel-Klick Löschen
     window.delEntry = (id, btn) => { 
-    if(!btn.classList.contains('confirm')) {
-        btn.classList.add('confirm');
-        btn.innerHTML = '🗑️ Sicher?';
-        btn.style.background = 'var(--danger)'; btn.style.color = 'white';
-        setTimeout(() => { 
-            if(document.getElementById(`e-${id}`)) {
-                btn.classList.remove('confirm'); btn.style.background = ''; btn.style.color = 'var(--danger)';
-                btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
-            }
-        }, 3000);
-        return;
-    }
-    document.getElementById(`e-${id}`).remove(); 
-    let h = JSON.parse(localStorage.getItem("hist_v38")||"[]"); 
-    localStorage.setItem("hist_v38", JSON.stringify(h.filter(x => x.id != id))); 
-};
+        if(!btn.classList.contains('confirm')) {
+            btn.classList.add('confirm');
+            btn.innerHTML = '🗑️ Sicher?';
+            btn.style.background = 'var(--danger)'; btn.style.color = 'white';
+            setTimeout(() => { 
+                if(document.getElementById(`e-${id}`)) {
+                    btn.classList.remove('confirm'); btn.style.background = ''; btn.style.color = 'var(--danger)';
+                    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
+                }
+            }, 3000);
+            return;
+        }
+        document.getElementById(`e-${id}`).remove(); 
+        let h = JSON.parse(localStorage.getItem("hist_v38")||"[]"); 
+        localStorage.setItem("hist_v38", JSON.stringify(h.filter(x => x.id != id))); 
+    };
+
     window.dlTxt = (id) => { download(new Blob([document.getElementById(`txt-${id}`).value]), `transkript_${id}.txt`); };
     window.dlAudio = (id) => { const el = document.getElementById(`e-${id}`); if(el.audioBlob) download(el.audioBlob, `rec_${id}.${el.audioBlob.type.includes('mp4') ? 'mp4' : 'webm'}`); };
     window.retry = (id) => { const el = document.getElementById(`e-${id}`); if(el.audioBlob) processAudio(el.audioBlob, "Retry", id); else showToast("Kein Audio", true); };
