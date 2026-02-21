@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Simple Transcription V46</title>
+    <title>Simple Transcription V47</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -65,12 +65,12 @@
             transition: all 0.3s ease;
         }
 
-        /* EDGE FLARE ANIMATION CANVAS */
+        /* V47: THE EDGE FLARE CANVAS */
         #cloudCanvas {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
-            pointer-events: none; opacity: 0.8; transition: filter 0.5s ease;
+            pointer-events: none; opacity: 0.85; transition: filter 0.5s ease;
         }
-        body[data-theme="dark"] #cloudCanvas { filter: brightness(0.5) saturate(1.5); opacity: 0.6; }
+        body[data-theme="dark"] #cloudCanvas { filter: brightness(0.3) saturate(1.2); opacity: 0.6; }
 
         .panel-content {
             position: relative; z-index: 1; padding: 30px 25px;
@@ -80,6 +80,7 @@
         /* ZENTRIERTER HEADER */
         .top-row { display: flex; flex-direction: column; align-items: center; gap: 15px; width: 100%; }
         h1 { margin: 0; font-size: 1.6rem; font-weight: 900; background: linear-gradient(90deg, var(--c2), var(--c1)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; display: flex; align-items: baseline; gap: 8px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1)); text-align: center;}
+        body[data-theme="dark"] h1 { background: none; -webkit-text-fill-color: var(--text); color: var(--text); }
         .version-tag { font-size: 0.5em; opacity: 0.7; font-weight: 700; color: var(--text-muted); -webkit-text-fill-color: initial; background: none;}
 
         .header-actions { display: flex; justify-content: center; gap: 12px; width: 100%; }
@@ -87,19 +88,22 @@
         .icon-btn svg { width: 100%; height: 100%; }
         .icon-btn:hover { transform: scale(1.1); background: var(--btn-bg); color: var(--accent); box-shadow: 0 5px 15px rgba(0,0,0,0.1);}
 
-        /* COMPACT SETTINGS ROW */
-        .settings-row { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; width: 100%; }
+        /* V47: COMPACT 2-ROW SETTINGS GRID */
+        .settings-group { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+        .settings-row { display: flex; gap: 10px; width: 100%; justify-content: center; align-items: stretch; flex-wrap: nowrap; }
         
-        .api-wrapper { display: flex; align-items: center; gap: 8px; background: var(--input-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 5px 15px; border-radius: 16px; border: 1px solid var(--glass-border); flex: 0 1 auto; width: 150px;}
-        .api-wrapper input { border: none; background: transparent; color: var(--text); width: 100%; font-size: 0.85rem; }
+        .api-wrapper { display: flex; align-items: center; gap: 8px; background: var(--input-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 5px 15px; border-radius: 16px; border: 1px solid var(--glass-border); flex: 1; min-width: 0;}
+        .api-wrapper input { border: none; background: transparent; color: var(--text); width: 100%; font-size: 0.85rem; min-width: 0;}
         .api-wrapper input:focus { outline: none; }
-        .eye-btn { background: none; border: none; cursor: pointer; padding: 0; color: var(--text-muted); display:flex; align-items:center;}
+        .eye-btn { background: none; border: none; cursor: pointer; padding: 0; color: var(--text-muted); display:flex; align-items:center; flex-shrink: 0;}
         
-        .toggle-btn { display:flex; gap:6px; color:var(--text); align-items:center; justify-content: center; cursor: pointer; background: var(--input-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 8px 15px; border-radius: 16px; border: 1px solid var(--glass-border); font-size: 0.8rem; font-weight: 600; text-align: center; transition: 0.2s; flex: 0 1 auto;}
+        .toggle-btn { display:flex; gap:6px; color:var(--text); align-items:center; justify-content: center; cursor: pointer; background: var(--input-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 8px 15px; border-radius: 16px; border: 1px solid var(--glass-border); font-size: 0.8rem; font-weight: 600; text-align: center; transition: 0.2s; flex-shrink: 0;}
         .toggle-btn:hover { background: var(--btn-bg); }
-        .mic-select { background: transparent; border: none; color: inherit; font-family: inherit; font-size: inherit; font-weight: inherit; outline: none; width: 100%; cursor: pointer; -webkit-appearance: none; text-align: center;}
+        
+        .mic-select-wrapper { flex: 1; min-width: 0; display:flex; }
+        .mic-select { background: transparent; border: none; color: inherit; font-family: inherit; font-size: 0.8rem; font-weight: 600; outline: none; width: 100%; cursor: pointer; -webkit-appearance: none; text-align: center; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;}
 
-        /* CONTROLS AREA (MODERN THIN TIMER) */
+        /* CONTROLS AREA */
         .controls-area { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-top: 10px; }
 
         .stats-col { display: flex; flex-direction: column; align-items: center; gap: 0px; color: var(--text); }
@@ -132,17 +136,17 @@
         .entry { background: var(--glass-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-radius: 30px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); animation: slideIn 0.4s ease-out; border: 1px solid var(--glass-border); }
         @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: 0; } }
 
-        .entry-meta { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; margin-bottom: 15px; }
-        .date-badge { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; display:flex; align-items:center; gap:5px;}
-        .stats-badges { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; }
+        /* V47: ZENTRIERTE ENTRY META */
+        .entry-meta { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 18px; width: 100%; }
+        .date-badge { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; display:flex; align-items:center; gap:5px; justify-content: center;}
+        .stats-badges { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; width: 100%; }
         .stat-pill { background: var(--badge-bg); padding: 6px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; color: var(--text); border: 1px solid var(--glass-border); display:flex; align-items:center; gap:4px; white-space: nowrap;}
         
-        textarea { width: 100%; background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text); padding: 18px; border-radius: 20px; font-family: inherit; resize: none; min-height: 100px; box-sizing: border-box; display: block; line-height: 1.6; font-size: 15px; transition: 0.2s; box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);}
+        textarea { width: 100%; background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text); padding: 18px; border-radius: 20px; font-family: inherit; resize: none; min-height: 100px; box-sizing: border-box; display: block; line-height: 1.6; font-size: 15px; transition: 0.2s; box-shadow: inset 0 2px 10px rgba(0,0,0,0.02); text-align: left;}
         textarea:focus { outline: none; border-color: var(--accent); background: var(--btn-bg); }
 
         audio { width: 100%; height: 40px; border-radius: 10px; margin-top: 15px; }
 
-        /* BUTTONS GRID (OHNE TEILEN) */
         .actions { margin-top: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 8px; }
         .btn-action { padding: 12px; border: none; border-radius: 16px; background: var(--btn-bg); color: var(--text); font-size: 0.85rem; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.03); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--glass-border); transition: 0.2s; width: 100%;}
         .btn-action:hover { background: var(--input-bg); transform: translateY(-2px); }
@@ -194,9 +198,9 @@
             </div>
             <div class="dev-row"><span>Hintergrund 1</span> <input type="color" id="col1"></div>
             <div class="dev-row"><span>Hintergrund 2</span> <input type="color" id="col2"></div>
-            <div class="dev-row"><span>Blob 1</span> <input type="color" id="blob1"></div>
-            <div class="dev-row"><span>Blob 2</span> <input type="color" id="blob2"></div>
-            <div class="dev-row"><span>Blob 3</span> <input type="color" id="blob3"></div>
+            <div class="dev-row"><span>Spike 1</span> <input type="color" id="blob1"></div>
+            <div class="dev-row"><span>Spike 2</span> <input type="color" id="blob2"></div>
+            <div class="dev-row"><span>Spike 3</span> <input type="color" id="blob3"></div>
             <div class="dev-row"><span>Größe</span> <input type="range" id="pSize" min="20" max="150"></div>
             <div class="dev-row"><span>Reaktion</span> <input type="range" id="pGain" min="0" max="200"></div>
             <div class="dev-row"><span>Weichzeichner</span> <input type="range" id="pBlur" min="0" max="60"></div>
@@ -210,7 +214,7 @@
         
         <div class="panel-content">
             <div class="top-row">
-                <h1>Simple Transcription <span class="version-tag">V46</span></h1>
+                <h1>Simple Transcription <span class="version-tag">V47</span></h1>
                 <div class="header-actions">
                     <button class="icon-btn" onclick="toggleTheme()" title="Dark Mode"><svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></button>
                     <button class="icon-btn" onclick="dlZip()" title="ZIP Download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></button>
@@ -219,27 +223,28 @@
                 </div>
             </div>
             
-            <div class="settings-row">
-                <div class="api-wrapper">
-                    <svg style="width:16px;height:16px;color:var(--text-muted);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0110 0v4"></path></svg>
-                    <input type="password" id="apiKey" placeholder="OpenAI Key">
-                    <button class="eye-btn" onclick="toggleApiKey()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
+            <div class="settings-group">
+                <div class="settings-row">
+                    <div class="api-wrapper">
+                        <svg style="width:16px;height:16px;color:var(--text-muted); flex-shrink:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0110 0v4"></path></svg>
+                        <input type="password" id="apiKey" placeholder="OpenAI Key">
+                        <button class="eye-btn" onclick="toggleApiKey()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
+                    </div>
+                    <label class="toggle-btn" style="cursor: pointer;">
+                        <input type="checkbox" id="autoDl" style="accent-color:var(--accent); width:16px; height:16px; margin:0;"> Auto-Save
+                    </label>
                 </div>
                 
-                <label class="toggle-btn">
-                    <input type="checkbox" id="autoDl" style="accent-color:var(--accent); width:16px; height:16px; margin:0;">
-                    Auto-Save (Audio & Text)
-                </label>
-
-                <div class="toggle-btn" style="padding: 0;">
-                    <select id="micSelect" class="mic-select" style="padding: 8px 15px; height: 100%;">
-                        <option value="default">🎙️ Mikrofon wählen</option>
-                    </select>
+                <div class="settings-row">
+                    <div class="toggle-btn mic-select-wrapper" style="padding: 0;">
+                        <select id="micSelect" class="mic-select" style="padding: 8px 15px; height: 100%;">
+                            <option value="default">🎙️ Mikrofon wählen</option>
+                        </select>
+                    </div>
+                    <button class="toggle-btn" onclick="document.getElementById('fileUpload').click()">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"></path></svg> Upload
+                    </button>
                 </div>
-
-                <button class="toggle-btn" onclick="document.getElementById('fileUpload').click()">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"></path></svg> Upload
-                </button>
             </div>
 
             <div class="controls-area">
@@ -294,14 +299,14 @@
     function toggleTheme() {
         const isDark = document.body.getAttribute('data-theme') === 'dark';
         if(isDark) { 
-            document.body.removeAttribute('data-theme'); localStorage.setItem('theme_v46', 'light'); 
+            document.body.removeAttribute('data-theme'); localStorage.setItem('theme_v47', 'light'); 
             els.themeIcon.innerHTML = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>';
         } else { 
-            document.body.setAttribute('data-theme', 'dark'); localStorage.setItem('theme_v46', 'dark'); 
+            document.body.setAttribute('data-theme', 'dark'); localStorage.setItem('theme_v47', 'dark'); 
             els.themeIcon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
         }
     }
-    if(localStorage.getItem('theme_v46') === 'dark') { toggleTheme(); toggleTheme(); } 
+    if(localStorage.getItem('theme_v47') === 'dark') { toggleTheme(); toggleTheme(); } 
 
     window.fixDuration = function(audio, id) {
         const updateCost = (sec) => {
@@ -349,8 +354,9 @@
     window.addEventListener('resize', resizeCanvas);
 
     let smoothedVol = 0;
-    let timeAccum = 0; // V46: Eigene Zeitachse für Idle-Kontrolle
+    let timeAccum = 0; // Separate Zeitachse für die Idle-Kontrolle
     
+    // V47: EDGE FLARE ANIMATION (Spitzen von außen nach innen)
     function initVisualizer() {
         const ctx = els.canvas.getContext('2d'); resizeCanvas();
         function draw() {
@@ -359,30 +365,43 @@
             ctx.clearRect(0, 0, w, h); 
 
             let vol = 0;
+            // Animation läuft NUR, wenn aktiv aufgenommen wird (Nicht Idle, Nicht Pausiert)
             if(analyser && isRecording && !isPaused) {
-                timeAccum += 0.015; // Animation läuft nur bei Aufnahme
                 const len = analyser.frequencyBinCount; if(!dataArray) dataArray = new Uint8Array(len);
-                analyser.getByteFrequencyData(dataArray); let sum = 0; for(let i=0; i<len; i++) sum += dataArray[i]; vol = (sum / len); 
+                analyser.getByteFrequencyData(dataArray); let sum = 0; for(let i=0; i<len; i++) sum += dataArray[i]; 
+                vol = (sum / len); 
+                timeAccum += 0.005 + (vol * 0.0002); // Rotiert langsam, leicht schneller wenn laut
             }
 
             smoothedVol = smoothedVol * 0.9 + vol * 0.1;
             const gain = parseInt(els.pGain.value) / 100;
-            const intensity = smoothedVol * gain * 2.5; 
+            const intensity = smoothedVol * gain; 
 
-            // V46: Edge Flare Logik (Orbit außen am Rand, drückt nach innen wenn laut)
+            // Die Basis der Spitzen liegt auf einem unsichtbaren Kreis AUSSERHALB des Bildschirms
             const maxDim = Math.max(w, h);
-            const dist = maxDim * 0.55; 
-            const baseSize = parseInt(els.pSize.value) * 1.8; 
-            const activeR = baseSize + (maxDim * 0.25) + intensity * 4; 
+            const radiusOut = maxDim * 0.7; 
+            const baseAngleW = 0.8; // Breite der Dreiecks-Basis
 
-            drawBlob(ctx, cx + Math.cos(timeAccum) * dist, cy + Math.sin(timeAccum*0.8) * dist, activeR + Math.sin(timeAccum*5)*20, els.blob1.value);
-            drawBlob(ctx, cx + Math.cos(timeAccum + 1.57) * dist, cy + Math.sin(timeAccum*0.9 + 1.57) * dist, activeR + Math.cos(timeAccum*4.5)*20, els.blob2.value);
-            drawBlob(ctx, cx + Math.cos(timeAccum + 3.14) * dist, cy + Math.sin(timeAccum*1.1 + 3.14) * dist, activeR + Math.sin(timeAccum*6)*20, els.blob3.value);
-            drawBlob(ctx, cx + Math.cos(timeAccum + 4.71) * dist, cy + Math.sin(timeAccum*1.2 + 4.71) * dist, activeR + Math.cos(timeAccum*5.5)*20, els.col1.value);
+            for(let i=0; i<4; i++) {
+                const angle = timeAccum + (i * Math.PI / 2);
+                const spikeStretch = intensity * 3.5; // Wie weit die Spitze nach innen schießt
+                
+                // Ziel-Radius für die Spitze (Je kleiner, desto näher am Zentrum)
+                let tipRadius = maxDim * 0.5 - spikeStretch * maxDim * 0.01;
+                if (tipRadius < 0) tipRadius = 0; // Verhindert Überschneiden in der Mitte
+
+                const color = [els.blob1.value, els.blob2.value, els.blob3.value, els.col1.value][i];
+                
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.moveTo(cx + Math.cos(angle - baseAngleW)*radiusOut, cy + Math.sin(angle - baseAngleW)*radiusOut);
+                ctx.lineTo(cx + Math.cos(angle + baseAngleW)*radiusOut, cy + Math.sin(angle + baseAngleW)*radiusOut);
+                ctx.lineTo(cx + Math.cos(angle)*tipRadius, cy + Math.sin(angle)*tipRadius);
+                ctx.fill();
+            }
         }
         draw();
     }
-    function drawBlob(ctx, x, y, r, color) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill(); }
     initVisualizer();
 
     async function loadMicrophones() {
@@ -448,7 +467,6 @@
         if(isPaused) return; const totalSec = Math.floor((Date.now() - startTime - pauseDelta)/1000);
         els.timer.innerText = `${Math.floor(totalSec/60).toString().padStart(2,'0')}:${(totalSec%60).toString().padStart(2,'0')}`;
         els.size.innerText = `(~${((totalSec * 4000) / (1024 * 1024)).toFixed(2)} MB)`;
-        // Timer wird erst ab 5 Min. orange, ab 10 Min. rot. Sonst bleibt er modern neutral (text-color)
         els.timer.style.color = totalSec < 300 ? "var(--text)" : totalSec < 600 ? "var(--warn)" : "var(--danger)";
     }
 
