@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Simple Transcription V40</title>
+    <title>Simple Transcription V41</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎙️</text></svg>">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
@@ -163,7 +163,8 @@
         @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: 0; } }
 
         .entry-meta { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; font-size: 0.85rem; color: #999; margin-bottom: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-        .text-stats { font-size: 0.75rem; color: var(--accent); font-weight: 700; text-transform: none; letter-spacing: 0; }
+        .text-stats { font-size: 0.75rem; color: var(--accent); font-weight: 700; text-transform: none; letter-spacing: 0; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end;}
+        .cost-badge { color: #27ae60; }
 
         textarea {
             width: 100%; background: #fdfdfd; border: 1px solid #eee; color: #444;
@@ -240,7 +241,7 @@
 <div class="app-container">
     <header>
         <div class="top-row">
-            <h1>Simple Transcription <span class="version-tag">V40</span></h1>
+            <h1>Simple Transcription <span class="version-tag">V41</span></h1>
             <div class="header-actions">
                 <button class="icon-btn" onclick="dlZip()" title="ZIP Download">📦</button>
                 <button class="icon-btn" onclick="clearAll()" title="Alles löschen">🗑️</button>
@@ -303,14 +304,25 @@
     function toggleInfo() { els.infoModal.classList.toggle('visible'); }
     function toggleApiKey() { els.apiKey.type = els.apiKey.type === 'password' ? 'text' : 'password'; }
 
-    // WICHTIG: Hack für Chrome WebM Duration-Bug
-    window.fixDuration = function(audio) {
+    // Berechnet die Kosten und fügt sie in das UI ein
+    window.fixDuration = function(audio, id) {
+        const updateCost = (sec) => {
+            const el = document.getElementById(`cost-${id}`);
+            if(el && sec > 0) {
+                const cost = (sec / 60) * 0.006;
+                el.innerText = `| 💵 ~$${cost.toFixed(4)}`;
+            }
+        };
+
         if(audio.duration === Infinity || isNaN(audio.duration)) {
             audio.currentTime = 1e101;
             audio.ontimeupdate = function() {
                 this.ontimeupdate = null;
                 this.currentTime = 0;
+                updateCost(this.duration);
             }
+        } else {
+            updateCost(audio.duration);
         }
     }
 
@@ -389,8 +401,10 @@
             if(audioDevs.length > 0) {
                 els.micSelect.innerHTML = '';
                 audioDevs.forEach((d, i) => {
+                    // V41: Namen aufräumen (Regex entfernt (046D:0A15) und "Default -")
+                    let cleanName = d.label.replace(/\s*\([a-fA-F0-9]{4}:[a-fA-F0-9]{4}\)\s*/g, '').replace(/Default - /i, '').trim();
                     const opt = document.createElement('option');
-                    opt.value = d.deviceId; opt.text = `🎙️ ` + (d.label || `Mikrofon ${i + 1}`);
+                    opt.value = d.deviceId; opt.text = `🎙️ ` + (cleanName || `Mikrofon ${i + 1}`);
                     els.micSelect.appendChild(opt);
                 });
                 micsLoaded = true;
@@ -430,7 +444,6 @@
             if(MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) options.mimeType='audio/webm;codecs=opus';
             
             mediaRecorder = new MediaRecorder(stream, options);
-            // V40 FIX: Kein Timeslice-Intervall mehr. Wir lassen am Stück aufnehmen, um Dateikorruption zu vermeiden.
             mediaRecorder.ondataavailable = e => { if(e.data.size > 0) chunks.push(e.data); };
             mediaRecorder.onstop = () => {
                 const blob = new Blob(chunks, { type: chunks[0].type });
@@ -438,7 +451,7 @@
                 resetUI();
             };
 
-            mediaRecorder.start(); // <-- HIER IST DER FIX
+            mediaRecorder.start();
             isRecording = true; isPaused = false; startTime = Date.now(); pauseDelta=0;
             timerInt = setInterval(updateTimer, 1000);
             setMainButtonState('recording');
@@ -458,7 +471,6 @@
         const s = (totalSec%60).toString().padStart(2,'0');
         els.timer.innerText = `${m}:${s}`;
         
-        // V40: Da wir nicht mehr stückeln, schätzen wir die Größe anhand der Zeit (ca. 4 KB/s bei 32kbps)
         const estMB = (totalSec * 4000) / (1024 * 1024);
         els.size.innerText = `(~${estMB.toFixed(2)} MB)`;
 
@@ -505,7 +517,8 @@
         
         fd.append("file", blob, `audio.${ext}`);
         fd.append("model", "whisper-1");
-        fd.append("prompt", "Dies ist ein Diktat. Bitte ignoriere Stille und Pausen. Transkribiere den Text sauber und fortlaufend mit korrekter Grammatik.");
+        
+        // V41 FIX: Prompt entfernt, damit die KI nicht bei Stille den Prompt halluziniert!
 
         try {
             const res = await fetch("https://api.openai.com/v1/audio/transcriptions", { method: "POST", headers: { "Authorization": `Bearer ${els.apiKey.value}` }, body: fd });
@@ -526,7 +539,12 @@
         if(!el || !statsEl) return;
         const txt = el.value.trim(); const words = txt ? txt.split(/\s+/).length : 0;
         const tokens = Math.ceil(words * 1.33); const pages = (words / 250).toFixed(1);
-        statsEl.innerText = `📝 ${words} Wörter | 🪙 ~${tokens} Tokens | 📄 ~${pages} Seiten`;
+        
+        // Kosten-Span sichern
+        const costEl = document.getElementById(`cost-${id}`);
+        const costHtml = costEl ? costEl.outerHTML : `<span id="cost-${id}" class="cost-badge"></span>`;
+        
+        statsEl.innerHTML = `📝 ${words} Wörter | 🪙 ~${tokens} Tokens | 📄 ~${pages} Seiten ${costHtml}`;
     }
 
     function saveToHistory(id, text, ts) { let h = JSON.parse(localStorage.getItem("hist_v38")||"[]"); const idx = h.findIndex(e => e.id == id); if(idx > -1) h[idx].text = text; else h.unshift({ id, text, ts }); if(h.length > 30) h.pop(); localStorage.setItem("hist_v38", JSON.stringify(h)); }
@@ -538,13 +556,13 @@
         let player = "";
         if(blob) {
             const url = URL.createObjectURL(blob);
-            // V40 FIX: onloadedmetadata triggert fixDuration wieder!
-            player = `<div class="audio-wrapper"><audio controls playsinline preload="metadata" src="${url}" onloadedmetadata="window.fixDuration(this)"></audio></div>`;
+            // V41: ID wird mit übergeben, um die Kosten zu berechnen
+            player = `<div class="audio-wrapper"><audio controls playsinline preload="metadata" src="${url}" onloadedmetadata="window.fixDuration(this, ${id})"></audio></div>`;
         }
         d.innerHTML = `
             <div class="entry-meta">
                 <span>📅 ${ts}</span>
-                <span id="stats-${id}" class="text-stats">📝 0 Wörter</span>
+                <span id="stats-${id}" class="text-stats">📝 0 Wörter <span id="cost-${id}" class="cost-badge"></span></span>
             </div>
             <textarea id="txt-${id}" oninput="updateTextStats(${id})">${text}</textarea>
             ${player}
