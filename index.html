@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Simple Transcription V50</title>
+    <title>Simple Transcription V51</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -221,7 +221,7 @@
         
         <div class="panel-content">
             <div class="top-row">
-                <h1>Simple Transcription <span class="version-tag">V50 🎉</span></h1>
+                <h1>Simple Transcription <span class="version-tag">V51</span></h1>
                 <div class="header-actions">
                     <button class="icon-btn" onclick="toggleTheme()" title="Dark Mode"><svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></button>
                     <button class="icon-btn" onclick="dlZip()" title="ZIP Download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></button>
@@ -374,6 +374,7 @@
     let smoothedVol = 0;
     let timeAccum = 0;
     
+    // V51: CLEAN STACK ANIMATION (3 Blobs, Correct Order)
     function initVisualizer() {
         const ctx = els.canvas.getContext('2d'); resizeCanvas();
         function draw() {
@@ -386,12 +387,11 @@
                 const len = analyser.frequencyBinCount; if(!dataArray) dataArray = new Uint8Array(len);
                 analyser.getByteFrequencyData(dataArray); let sum = 0; for(let i=0; i<len; i++) sum += dataArray[i]; 
                 rawVol = (sum / len); 
-                timeAccum += 0.004 + (rawVol * 0.0001); // Angenehm ruhige Rotation
+                timeAccum += 0.004 + (rawVol * 0.0001); 
             } else {
-                timeAccum += 0.0015; // Sehr sanftes Wabern im Hintergrund
+                timeAccum += 0.002;
             }
 
-            // Normalisieren (0.0 bis 1.0) für garantierte Stabilität
             let volNorm = Math.min(rawVol / 100, 1.0); 
             smoothedVol = smoothedVol * 0.85 + volNorm * 0.15; 
             
@@ -399,39 +399,36 @@
             const intensity = Math.min(smoothedVol * gain, 1.5); 
 
             const maxDim = Math.max(w, h);
-            
-            // GRÖSSER & KRÄFTIGER: Basis-Radius deutlich erhöht, damit es weniger blass wirkt
-            const baseRadius = (parseInt(els.pSize.value) / 100) * maxDim * 0.18; 
-            const pulse = intensity * maxDim * 0.12; 
+            // Basis-Größe etwas erhöht für mehr Präsenz
+            const baseRadius = (parseInt(els.pSize.value) / 100) * maxDim * 0.20; 
+            const pulse = intensity * maxDim * 0.10; 
             
             const drawGlow = (x, y, r, color) => {
                 ctx.beginPath(); ctx.arc(x, y, Math.max(0, r), 0, Math.PI * 2); 
                 ctx.fillStyle = color; ctx.fill();
             };
 
-            const orbit = maxDim * 0.09 + (intensity * maxDim * 0.02);
+            const orbit = maxDim * 0.1 + (intensity * maxDim * 0.03);
 
-            // NEUES STACKING: Oben klein, nach unten hin massiver
+            // --- ZEICHENREIHENFOLGE KORRIGIERT (Hintergrund -> Vordergrund) ---
 
-            // Blob 1: Oben (Am kleinsten)
-            const x1 = cx + Math.sin(timeAccum) * (orbit * 0.7);
-            const y1 = cy - orbit + Math.cos(timeAccum * 1.2) * (orbit * 0.4);
-            drawGlow(x1, y1, (baseRadius * 0.5) + pulse, els.blob1.value);
+            // 1. UNTEN & GROSS (Hintergrund) -> Nimmt Blob 3 Farbe
+            const x3 = cx + Math.sin(timeAccum * 0.7) * (orbit * 0.3);
+            const y3 = cy + orbit * 0.7; // Tief positioniert
+            // Größe: 1.5x Basis (Groß)
+            drawGlow(x3, y3, (baseRadius * 1.5) + pulse, els.blob3.value);
 
-            // Blob 2: Mitte Links (Mittel)
-            const x2 = cx - orbit * 1.2 + Math.sin(timeAccum * 0.8) * (orbit * 0.5);
-            const y2 = cy + Math.cos(timeAccum * 1.5) * (orbit * 0.3);
-            drawGlow(x2, y2, (baseRadius * 0.9) + (pulse * 1.1), els.blob2.value);
+            // 2. MITTE & MITTEL (Dazwischen) -> Nimmt Blob 2 Farbe
+            const x2 = cx + Math.cos(timeAccum * 0.9) * (orbit * 0.6);
+            const y2 = cy + Math.sin(timeAccum * 1.1) * (orbit * 0.2); // Zentral
+            // Größe: 1.0x Basis (Mittel)
+            drawGlow(x2, y2, baseRadius + (pulse * 1.1), els.blob2.value);
 
-            // Blob 3: Mitte Rechts (Mittel-Groß)
-            const x3 = cx + orbit * 1.2 + Math.cos(timeAccum * 1.1) * (orbit * 0.5);
-            const y3 = cy + Math.sin(timeAccum * 0.9) * (orbit * 0.3);
-            drawGlow(x3, y3, (baseRadius * 1.1) + (pulse * 1.2), els.blob3.value);
-
-            // Blob 4: Unten (Am größten & massivsten)
-            const x4 = cx + Math.sin(timeAccum * 1.3) * (orbit * 0.5);
-            const y4 = cy + orbit * 0.8 + Math.cos(timeAccum * 0.7) * (orbit * 0.4);
-            drawGlow(x4, y4, (baseRadius * 1.5) + (pulse * 1.4), els.col2.value); 
+            // 3. OBEN & KLEIN (Vordergrund) -> Nimmt Blob 1 Farbe
+            const x1 = cx + Math.sin(timeAccum * 1.2) * (orbit * 0.5);
+            const y1 = cy - orbit * 0.8; // Hoch positioniert
+            // Größe: 0.6x Basis (Klein, knackig)
+            drawGlow(x1, y1, (baseRadius * 0.6) + (pulse * 0.8), els.blob1.value);
         }
         draw();
     }
