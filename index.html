@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Simple Transcription V54</title>
+    <title>Simple Transcription V55</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,9 +14,12 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
+        /* Nativer Dark-Mode für Audio-Player, Input-Felder und Scrollbars */
+        html { color-scheme: light; background: var(--c1); transition: background 0.5s ease; }
+        html[data-theme="dark"] { color-scheme: dark; background: #000000; }
+
         :root {
-            --c1: #a18cd1; --c2: #fbc2eb;
-            /* V54: Mehr Transparenz für den Floating-Effekt */
+            --c1: #8c6bd1; --c2: #fbc2eb; /* Minimal gesättigtere Pastellfarben */
             --glass-bg: rgba(255, 255, 255, 0.55);
             --glass-border: rgba(255, 255, 255, 0.6);
             --text: #222;
@@ -27,72 +30,90 @@
             --danger: #ff5252;
             --warn: #ffb142;
             --safe: #2ecc71;
-            --badge-bg: rgba(255, 255, 255, 0.4);
+            --badge-bg: rgba(255, 255, 255, 0.5);
         }
 
         body[data-theme="dark"] {
             --glass-bg: rgba(15, 15, 20, 0.65);
             --glass-border: rgba(255, 255, 255, 0.1);
-            --text: #f8f8f8;
-            --text-muted: #aaa;
+            --text: #e6e6e6; /* Sanfteres Weiß */
+            --text-muted: #999;
             --input-bg: rgba(0, 0, 0, 0.5);
             --btn-bg: rgba(40, 40, 45, 0.9);
-            --badge-bg: rgba(0, 0, 0, 0.4);
+            --badge-bg: rgba(0, 0, 0, 0.5);
         }
 
-        html { background: var(--c1); transition: background 0.5s ease; }
-        body[data-theme="dark"] html { background: #000000; }
-        
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             color: var(--text); margin: 0;
+            /* V55: Fixiertes Layout gegen Scroll-Durchrutschen */
+            height: 100dvh; width: 100vw; overflow: hidden;
             display: flex; flex-direction: column; align-items: center;
-            min-height: 100vh;
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* V54: VOLLBILD HINTERGRUND ANIMATION */
+        /* Vollbild-Hintergrund für die Animation */
         #cloudCanvas {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; z-index: -1;
             pointer-events: none; opacity: 1; transition: filter 0.5s ease;
         }
-        body[data-theme="dark"] #cloudCanvas { filter: brightness(0.5) saturate(1.3); opacity: 0.9; }
+        body[data-theme="dark"] #cloudCanvas { filter: brightness(0.6) saturate(1.2); opacity: 0.9; }
 
-        .app-container { width: 100%; max-width: 800px; position: relative; z-index: 2; padding: 15px; display: flex; flex-direction: column; gap: 20px; }
+        /* Das Haupt-Raster */
+        .app-container { 
+            width: 100%; max-width: 800px; height: 100%; 
+            display: flex; flex-direction: column; gap: 20px; 
+            padding: 15px; box-sizing: border-box; 
+            position: relative; z-index: 2;
+        }
 
-        /* V54: STICKY FLOATING DASHBOARD */
+        /* OBERES PANEL (Fixiert, scrollt nicht mit) */
         .main-panel {
-            position: sticky; top: 15px; z-index: 100;
+            flex-shrink: 0;
             border-radius: 35px; border: 1px solid var(--glass-border);
             box-shadow: 0 20px 50px rgba(0,0,0,0.15);
             background: var(--glass-bg); backdrop-filter: blur(35px); -webkit-backdrop-filter: blur(35px);
             padding: 25px 20px; display: flex; flex-direction: column; gap: 20px;
-            transition: all 0.3s ease;
+            box-sizing: border-box; width: 100%;
         }
+
+        /* UNTERER BEREICH (Scrollbar, schneidet Elemente ab, bevor sie unters Glas rutschen) */
+        #feed { 
+            flex-grow: 1; overflow-y: auto; overflow-x: hidden;
+            display: flex; flex-direction: column; gap: 20px; width: 100%;
+            padding-bottom: 30px; box-sizing: border-box;
+            /* Scrollbar unsichtbar machen, aber Funktion behalten */
+            scrollbar-width: none; -ms-overflow-style: none;
+        }
+        #feed::-webkit-scrollbar { display: none; }
 
         .top-row { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; }
         h1 { margin: 0; font-size: 1.5rem; font-weight: 900; background: linear-gradient(90deg, var(--c2), var(--c1)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; display: flex; align-items: baseline; gap: 8px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1)); text-align: center;}
-        body[data-theme="dark"] h1 { background: none; -webkit-text-fill-color: var(--text); color: var(--text); }
+        /* V55: Gradient bleibt auch im Dark Mode! */
+        body[data-theme="dark"] h1 { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+        
         .version-tag { font-size: 0.5em; opacity: 0.7; font-weight: 700; color: var(--text-muted); -webkit-text-fill-color: initial; }
 
         .header-actions { display: flex; justify-content: center; gap: 10px; width: 100%; }
-        .icon-btn { background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text); border-radius: 50%; width: 40px; height: 40px; cursor: pointer; display:flex; align-items:center; justify-content:center; transition: 0.2s; padding: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.03);}
+        .icon-btn { background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text); border-radius: 50%; width: 40px; height: 40px; cursor: pointer; display:flex; align-items:center; justify-content:center; transition: 0.2s; padding: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); box-sizing: border-box;}
         .icon-btn svg { width: 100%; height: 100%; }
         .icon-btn:hover { transform: scale(1.1); background: var(--btn-bg); color: var(--accent); box-shadow: 0 5px 15px rgba(0,0,0,0.1);}
 
-        /* COMPACT SETTINGS */
-        .settings-row { display: flex; gap: 8px; width: 100%; justify-content: center; align-items: stretch; flex-wrap: wrap; }
+        /* SETTINGS */
+        .settings-row { display: flex; gap: 8px; width: 100%; justify-content: center; align-items: stretch; flex-wrap: wrap; box-sizing: border-box;}
         
-        .api-wrapper { display: flex; align-items: center; gap: 8px; background: var(--input-bg); padding: 6px 12px; border-radius: 16px; border: 1px solid var(--glass-border); flex: 1 1 140px; min-width: 0;}
-        .api-wrapper input { border: none; background: transparent; color: var(--text); width: 100%; font-size: 0.85rem; min-width: 0;}
-        .api-wrapper input:focus { outline: none; }
+        .api-wrapper { display: flex; align-items: center; gap: 8px; background: var(--input-bg); padding: 6px 12px; border-radius: 16px; border: 1px solid var(--glass-border); flex: 1 1 140px; min-width: 0; box-sizing: border-box;}
+        .api-wrapper input { border: none; background: transparent; color: var(--text); width: 100%; font-size: 0.85rem; min-width: 0; outline: none;}
         .eye-btn { background: none; border: none; cursor: pointer; padding: 0; color: var(--text-muted); display:flex; align-items:center; flex-shrink: 0;}
         
-        .toggle-btn { display:flex; gap:6px; color:var(--text); align-items:center; justify-content: center; cursor: pointer; background: var(--input-bg); padding: 8px 12px; border-radius: 16px; border: 1px solid var(--glass-border); font-size: 0.8rem; font-weight: 600; text-align: center; transition: 0.2s; flex: 1 1 auto; white-space: nowrap;}
+        .toggle-btn { display:flex; gap:6px; color:var(--text); align-items:center; justify-content: center; cursor: pointer; background: var(--input-bg); padding: 8px 12px; border-radius: 16px; border: 1px solid var(--glass-border); font-size: 0.8rem; font-weight: 600; text-align: center; transition: 0.2s; flex: 1 1 auto; white-space: nowrap; box-sizing: border-box;}
         .toggle-btn:hover { background: var(--btn-bg); }
         
-        /* V54: Sleek Select for Auto-Cut & Mic */
         select.sleek-select { background: transparent; border: none; color: inherit; font-family: inherit; font-size: 0.8rem; font-weight: 600; outline: none; width: 100%; cursor: pointer; -webkit-appearance: none; text-align: center; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; padding: 0;}
+
+        /* V55: Auto-Cut Inputs */
+        .cut-input { width: 40px; background: rgba(0,0,0,0.05); border: 1px solid var(--glass-border); color: var(--text); font-weight: bold; text-align: center; border-radius: 8px; outline: none; padding: 4px; font-family: inherit;}
+        body[data-theme="dark"] .cut-input { background: rgba(255,255,255,0.1); }
 
         /* CONTROLS */
         .controls-area { display: flex; flex-direction: column; align-items: center; gap: 10px; }
@@ -119,9 +140,8 @@
         #btnPause.state-paused { background: var(--warn); }
         #btnPause.state-paused svg { fill: white; stroke: white; }
 
-        /* FEED & TEXT PILLS */
-        #feed { display: flex; flex-direction: column; gap: 20px; width: 100%; position: relative; z-index: 1;}
-        .entry { background: var(--glass-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-radius: 30px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); animation: slideIn 0.4s ease-out; border: 1px solid var(--glass-border); }
+        /* ENTRIES */
+        .entry { background: var(--glass-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-radius: 30px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); animation: slideIn 0.4s ease-out; border: 1px solid var(--glass-border); box-sizing: border-box; width: 100%;}
         @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: 0; } }
 
         .entry-meta { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 18px; width: 100%; }
@@ -149,7 +169,7 @@
         /* MODALS */
         .modal { display: none; position: fixed; bottom: 0; left: 0; right: 0; top: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .modal.visible { display: flex; animation: fadeIn 0.3s; }
-        .modal-box { background: var(--btn-bg); padding: 25px; border-radius: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.4); width: 90%; max-width: 400px; border: 1px solid var(--glass-border); max-height: 80vh; overflow-y: auto; color: var(--text); }
+        .modal-box { background: var(--btn-bg); padding: 25px; border-radius: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.4); width: 90%; max-width: 400px; border: 1px solid var(--glass-border); max-height: 80vh; overflow-y: auto; color: var(--text); box-sizing: border-box;}
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-weight: 800; font-size: 1.2rem; }
         .preset-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 20px; }
         .preset-btn { width: 100%; aspect-ratio: 1; border-radius: 50%; border: 2px solid var(--glass-border); cursor: pointer; transition: 0.2s; }
@@ -202,9 +222,10 @@
 <div class="app-container">
     <div class="main-panel">
         <div class="top-row">
-            <h1>Simple Transcription <span class="version-tag">V54</span></h1>
+            <h1>Simple Transcription <span class="version-tag">V55</span></h1>
             <div class="header-actions">
                 <button class="icon-btn" onclick="toggleTheme()" title="Dark Mode"><svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></button>
+                <button class="icon-btn" onclick="dlZip()" title="ZIP Download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></button>
                 <button class="icon-btn" onclick="clearAll()" title="Alles löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
                 <button class="icon-btn" onclick="toggleDev()" title="Design"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c1.06 0 2-.94 2-2 0-.53-.21-1.04-.59-1.41-.36-.36-.59-.86-.59-1.4 0-1.06.94-2 2-2h1.5c2.76 0 5.5-2.24 5.5-5.5C22 7.36 17.52 2 12 2z"></path></svg></button>
             </div>
@@ -220,13 +241,12 @@
                 <input type="checkbox" id="autoDl" style="accent-color:var(--accent); width:16px; height:16px; margin:0;"> Save
             </label>
             
-            <div class="toggle-btn" style="padding: 0 10px;">
-                <select id="autoCutSel" class="sleek-select" style="height: 32px;">
-                    <option value="0">Cut: Aus</option>
-                    <option value="1">Cut: 1 Min</option>
-                    <option value="2" selected>Cut: 2 Min</option>
-                    <option value="5">Cut: 5 Min</option>
-                </select>
+            <label class="toggle-btn" style="cursor: pointer;">
+                <input type="checkbox" id="autoCutToggle" style="accent-color:var(--accent); width:16px; height:16px; margin:0;" checked> Auto-Cut
+            </label>
+            <div class="toggle-btn" style="cursor: default; padding: 5px 10px;">
+                <input type="number" id="autoCutMin" value="1" min="0.5" step="0.5" class="cut-input"> 
+                <span style="font-size:0.75rem; margin-left:4px;">min</span>
             </div>
         </div>
         
@@ -271,7 +291,8 @@
         timer: document.getElementById('timer'), size: document.getElementById('sizeDisplay'),
         canvas: document.getElementById('cloudCanvas'), feed: document.getElementById('feed'),
         apiKey: document.getElementById('apiKey'), fileUpload: document.getElementById('fileUpload'),
-        toast: document.getElementById('toast'), autoDl: document.getElementById('autoDl'), autoCutSel: document.getElementById('autoCutSel'),
+        toast: document.getElementById('toast'), autoDl: document.getElementById('autoDl'), 
+        autoCutToggle: document.getElementById('autoCutToggle'), autoCutMin: document.getElementById('autoCutMin'),
         devPanel: document.getElementById('devPanel'), micSelect: document.getElementById('micSelect'),
         col1: document.getElementById('col1'), col2: document.getElementById('col2'),
         blob1: document.getElementById('blob1'), blob2: document.getElementById('blob2'), blob3: document.getElementById('blob3'),
@@ -287,15 +308,15 @@
     function toggleTheme(forceInitDark) {
         const isDark = forceInitDark !== undefined ? !forceInitDark : document.body.getAttribute('data-theme') === 'dark';
         if(isDark) { 
-            document.body.removeAttribute('data-theme'); localStorage.setItem('theme_v54', 'light'); 
+            document.body.removeAttribute('data-theme'); document.documentElement.removeAttribute('data-theme'); localStorage.setItem('theme_v55', 'light'); 
             els.themeIcon.innerHTML = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>';
         } else { 
-            document.body.setAttribute('data-theme', 'dark'); localStorage.setItem('theme_v54', 'dark'); 
+            document.body.setAttribute('data-theme', 'dark'); document.documentElement.setAttribute('data-theme', 'dark'); localStorage.setItem('theme_v55', 'dark'); 
             els.themeIcon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
         }
         if(els.col1) updateDev(); 
     }
-    if(localStorage.getItem('theme_v54') === 'dark') { toggleTheme(true); } 
+    if(localStorage.getItem('theme_v55') === 'dark') { toggleTheme(true); } 
 
     window.fixDuration = function(audio, id) {
         const updateCost = (sec) => {
@@ -312,7 +333,7 @@
         } else { updateCost(audio.duration); }
     }
 
-    const defaults = { c1: '#a18cd1', c2: '#fbc2eb', b1: '#8ec5fc', b2: '#e0c3fc', b3: '#99ddff', sz: 80, gn: 100, bl: 50 };
+    const defaults = { c1: '#8c6bd1', c2: '#fbc2eb', b1: '#8ec5fc', b2: '#e0c3fc', b3: '#99ddff', sz: 70, gn: 100, bl: 50 };
     function applyPreset(c1, c2) { els.col1.value = c1; els.col2.value = c2; els.blob1.value = c1; els.blob2.value = c2; els.blob3.value = '#ffffff'; updateDev(); }
 
     window.resetDev = () => {
@@ -333,9 +354,8 @@
     function updateDev() {
         const c1 = els.col1.value; const c2 = els.col2.value;
         document.documentElement.style.setProperty('--c1', c1); document.documentElement.style.setProperty('--c2', c2);
-        // Hintergrundfarbe für den Wisch-Effekt und Meta-Tag setzen
+        
         const isDark = document.body.getAttribute('data-theme') === 'dark';
-        document.documentElement.style.backgroundColor = isDark ? '#000000' : c1;
         const metaTheme = document.getElementById('theme-color-meta');
         if(metaTheme) metaTheme.setAttribute('content', isDark ? '#000000' : c1);
         
@@ -347,11 +367,10 @@
     let globalStream, mediaRecorder, chunks = [], audioCtx, analyser, dataArray;
     let isRecording = false, isPaused = false, isCancelled = false;
     
-    // V54: Timer Management
-    let sessionStartTime = 0; // Absolute Startzeit der Session
-    let partStartTime = 0;    // Startzeit des aktuellen Chunks
-    let totalPauseDelta = 0;  // Gesamte pausierte Zeit der Session
-    let partPauseDelta = 0;   // Pausierte Zeit des aktuellen Chunks
+    let sessionStartTime = 0; 
+    let partStartTime = 0;    
+    let totalPauseDelta = 0;  
+    let partPauseDelta = 0;   
     let pauseStart = 0, timerInt;
     let micsLoaded = false;
     
@@ -370,7 +389,7 @@
     function resizeCanvas() { els.canvas.width = window.innerWidth; els.canvas.height = window.innerHeight; }
     window.addEventListener('resize', resizeCanvas);
 
-    // V54: VOLLBILD ANIMATION (Responsive zum Bildschirm, nicht zur Box)
+    // V55: FINERE PARTIKEL-ANIMATION (8 Elemente statt 4)
     let smoothedVol = 0; let timeAccum = 0;
     function initVisualizer() {
         const ctx = els.canvas.getContext('2d'); resizeCanvas();
@@ -389,20 +408,23 @@
             let volNorm = Math.min(rawVol / 100, 1.0); 
             smoothedVol = smoothedVol * 0.85 + volNorm * 0.15; 
             const gain = parseInt(els.pGain.value) / 100;
-            // V54: Stärkere Reaktivität (Potenzfunktion macht Spitzen knackiger)
-            const intensity = Math.min(Math.pow(smoothedVol, 0.7) * gain * 1.8, 2.5); 
+            const intensity = Math.min(Math.pow(smoothedVol, 0.7) * gain * 1.5, 2.0); 
 
             const maxDim = Math.max(w, h);
-            // Basis größer, da Fullscreen
-            const baseRadius = (parseInt(els.pSize.value) / 100) * maxDim * 0.4;
+            const baseRadius = (parseInt(els.pSize.value) / 100) * maxDim * 0.25; // Kleinere Basis für mehr Elemente
             
             const drawGlow = (x, y, r, color) => { ctx.beginPath(); ctx.arc(x, y, Math.max(0, r), 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill(); };
 
-            // Die Animation dehnt sich bei Lautstärke stark über den ganzen Bildschirm aus
-            drawGlow(w * 0.5 + Math.sin(timeAccum * 0.7) * w * 0.25, h * 0.5 + Math.cos(timeAccum * 0.5) * h * 0.25, baseRadius + intensity * maxDim * 0.1, els.blob1.value);
-            drawGlow(w * 0.5 + Math.cos(timeAccum * 0.8) * w * 0.30, h * 0.5 + Math.sin(timeAccum * 0.6) * h * 0.30, baseRadius + intensity * maxDim * 0.12, els.blob2.value);
-            drawGlow(w * 0.5 + Math.sin(timeAccum * 0.9 + Math.PI) * w * 0.20, h * 0.5 + Math.cos(timeAccum * 1.1 + Math.PI) * h * 0.20, baseRadius * 0.8 + intensity * maxDim * 0.15, els.blob3.value);
-            drawGlow(w * 0.5 + Math.cos(timeAccum * 0.6 + Math.PI/2) * w * 0.35, h * 0.5 + Math.sin(timeAccum * 0.7 + Math.PI/2) * h * 0.35, baseRadius * 1.1 + intensity * maxDim * 0.1, els.col2.value); 
+            // Farbpalette für die Partikel
+            const colors = [els.blob1.value, els.blob2.value, els.blob3.value, els.col1.value, els.col2.value];
+
+            // Erzeugt 8 individuelle Partikel, die sich auf komplexen Bahnen bewegen
+            for(let i=0; i<8; i++) {
+                let r = baseRadius + Math.sin(timeAccum + i) * maxDim * 0.05 + intensity * maxDim * 0.08;
+                let x = w * 0.5 + Math.cos(timeAccum * (0.4 + i*0.1) + i) * w * 0.4;
+                let y = h * 0.5 + Math.sin(timeAccum * (0.3 + i*0.15) - i) * h * 0.4;
+                drawGlow(x, y, r, colors[i % colors.length]);
+            }
         } draw();
     } initVisualizer();
 
@@ -424,14 +446,13 @@
     els.btnMain.onclick = () => { if(!isRecording) startRec(); else stopRec(); };
     els.btnPause.onclick = () => { if(isRecording && !isPaused) pauseRec(); else if(isPaused) resumeRec(); };
     
-    // V54: DOPPEL-KLICK ZUM VERWERFEN DER AUFNAHME
     window.cancelRec = (btn) => { 
         if(!btn.classList.contains('confirm')) {
             btn.classList.add('confirm');
             btn.innerHTML = '<span style="font-size:1.2rem; font-weight:bold;">🗑️?</span>';
             btn.style.background = 'var(--danger)'; btn.style.color = 'white';
             setTimeout(() => { 
-                if(isRecording || isPaused) { // Nur zurücksetzen wenn noch in Aufnahme
+                if(isRecording || isPaused) { 
                     btn.classList.remove('confirm'); btn.style.background = ''; btn.style.color = '';
                     btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"></path></svg>';
                 }
@@ -479,7 +500,7 @@
             mediaRecorder.ondataavailable = e => { if(e.data.size > 0) chunks.push(e.data); };
             
             mediaRecorder.onstop = () => {
-                if(isCancelled) { resetUI(); showToast("Verworfen."); return; }
+                if(isCancelled) { resetUI(); return; } // Still verworfen
                 const blob = new Blob(chunks, { type: chunks[0].type });
                 
                 processSessionAudio(blob, "Memo", currentSessionId, currentPart);
@@ -488,7 +509,6 @@
                     isAutoCutting = false; chunks = []; currentPart++;
                     mediaRecorder.start(); 
                     partStartTime = Date.now(); partPauseDelta = 0; 
-                    showToast(`✂️ Auto-Cut: Teil ${currentPart-1} in Arbeit. Nehme weiter auf...`);
                 } else {
                     resetUI();
                 }
@@ -519,17 +539,15 @@
 
     function updateTimer() {
         if(isPaused) return; 
-        // V54: Timer zeigt absolute Gesamtzeit der Session an
         const totalSec = Math.floor((Date.now() - sessionStartTime - totalPauseDelta)/1000);
         const partSec = Math.floor((Date.now() - partStartTime - partPauseDelta)/1000);
         
-        let cutMins = parseFloat(els.autoCutSel.value);
-        // Prüft auf Part-Länge für den Cut
-        if(cutMins > 0 && partSec >= cutMins * 60) { performAutoCut(); return; }
+        let cutMins = parseFloat(els.autoCutMin.value);
+        if(els.autoCutToggle.checked && !isNaN(cutMins) && cutMins > 0 && partSec >= cutMins * 60) { performAutoCut(); return; }
 
         els.timer.innerText = `${Math.floor(totalSec/60).toString().padStart(2,'0')}:${(totalSec%60).toString().padStart(2,'0')}`;
         
-        if(cutMins > 0) {
+        if(els.autoCutToggle.checked && cutMins > 0) {
             els.size.innerText = `Auto-Cut an | Teil ${currentPart}`;
         } else {
             els.size.innerText = `Aufnahme läuft`;
@@ -545,12 +563,13 @@
         processSessionAudio(file, file.name, Date.now(), 1); els.fileUpload.value='';
     });
 
+    // V55: Silent Copy im Vordergrund, reduziert Spam
     function smartCopy(text) {
         if(document.hasFocus()) { 
-            navigator.clipboard.writeText(text).then(() => { showToast("📋 Transkript kopiert!"); }); 
+            navigator.clipboard.writeText(text); // Silent copy!
         } else { 
             pendingClipboardText = text; isPendingCopy = true;
-            els.toast.innerHTML = "⏳ <b>Transkript aktualisiert!</b><br>Klicke irgendwo ins Fenster zum Kopieren.";
+            els.toast.innerHTML = "⏳ <b>Transkript aktualisiert!</b><br>Klicke ins Fenster zum Kopieren.";
             els.toast.style.background = "var(--warn)"; els.toast.style.color = "#000";
             els.toast.className = 'visible'; 
         } 
@@ -572,7 +591,6 @@
         
         if(!document.getElementById(`e-${sessionId}`)) { createEntry(sessionId, ts); }
         
-        // V54: Blob an den Eintrag anhängen (für den ZIP Download)
         const entryDiv = document.getElementById(`e-${sessionId}`);
         if(!entryDiv.audioBlobs) entryDiv.audioBlobs = [];
         entryDiv.audioBlobs.push(blob);
@@ -650,7 +668,7 @@
             <textarea id="txt-${id}" oninput="updateTextStats(${id})">${initialText}</textarea>
             <div id="audio-list-${id}" class="audio-list">${isHistory ? '<span style="font-size:0.75rem; color:var(--text-muted);"><i>Audio aus Verlauf nicht geladen</i></span>' : ''}</div>
             <div class="actions">
-                <button class="btn-action" onclick="doCopy(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg> Copy</button>
+                <button class="btn-action" onclick="doCopy(${id}, true)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg> Copy</button>
                 <button class="btn-action" onclick="dlTxt(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Text</button>
                 <button class="btn-action" onclick="dlAudio(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg> Audio</button>
                 <button class="btn-action btn-retry" id="retry-${id}" style="display:none;" onclick="retrySession(${id})"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg> Retry</button>
@@ -659,7 +677,16 @@
         els.feed.prepend(d); if(isHistory) updateTextStats(id);
     }
 
-    window.doCopy = (id) => { navigator.clipboard.writeText(document.getElementById(`txt-${id}`).value); showToast("Kopiert"); };
+    // Manueller Klick triggert Toast
+    window.doCopy = (id, showPopup=false) => { 
+        navigator.clipboard.writeText(document.getElementById(`txt-${id}`).value); 
+        if(showPopup) {
+            els.toast.innerHTML = "📋 Manuell kopiert!";
+            els.toast.style.background = "var(--safe)"; els.toast.style.color = "#fff";
+            els.toast.className = 'visible';
+            setTimeout(() => { els.toast.className = ''; els.toast.style.background = ''; els.toast.style.color = ''; }, 2000);
+        }
+    };
     
     window.delEntry = (id, btn) => { 
         if(!btn.classList.contains('confirm')) {
@@ -676,19 +703,14 @@
 
     window.dlTxt = (id) => { download(new Blob([document.getElementById(`txt-${id}`).value]), `transkript_${id}.txt`); };
     
-    // V54: Lade alle Audios einer Session als ZIP herunter, wenn es mehr als eins ist
     window.dlAudio = async (id) => { 
         const el = document.getElementById(`e-${id}`); 
-        if(!el.audioBlobs || el.audioBlobs.length === 0) { showToast("Kein Audio verfügbar", true); return; }
-        
+        if(!el.audioBlobs || el.audioBlobs.length === 0) { showToast("Kein Audio im Speicher", true); return; }
         if(el.audioBlobs.length === 1) {
             download(el.audioBlobs[0], `rec_${id}.${el.audioBlobs[0].type.includes('mp4') ? 'mp4' : 'webm'}`);
         } else {
-            showToast("Verpacke Audios als ZIP...");
             if(!window.JSZip) return; const zip = new JSZip();
-            el.audioBlobs.forEach((blob, index) => {
-                zip.file(`rec_${id}_part${index+1}.${blob.type.includes('mp4') ? 'mp4' : 'webm'}`, blob);
-            });
+            el.audioBlobs.forEach((blob, index) => { zip.file(`rec_${id}_part${index+1}.${blob.type.includes('mp4') ? 'mp4' : 'webm'}`, blob); });
             download(await zip.generateAsync({type:"blob"}), `Session_${id}_Audios.zip`);
         }
     };
@@ -696,12 +718,21 @@
     window.retrySession = async (id) => { 
         const el = document.getElementById(`e-${id}`);
         if(!el.audioBlobs || el.audioBlobs.length === 0) { showToast("Kein Audio für Retry", true); return; }
-        // Nimmt das letzte Audio aus der Session
         const blob = el.audioBlobs[el.audioBlobs.length - 1];
         showToast("Starte Retry mit Temperatur 0.8...");
         processSessionAudio(blob, "Retry", id, el.audioBlobs.length); 
     };
     
+    window.dlZip = async () => {
+        if(!window.JSZip) return; const zip = new JSZip(); let allTxt = "--- PROTOKOLL ---\n\n";
+        document.querySelectorAll('.entry').forEach(e => {
+            const id = e.id.replace('e-',''); const txt = e.querySelector('textarea').value; const ts = e.querySelector('.date-badge').innerText;
+            allTxt += `[${ts}]\n${txt}\n\n---\n\n`; 
+            const audios = e.querySelectorAll('audio');
+            audios.forEach((a, index) => { fetch(a.src).then(res => res.blob()).then(blob => { zip.folder("audio").file(`rec_${id}_part${index+1}.webm`, blob); }); });
+        });
+        setTimeout(async () => { download(await zip.generateAsync({type:"blob"}), `Session_${new Date().toISOString().replace(/[:.]/g, '-').slice(0,16)}.zip`); }, 1000);
+    };
     function download(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
     function showToast(txt, err=false) { els.toast.innerText = txt; els.toast.className = err ? 'visible error' : 'visible'; setTimeout(()=>els.toast.className='', 3000); }
 </script>
