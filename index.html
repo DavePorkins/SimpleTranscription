@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Simple Transcription V62</title>
+    <title>Simple Transcription V63</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -21,43 +21,45 @@
             --glass-border: rgba(255, 255, 255, 0.6);
             --text: #111; --text-muted: #555;
             --input-bg: rgba(255, 255, 255, 0.4);
-            --btn-bg: rgba(255, 255, 255, 0.9);
+            --btn-bg: rgba(255, 255, 255, 0.95);
             --btn-text: #222;
+            --rec-btn-bg: linear-gradient(135deg, var(--c2), var(--c1));
             --accent: #c471ed; --danger: #ff4757; --warn: #ffa502; --safe: #2ed573;
-            --badge-bg: rgba(255, 255, 255, 0.4);
+            --badge-bg: rgba(255, 255, 255, 0.5);
+            --title-glow: rgba(255,255,255,0.8);
         }
 
-        /* 1. Light Clear (Maximales Glas) -> Standard oben */
-        /* 2. Light Glass (Milchglas, etwas kontrastreicher) */
         html[data-theme="light-glass"] {
             --glass-bg: rgba(255, 255, 255, 0.65);
             --input-bg: rgba(255, 255, 255, 0.7);
             --btn-bg: rgba(20, 20, 25, 0.9);
             --btn-text: #fff;
+            --text-muted: #444;
         }
 
-        /* 3. Dark Glass (Milchig dunkel) */
         html[data-theme="dark-glass"] {
             color-scheme: dark; background: #000000;
-            --glass-bg: rgba(40, 40, 45, 0.65);
+            --glass-bg: rgba(40, 40, 45, 0.75);
             --glass-border: rgba(255, 255, 255, 0.15);
-            --text: #f0f0f0; --text-muted: #aaaaaa;
+            --text: #f0f0f0; --text-muted: #cccccc;
             --input-bg: rgba(0, 0, 0, 0.5);
             --btn-bg: rgba(240, 240, 245, 0.95);
             --btn-text: #111;
-            --badge-bg: rgba(0, 0, 0, 0.3);
+            --badge-bg: rgba(0, 0, 0, 0.4);
+            --rec-btn-bg: #444; /* Kohärenter Record Button */
+            --title-glow: rgba(0,0,0,0.8);
         }
 
-        /* 4. Dark Clear (Tief schwarz, hohe Transparenz) */
         html[data-theme="dark-clear"] {
             color-scheme: dark; background: #000000;
-            --glass-bg: rgba(10, 10, 12, 0.3);
+            --glass-bg: rgba(10, 10, 12, 0.35);
             --glass-border: rgba(255, 255, 255, 0.08);
-            --text: #f5f5f5; --text-muted: #888888;
+            --text: #f5f5f5; --text-muted: #dddddd;
             --input-bg: rgba(0, 0, 0, 0.3);
             --btn-bg: rgba(30, 30, 35, 0.8);
             --btn-text: #fff;
-            --badge-bg: rgba(255, 255, 255, 0.1);
+            --badge-bg: rgba(255, 255, 255, 0.15);
+            --title-glow: rgba(0,0,0,0.9);
         }
 
         body {
@@ -67,79 +69,75 @@
             -webkit-tap-highlight-color: transparent; padding-bottom: 50px;
         }
 
+        /* Fluid Mesh Canvas */
         #cloudCanvas {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
             pointer-events: none; opacity: 1; transition: filter 0.5s ease;
         }
-        html[data-theme^="dark"] #cloudCanvas { filter: brightness(0.6) saturate(1.2); }
+        html[data-theme^="dark"] #cloudCanvas { filter: brightness(0.55) saturate(1.2); }
 
         .app-container { 
             width: 100%; max-width: 800px; 
             display: flex; flex-direction: column; gap: 15px; 
-            padding: 15px; box-sizing: border-box; position: relative;
+            padding: 10px; box-sizing: border-box; position: relative;
         }
 
-        /* --- DOUBLE STICKY ZONE --- */
+        /* DOUBLE STICKY ZONE - Absolut stabil */
         .sticky-zone {
             position: sticky; top: 10px; z-index: 100;
             display: flex; flex-direction: column; gap: 12px; width: 100%;
+            align-self: flex-start;
         }
 
-        .sticky-cockpit, .record-glass-block {
+        .glass-panel {
             border-radius: 28px; border: 1px solid var(--glass-border);
-            background: var(--glass-bg); backdrop-filter: blur(35px); -webkit-backdrop-filter: blur(35px);
+            background: var(--glass-bg); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
             padding: 15px; box-sizing: border-box; width: 100%;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
         }
 
-        /* HEADER */
-        .top-row { display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 10px;}
+        /* HEADER & ZENTRIERUNG */
+        .top-row { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; gap: 12px;}
         h1 { 
-            margin: 0; font-size: 1.3rem; font-weight: 900; 
+            margin: 0; font-size: 1.4rem; font-weight: 900; text-align: center;
             background: linear-gradient(90deg, var(--c2), var(--c1)); 
             -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; 
-            color: transparent; display: flex; align-items: baseline; gap: 8px;
+            color: transparent; filter: drop-shadow(0 2px 8px var(--title-glow));
         }
         html[data-theme^="dark"] h1 { background: linear-gradient(90deg, var(--c2), var(--c1), #fff); -webkit-background-clip: text; }
-        .version-tag { font-size: 0.55em; opacity: 0.7; font-weight: 700; color: var(--text-muted); -webkit-text-fill-color: initial;}
+        .version-tag { font-size: 0.55em; opacity: 0.8; font-weight: 800; color: var(--text-muted); -webkit-text-fill-color: initial;}
 
-        .header-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;}
+        .header-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; width: 100%;}
         .icon-btn { 
             background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text); 
-            border-radius: 50%; width: 36px; height: 36px; cursor: pointer; display:flex; align-items:center; justify-content:center; 
+            border-radius: 50%; width: 38px; height: 38px; cursor: pointer; display:flex; align-items:center; justify-content:center; 
             transition: 0.2s;
         }
         .icon-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;}
         .icon-btn:hover { transform: scale(1.1); background: var(--btn-bg); color: var(--btn-text);}
 
-        /* SETTINGS ROW */
-        .settings-row { display: flex; gap: 8px; width: 100%; justify-content: flex-start; align-items: stretch; flex-wrap: wrap; margin-top: 5px;}
-        
-        .api-wrapper { display: flex; align-items: center; gap: 6px; background: var(--input-bg); padding: 4px 12px; border-radius: 12px; border: 1px solid var(--glass-border); flex-grow: 1; max-width: 200px;}
-        .api-wrapper input { border: none; background: transparent; color: var(--text); width: 100%; font-size: 0.8rem; outline: none;}
-        .api-tools { display: flex; gap: 4px; opacity: 0.6; }
-        .api-tools svg { width: 14px; height: 14px; cursor: pointer; transition: 0.2s;}
-        .api-tools svg:hover { opacity: 1; color: var(--accent); }
-        
-        .btn-sleek { display:flex; gap:6px; color:var(--text); align-items:center; justify-content: center; cursor: pointer; background: var(--input-bg); padding: 4px 12px; border-radius: 12px; border: 1px solid var(--glass-border); font-size: 0.8rem; font-weight: 600; white-space: nowrap; transition: 0.2s; height: 34px; box-sizing: border-box;}
-        .btn-sleek:hover { background: var(--btn-bg); color: var(--btn-text); }
-        .btn-sleek.active { background: var(--safe); color: #fff; border-color: var(--safe); }
-        .btn-sleek svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2;}
-        
-        select.icon-select { background: transparent; border: none; color: inherit; font-size: 0.8rem; font-weight: 600; outline: none; cursor: pointer; -webkit-appearance: none; text-align: center; max-width: 80px; text-overflow: ellipsis;}
+        /* ACTION BAR (Auto-Save, Auto-Cut) */
+        .btn-sleek { 
+            display:flex; gap:6px; color:var(--text); align-items:center; justify-content: center; 
+            cursor: pointer; background: var(--input-bg); padding: 6px 14px; border-radius: 14px; 
+            border: 1px solid var(--glass-border); font-size: 0.85rem; font-weight: 700; 
+            white-space: nowrap; transition: 0.2s; height: 36px; box-sizing: border-box;
+        }
+        .btn-sleek.inactive { opacity: 0.6; filter: grayscale(1); background: transparent; }
+        .btn-sleek.inactive:hover { opacity: 1; filter: none; background: var(--input-bg);}
+        .btn-sleek.active { background: var(--btn-bg); color: var(--btn-text); box-shadow: 0 4px 10px rgba(0,0,0,0.1);}
+        .btn-sleek svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2;}
 
-        /* TIMER & RECORDING BLOCK */
-        .record-glass-block { display: flex; flex-direction: column; gap: 15px; align-items: center; padding: 20px;}
+        /* TIMER BLOCK */
         .action-center { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%;}
-        .timer { font-size: 3.2rem; font-weight: 300; letter-spacing: 2px; line-height: 1; font-variant-numeric: tabular-nums; color: var(--text);}
+        .timer { font-size: 3.5rem; font-weight: 300; letter-spacing: 2px; line-height: 1; font-variant-numeric: tabular-nums; color: var(--text); text-shadow: 0 4px 15px rgba(0,0,0,0.1);}
         
         .rec-controls { display: flex; justify-content: center; align-items: center; gap: 15px; width: 100%; }
-        .btn-circle { border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); background: var(--btn-bg); color: var(--btn-text); border-radius: 50%; width: 45px; height: 45px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);}
+        .btn-circle { border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); background: var(--btn-bg); color: var(--btn-text); border-radius: 50%; width: 45px; height: 45px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);}
         .btn-circle:active { transform: scale(0.9); }
         .btn-circle svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2;}
 
-        #btnMain { width: 65px; height: 65px; background: linear-gradient(135deg, var(--c2), var(--c1)); color: white;}
+        #btnMain { width: 65px; height: 65px; background: var(--rec-btn-bg); color: white;}
         #btnMain.state-recording { background: var(--btn-bg); color: var(--danger); border-radius: 20px;}
         #btnMain svg { stroke: currentColor; fill: currentColor; width: 28px; height: 28px; stroke-width:0;}
         #btnMain.state-recording svg { fill: currentColor; }
@@ -150,37 +148,33 @@
         .side-btn.visible#btnPause { background: rgba(255, 165, 2, 0.15); color: var(--warn); }
         #btnPause.state-paused { background: var(--warn); color: white; }
 
-        /* ACTIVE TEXT ENTRY (Inside Timer Block) */
-        #activeEntry { width: 100%; display: none; flex-direction: column; gap: 12px; border-top: 1px solid var(--glass-border); padding-top: 15px;}
-        
+        /* ACTIVE TEXT ENTRY */
+        #activeEntry { width: 100%; display: none; flex-direction: column; gap: 12px; border-top: 1px solid var(--glass-border); padding-top: 15px; margin-top: 5px;}
         .active-top-bar { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; flex-wrap: wrap; gap: 10px; }
+        
         .status-badge { font-size: 0.85rem; font-weight: 700; display:flex; align-items:center; gap:6px; padding: 4px 10px; border-radius: 20px;}
         .status-badge.listening { background: rgba(46, 204, 113, 0.15); color: var(--safe); }
         .status-badge.processing { background: rgba(196, 113, 237, 0.15); color: var(--accent); animation: pulse 1.5s infinite;}
         @keyframes pulse { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
         
         .stats-badges { display: flex; flex-wrap: wrap; gap: 6px; }
-        .stat-pill { background: var(--badge-bg); padding: 4px 8px; border-radius: 8px; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); display:flex; align-items:center; gap:4px; border: 1px solid var(--glass-border); cursor: help;}
+        .stat-pill { background: var(--badge-bg); padding: 4px 8px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); display:flex; align-items:center; gap:4px; border: 1px solid var(--glass-border); cursor: help;}
         
         .seamless-text { 
             width: 100%; background: rgba(0,0,0,0.03); border: none; color: var(--text); 
             font-family: inherit; resize: none; min-height: 40px; max-height: 40vh;
-            box-sizing: border-box; line-height: 1.6; font-size: 15px; outline: none; padding: 15px; border-radius: 12px;
+            box-sizing: border-box; line-height: 1.6; font-size: 15px; outline: none; padding: 15px; border-radius: 16px;
         }
-        html[data-theme^="dark"] .seamless-text { background: rgba(255,255,255,0.03); }
+        html[data-theme^="dark"] .seamless-text { background: rgba(255,255,255,0.04); }
 
-        .dummy-actions { display: flex; gap: 6px; opacity: 0.3; pointer-events: none;}
-        .dummy-actions .mini-btn { width: 28px; height: 28px; }
-
-        /* HISTORY FEED (Scrolls under) */
+        /* HISTORY FEED */
         #feed { display: flex; flex-direction: column; gap: 15px; width: 100%; position: relative; z-index: 1; padding-top: 5px;}
-
         .entry { background: var(--glass-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-radius: 24px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); border: 1px solid var(--glass-border); box-sizing: border-box; width: 100%; animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);}
         @keyframes slideDown { from { opacity: 0; transform: translateY(-30px) scale(0.98); } to { opacity: 1; transform: 0 scale(1); } }
 
         .entry-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; width: 100%; flex-wrap: wrap; gap: 10px;}
         .entry-meta-info { display: flex; flex-direction: column; gap: 6px; }
-        .date-badge { font-size: 0.85rem; color: var(--text); font-weight: 700; display:flex; align-items:center; gap:6px;}
+        .date-badge { font-size: 0.85rem; color: var(--text); font-weight: 800; display:flex; align-items:center; gap:6px;}
         .date-badge svg { width: 14px; height: 14px; stroke: var(--text-muted); fill:none; stroke-width:2;}
         
         .entry-actions { display: flex; gap: 6px; flex-wrap: wrap;}
@@ -193,27 +187,40 @@
 
         details.custom-accordion { background: var(--badge-bg); border: 1px solid var(--glass-border); border-radius: 12px; padding: 8px 12px; margin-top: 15px; }
         details.custom-accordion summary { font-size: 0.8rem; font-weight: bold; color: var(--text); cursor: pointer; outline: none; user-select: none; display: flex; align-items: center; gap:6px;}
-        details.custom-accordion summary svg { width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2;}
         .audio-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
         .audio-part { display: flex; align-items: center; gap: 10px; background: var(--input-bg); padding: 4px 10px; border-radius: 8px;}
         .audio-part span { font-size: 0.75rem; font-weight: bold; color: var(--text-muted); flex-shrink: 0;}
         audio { width: 100%; height: 30px; border-radius: 6px; outline: none; }
 
-        /* MODALS (Transparent Color Studio) */
-        .modal { display: none; position: fixed; bottom: 0; left: 0; right: 0; top: 0; background: rgba(0,0,0,0.2); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        /* MODALS */
+        .modal { display: none; position: fixed; bottom: 0; left: 0; right: 0; top: 0; background: rgba(0,0,0,0.3); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
         .modal.visible { display: flex; animation: fadeIn 0.2s; }
-        .modal-box { background: var(--glass-bg); padding: 25px; border-radius: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); width: 90%; max-width: 420px; border: 1px solid var(--glass-border); max-height: 80vh; overflow-y: auto; color: var(--text); box-sizing: border-box; backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);}
+        .modal-box { background: var(--glass-bg); padding: 25px; border-radius: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.4); width: 90%; max-width: 420px; border: 1px solid var(--glass-border); max-height: 85vh; overflow-y: auto; color: var(--text); box-sizing: border-box; backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);}
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-weight: 800; font-size: 1.2rem; }
         
-        .preset-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(40px, 1fr)); gap: 12px; margin-bottom: 20px; justify-items: center;}
-        .squircle { width: 45px; height: 45px; border-radius: 14px; border: 2px solid var(--glass-border); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.1);}
-        .squircle:hover { transform: scale(1.1) translateY(-2px); box-shadow: 0 8px 15px rgba(0,0,0,0.2);}
-        
+        /* HEXAGON WABEN DESIGN */
+        .hex-row { display: flex; justify-content: center; gap: 6px; margin-bottom: -14px; z-index: 2; position: relative;}
+        .hex { 
+            width: 50px; height: 58px; cursor: pointer; transition: 0.2s;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            background: #fff; display: flex; align-items: center; justify-content: center;
+        }
+        .hex:hover { transform: scale(1.15); z-index: 10; box-shadow: 0 0 20px rgba(255,255,255,0.5);}
+        .hex-inner { width: 100%; height: 100%; }
+        /* Rainbow Animation */
+        .rainbow-hex { background: linear-gradient(124deg, #ff2400, #e81d1d, #e8b71d, #e3e81d, #1de840, #1ddde8, #2b1de8, #dd00f3, #dd00f3); background-size: 1800% 1800%; animation: rainbow 4s ease infinite; }
+        @keyframes rainbow { 0%{background-position:0% 82%} 50%{background-position:100% 19%} 100%{background-position:0% 82%} }
+
         .dev-row { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; font-size: 0.9rem; font-weight: 600; color:var(--text);}
         .dev-row input[type="color"] { border: 2px solid var(--glass-border); width: 50px; height: 30px; border-radius: 8px; padding: 0; background:transparent;}
         .dev-row input[type="range"] { accent-color: var(--accent); }
 
-        #toast { position: fixed; top: 20px; left: 50%; transform: translate(-50%, -150%); background: var(--btn-bg); color: var(--btn-text); padding: 12px 30px; border-radius: 50px; font-weight: 700; transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.2s; opacity: 0; z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 1px solid var(--accent); text-align: center; pointer-events: none;}
+        /* API Modal Form */
+        .api-input-box { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--glass-border); background: var(--input-bg); color: var(--text); font-size: 1rem; outline: none; box-sizing: border-box; margin-bottom: 10px;}
+        .info-text { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 15px; font-weight: 500;}
+        .info-text a { color: var(--accent); text-decoration: none; font-weight: bold;}
+
+        #toast { position: fixed; top: 20px; left: 50%; transform: translate(-50%, -150%); background: var(--btn-bg); color: var(--btn-text); padding: 12px 30px; border-radius: 50px; font-weight: 800; transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.2s; opacity: 0; z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 1px solid var(--accent); text-align: center; pointer-events: none;}
         #toast.visible { transform: translate(-50%, 0); opacity: 1; }
     </style>
 </head>
@@ -224,47 +231,70 @@
 <div id="toast">Nachricht</div>
 
 <div id="devPanel" class="modal">
-    <div class="modal-box">
-        <div class="modal-header">
-            <span style="display:flex; align-items:center; gap:8px;"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c1.06 0 2-.94 2-2 0-.53-.21-1.04-.59-1.41-.36-.36-.59-.86-.59-1.4 0-1.06.94-2 2-2h1.5c2.76 0 5.5-2.24 5.5-5.5C22 7.36 17.52 2 12 2z"/></svg> Ästhetik</span>
+    <div class="modal-box" style="padding: 20px 10px;">
+        <div class="modal-header" style="padding: 0 15px;">
+            <span style="display:flex; align-items:center; gap:8px;"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg> Ästhetik</span>
             <div style="display:flex; gap:8px;">
                 <button class="icon-btn" onclick="resetDev()" style="width:auto; height:30px; border-radius:10px; font-size:0.8rem; font-weight:bold;">Reset</button>
                 <button class="icon-btn" onclick="toggleModal('devPanel')" style="width:30px;height:30px;"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
             </div>
         </div>
-        <div class="dev-section">
-            <div style="font-size: 0.8rem; font-weight:bold; color:var(--text-muted); margin-bottom:8px;">Monochrom & Edel</div>
-            <div class="preset-grid">
-                <div class="squircle" style="background: linear-gradient(135deg, #111, #444)" onclick="applyPreset('#111111','#444444', '#222222', '#555555', '#333333')" title="OLED Mono"></div>
-                <div class="squircle" style="background: linear-gradient(135deg, #bdc3c7, #2c3e50)" onclick="applyPreset('#bdc3c7','#2c3e50', '#a0aab2', '#34495e', '#7f8c8d')" title="Silver Mono"></div>
-                <div class="squircle" style="background: linear-gradient(135deg, #fdfbfb, #ebedee)" onclick="applyPreset('#fdfbfb','#ebedee', '#e0e0e0', '#f5f5f5', '#ffffff')" title="Pure White"></div>
+        
+        <div style="margin-bottom: 30px; padding-top: 10px;">
+            <div class="hex-row" style="z-index: 6;">
+                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #111, #444)" onclick="applyPreset('#111111','#444444', '#222222', '#555555', '#333333')" title="OLED Mono"></div></div>
+                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #fdfbfb, #ebedee)" onclick="applyPreset('#fdfbfb','#ebedee', '#e0e0e0', '#f5f5f5', '#ffffff')" title="Pure White"></div></div>
             </div>
-            
-            <div style="font-size: 0.8rem; font-weight:bold; color:var(--text-muted); margin-bottom:8px;">Lebhaft & Pastell</div>
-            <div class="preset-grid">
-                <div class="squircle" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb)" onclick="applyPreset('#a18cd1','#fbc2eb', '#8ec5fc', '#e0c3fc', '#99ddff')" title="Classic Purple"></div>
-                <div class="squircle" style="background: linear-gradient(135deg, #84fab0, #8fd3f4)" onclick="applyPreset('#84fab0','#8fd3f4', '#a1c4fd', '#c2e9fb', '#96e6a1')" title="Aqua Fresh"></div>
-                <div class="squircle" style="background: linear-gradient(135deg, #ff9a9e, #fecfef)" onclick="applyPreset('#ff9a9e','#fecfef', '#f6416c', '#ffb199', '#ff0844')" title="Sunset Vibrant"></div>
+            <div class="hex-row" style="z-index: 5;">
+                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #2c3e50, #000000)" onclick="applyPreset('#2c3e50','#000000', '#34495e', '#111111', '#4b6584')" title="Midnight"></div></div>
+                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #bdc3c7, #2c3e50)" onclick="applyPreset('#bdc3c7','#2c3e50', '#a0aab2', '#34495e', '#7f8c8d')" title="Silver"></div></div>
+                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #e6dada, #274046)" onclick="applyPreset('#e6dada','#274046', '#dcd2d2', '#3a5a60', '#f2ecec')" title="Dark Teal Creme"></div></div>
             </div>
+            <div class="hex-row" style="z-index: 4;">
+                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #f5f7fa, #c3cfe2)" onclick="applyPreset('#f5f7fa','#c3cfe2', '#d9e2ec', '#b2c0d6', '#ffffff')" title="Ice Cream"></div></div>
+                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #ffecd2, #fcb69f)" onclick="applyPreset('#ffecd2','#fcb69f', '#ffdfb3', '#fca083', '#ffffff')" title="Peach Creme"></div></div>
+                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #d4fc79, #96e6a1)" onclick="applyPreset('#d4fc79','#96e6a1', '#bbf569', '#7ad186', '#e7fd9c')" title="Matcha Cream"></div></div>
+                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #cfd9df, #e2ebf0)" onclick="applyPreset('#cfd9df','#e2ebf0', '#b8c6d1', '#d1dce5', '#ffffff')" title="Winter Sky"></div></div>
+            </div>
+            <div class="hex-row" style="z-index: 3;">
+                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb)" onclick="applyPreset('#a18cd1','#fbc2eb', '#8ec5fc', '#e0c3fc', '#99ddff')" title="Classic Purple"></div></div>
+                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #84fab0, #8fd3f4)" onclick="applyPreset('#84fab0','#8fd3f4', '#a1c4fd', '#c2e9fb', '#96e6a1')" title="Aqua Fresh"></div></div>
+                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #ff9a9e, #fecfef)" onclick="applyPreset('#ff9a9e','#fecfef', '#f6416c', '#ffb199', '#ff0844')" title="Sunset Vibrant"></div></div>
+                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #fbc2eb, #a6c1ee)" onclick="applyPreset('#fbc2eb','#a6c1ee', '#fbc2eb', '#c1c8e4', '#84fab0')" title="Cotton Candy"></div></div>
+                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #4facfe, #00f2fe)" onclick="applyPreset('#4facfe','#00f2fe', '#43e97b', '#38f9d7', '#4facfe')" title="Neon Cyber"></div></div>
+            </div>
+            <div class="hex-row" style="z-index: 2;">
+                <div class="hex"><div class="hex-inner rainbow-hex" onclick="applyPreset('#ff0000','#0000ff', '#00ff00', '#ffff00', '#ff00ff')" title="Crazy Rainbow"></div></div>
+            </div>
+        </div>
+        
+        <details class="custom-accordion" style="margin: 0 15px;">
+            <summary><svg viewBox="0 0 24 24"><path d="M12 20V10M18 20V4M6 20v-4"></path><circle cx="12" cy="10" r="2"></circle><circle cx="18" cy="4" r="2"></circle><circle cx="6" cy="16" r="2"></circle></svg> Feintuning aufklappen</summary>
+            <div class="dev-row"><span>Color 1</span> <input type="color" id="col1"></div>
+            <div class="dev-row"><span>Color 2</span> <input type="color" id="col2"></div>
+            <div class="dev-row"><span>Mesh 1</span> <input type="color" id="blob1"></div>
+            <div class="dev-row"><span>Mesh 2</span> <input type="color" id="blob2"></div>
+            <div class="dev-row"><span>Mesh 3</span> <input type="color" id="blob3"></div>
+            <div class="dev-row"><span>Größe</span> <input type="range" id="pSize" min="50" max="250"></div>
+            <div class="dev-row"><span>Dynamik</span> <input type="range" id="pGain" min="0" max="200"></div>
+        </details>
+    </div>
+</div>
 
-            <div style="font-size: 0.8rem; font-weight:bold; color:var(--text-muted); margin-bottom:8px;">Creme & Kontrast</div>
-            <div class="preset-grid">
-                <div class="squircle" style="background: linear-gradient(135deg, #e6dada, #274046)" onclick="applyPreset('#e6dada','#274046', '#dcd2d2', '#3a5a60', '#f2ecec')" title="Creme & Dark Teal"></div>
-                <div class="squircle" style="background: linear-gradient(135deg, #f5f7fa, #c3cfe2)" onclick="applyPreset('#f5f7fa','#c3cfe2', '#d9e2ec', '#b2c0d6', '#ffffff')" title="Ice Cream"></div>
-                <div class="squircle" style="background: linear-gradient(135deg, #d4fc79, #96e6a1)" onclick="applyPreset('#d4fc79','#96e6a1', '#bbf569', '#7ad186', '#e7fd9c')" title="Matcha Cream"></div>
-            </div>
-            
-            <details class="custom-accordion">
-                <summary><svg viewBox="0 0 24 24"><path d="M12 20V10M18 20V4M6 20v-4"></path><circle cx="12" cy="10" r="2"></circle><circle cx="18" cy="4" r="2"></circle><circle cx="6" cy="16" r="2"></circle></svg> Feintuning aufklappen</summary>
-                <div class="dev-row"><span>Color 1</span> <input type="color" id="col1"></div>
-                <div class="dev-row"><span>Color 2</span> <input type="color" id="col2"></div>
-                <div class="dev-row"><span>Plasma 1</span> <input type="color" id="blob1"></div>
-                <div class="dev-row"><span>Plasma 2</span> <input type="color" id="blob2"></div>
-                <div class="dev-row"><span>Plasma 3</span> <input type="color" id="blob3"></div>
-                <div class="dev-row"><span>Größe</span> <input type="range" id="pSize" min="20" max="150"></div>
-                <div class="dev-row"><span>Reaktion</span> <input type="range" id="pGain" min="0" max="200"></div>
-                <div class="dev-row"><span>Blur</span> <input type="range" id="pBlur" min="0" max="80"></div>
-            </details>
+<div id="apiModal" class="modal">
+    <div class="modal-box">
+        <div class="modal-header"><span>OpenAI API Key</span><button class="icon-btn" onclick="toggleModal('apiModal')" style="width:30px;height:30px;"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div>
+        <input type="password" id="apiKey" class="api-input-box" placeholder="sk-...">
+        <div style="display:flex; justify-content:space-between; margin-bottom: 20px;">
+            <button class="btn-sleek active" onclick="saveApiAndClose()" style="width:48%;">Speichern</button>
+            <button class="btn-sleek" onclick="toggleApiVisibility()" style="width:48%;">Zeigen / Verbergen</button>
+        </div>
+        <div class="info-text">
+            <b>Was ist das?</b><br>
+            Simple Transcription nutzt die <a href="https://platform.openai.com/" target="_blank">Whisper API von OpenAI</a>. Dafür brauchst du einen eigenen Key. Die Audios werden nicht gespeichert, sondern direkt verarbeitet.
+            <br><br>
+            <b>Kosten:</b><br>
+            Die Transkription kostet ca. <b>0,6 Cent pro Minute</b> ($0.006/min). Eine Stunde Diktat kostet dich also gerade einmal ~36 Cent.
         </div>
     </div>
 </div>
@@ -273,7 +303,10 @@
     <div class="modal-box" style="text-align:center;">
         <div class="modal-header"><span>App teilen</span><button class="icon-btn" onclick="toggleModal('qrModal')" style="width:30px;height:30px;"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div>
         <div id="qrcode" style="display:flex; justify-content:center; padding: 20px; background: white; border-radius: 15px; margin-bottom: 15px;"></div>
-        <p style="font-size:0.8rem; color:var(--text-muted);">Scanne den Code, um die App am Handy zu öffnen.</p>
+        <p style="font-size:1rem; font-weight:700; color:var(--text); margin-bottom: 5px;">Simple Transcription</p>
+        <p style="font-size:0.9rem; color:var(--text-muted); line-height: 1.4;">
+            ist eine Web-App, die von mir ge-vibe-coded wurde. Ist ein kleines Experiment und soll dazu motivieren, dass andere damit experimentieren und ausprobieren.
+        </p>
     </div>
 </div>
 
@@ -281,53 +314,46 @@
     
     <div class="sticky-zone">
         
-        <div class="sticky-cockpit">
+        <div class="glass-panel">
             <div class="top-row">
-                <h1>Simple Transcription <span class="version-tag">V62</span></h1>
+                <h1>Simple Transcription <span class="version-tag">V63</span></h1>
+                
                 <div class="header-actions">
+                    <button class="icon-btn" onclick="toggleModal('apiModal')" title="API Key & Info">
+                        <svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+                    </button>
                     <button class="icon-btn" onclick="cycleTheme()" title="Theme Rotator" id="themeIcon"></button>
+                    <button class="icon-btn" onclick="toggleModal('devPanel')" title="Color Studio">
+                        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+                    </button>
                     <button class="icon-btn" onclick="dlAllZip()" title="Master ZIP Download">
                         <svg viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
                     </button>
                     <button class="icon-btn" onclick="showQR()" title="App Teilen">
                         <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                     </button>
-                    <button class="icon-btn" onclick="toggleModal('devPanel')" title="Color Studio">
-                        <svg viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c1.06 0 2-.94 2-2 0-.53-.21-1.04-.59-1.41-.36-.36-.59-.86-.59-1.4 0-1.06.94-2 2-2h1.5c2.76 0 5.5-2.24 5.5-5.5C22 7.36 17.52 2 12 2z"/></svg>
+                    <button class="icon-btn" onclick="document.getElementById('fileUpload').click()" title="Audio Upload">
+                        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    </button>
+                    <button class="icon-btn" title="Mikrofon Auswahl" style="position:relative;">
+                        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path></svg>
+                        <select id="micSelect" style="position:absolute; width:100%; height:100%; opacity:0; cursor:pointer;"><option value="default">Default</option></select>
                     </button>
                 </div>
-            </div>
-            
-            <div class="settings-row">
-                <div class="api-wrapper">
-                    <input type="password" id="apiKey" placeholder="API Key">
-                    <div class="api-tools">
-                        <svg viewBox="0 0 24 24" onclick="toggleApiKey()" title="Key anzeigen/verbergen"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                        <svg viewBox="0 0 24 24" onclick="copyApiKey()" title="Key kopieren"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg>
+
+                <div class="header-actions" style="margin-top: 4px;">
+                    <div class="btn-sleek inactive" id="btnAutoSave" onclick="toggleSave()" title="Auto-Save Backup">
+                        <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Auto 💾
                     </div>
-                </div>
-                
-                <div class="btn-sleek" id="btnAutoSave" onclick="toggleSave()" title="Auto-Save Backup">
-                    <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Auto-Save
-                </div>
-                
-                <div class="btn-sleek" id="btnAutoCut" onclick="toggleAutoCut()" title="Auto-Cut">
-                    <svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg> 
-                    <span id="cutDisplay">2 m</span>
-                </div>
-                
-                <div class="btn-sleek" style="padding: 0 8px; flex-grow:1; max-width: 120px;" title="Mikrofon">
-                    <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-                    <select id="micSelect" class="icon-select"><option value="default">Mic</option></select>
-                </div>
-                
-                <div class="btn-sleek" onclick="document.getElementById('fileUpload').click()" style="padding: 0 10px;" title="Upload">
-                    <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    <div class="btn-sleek inactive" id="btnAutoCut" onclick="cycleAutoCut()" title="Auto-Cut Intervall">
+                        <svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg> 
+                        <span id="cutDisplay">Off</span>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="record-glass-block" id="glassBlock">
+        <div class="glass-panel" id="glassBlock">
             <div class="action-center">
                 <div class="timer" id="timer">00:00</div>
                 <div class="rec-controls">
@@ -352,13 +378,9 @@
                     </div>
                     <div class="stats-badges" id="liveBadges">
                         <span class="stat-pill" id="liveWords" title="Gezählte Wörter">0 W</span>
-                        <span class="stat-pill" id="liveTokens" title="Geschätzte Token">0 T</span>
-                        <span class="stat-pill" id="livePages" title="Normseiten (~250 W)">0 S</span>
-                        <span class="stat-pill" id="liveCost" title="Geschätzte API Kosten">0.0 ct</span>
-                    </div>
-                    <div class="dummy-actions">
-                        <div class="mini-btn"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg></div>
-                        <div class="mini-btn"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line></svg></div>
+                        <span class="stat-pill" id="liveTokens" title="Geschätzte Token (~0.75 pro Wort)">0 T</span>
+                        <span class="stat-pill" id="livePages" title="Normseiten (~250 W pro Seite)">0 S</span>
+                        <span class="stat-pill" id="liveCost" title="Geschätzte API Kosten (0.6ct / min)">0.0 ct</span>
                     </div>
                 </div>
                 
@@ -381,13 +403,13 @@
         glassBlock: document.getElementById('glassBlock'), canvas: document.getElementById('cloudCanvas'), feed: document.getElementById('historyFeed'), activeEntry: document.getElementById('activeEntry'), activeText: document.getElementById('activeText'), statusBadge: document.getElementById('statusBadge'),
         apiKey: document.getElementById('apiKey'), fileUpload: document.getElementById('fileUpload'),
         toast: document.getElementById('toast'), btnAutoSave: document.getElementById('btnAutoSave'), btnAutoCut: document.getElementById('btnAutoCut'), cutDisplay: document.getElementById('cutDisplay'),
-        devPanel: document.getElementById('devPanel'), qrModal: document.getElementById('qrModal'), micSelect: document.getElementById('micSelect'),
+        devPanel: document.getElementById('devPanel'), qrModal: document.getElementById('qrModal'), apiModal: document.getElementById('apiModal'), micSelect: document.getElementById('micSelect'),
         col1: document.getElementById('col1'), col2: document.getElementById('col2'),
         blob1: document.getElementById('blob1'), blob2: document.getElementById('blob2'), blob3: document.getElementById('blob3'),
-        pSize: document.getElementById('pSize'), pGain: document.getElementById('pGain'), pBlur: document.getElementById('pBlur')
+        pSize: document.getElementById('pSize'), pGain: document.getElementById('pGain')
     };
 
-    // 4 Theme Icons: Sun (Clear), Sun+Cloud (Glass), Moon (Glass), FullMoon (Clear)
+    // Theme Rotator: Sun (Clear) -> SunCloud (Glass) -> Moon (Glass) -> FullMoon (Clear)
     const svgThemes = [
         `<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>`, 
         `<path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"></path>`, 
@@ -404,8 +426,8 @@
     const svgZip = `<path d="M21 8v13H3V8"></path><polyline points="1 3 23 3 23 8 1 8 1 3"></polyline><line x1="10" y1="12" x2="14" y2="12"></line>`;
 
     function toggleModal(id) { document.getElementById(id).classList.toggle('visible'); }
-    function toggleApiKey() { els.apiKey.type = els.apiKey.type === 'password' ? 'text' : 'password'; }
-    function copyApiKey() { navigator.clipboard.writeText(els.apiKey.value); showToast("Key kopiert!"); }
+    function toggleApiVisibility() { els.apiKey.type = els.apiKey.type === 'password' ? 'text' : 'password'; }
+    function saveApiAndClose() { localStorage.setItem("key_v38", els.apiKey.value); toggleModal('apiModal'); showToast("API Key gespeichert"); }
 
     function showQR() {
         document.getElementById('qrcode').innerHTML = ""; 
@@ -413,55 +435,55 @@
         toggleModal('qrModal');
     }
 
-    // Theme Engine Memory
-    let currentThemeIdx = parseInt(localStorage.getItem('theme_idx_v62') || 0);
+    // Theme Engine
+    let currentThemeIdx = parseInt(localStorage.getItem('theme_idx_v63') || 0);
     function cycleTheme() { currentThemeIdx = (currentThemeIdx + 1) % themes.length; applyTheme(currentThemeIdx); }
     function applyTheme(idx) {
         document.documentElement.setAttribute('data-theme', themes[idx]);
         els.themeIcon.innerHTML = `<svg viewBox="0 0 24 24">${svgThemes[idx]}</svg>`;
-        localStorage.setItem('theme_idx_v62', idx);
+        localStorage.setItem('theme_idx_v63', idx);
         if(els.col1) updateDev(); 
     }
     applyTheme(currentThemeIdx);
 
     // Auto-Save Toggle
-    let isAutoSave = localStorage.getItem("autodl_v62") === 'true';
-    function updateSaveBtn() { els.btnAutoSave.className = isAutoSave ? 'btn-sleek active' : 'btn-sleek'; }
-    window.toggleSave = () => { isAutoSave = !isAutoSave; localStorage.setItem("autodl_v62", isAutoSave); updateSaveBtn(); showToast(isAutoSave ? "Auto-Save aktiviert" : "Auto-Save deaktiviert"); };
+    let isAutoSave = localStorage.getItem("autodl_v63") === 'true';
+    function updateSaveBtn() { els.btnAutoSave.className = isAutoSave ? 'btn-sleek active' : 'btn-sleek inactive'; }
+    window.toggleSave = () => { isAutoSave = !isAutoSave; localStorage.setItem("autodl_v63", isAutoSave); updateSaveBtn(); showToast(isAutoSave ? "Auto-Save an" : "Auto-Save aus"); };
     updateSaveBtn();
 
-    // Auto-Cut Button Cycle (Off -> 1m -> 2m -> 5m)
-    const cutOptions = [0, 1, 2, 5];
-    let currentCutIdx = parseInt(localStorage.getItem("autocut_idx_v62") || 2); // default 2m
+    // Auto-Cut Logik
+    const cutOptions = [0, 1, 2, 3, 4, 5];
+    let currentCutIdx = parseInt(localStorage.getItem("autocut_idx_v63") || 0);
     function updateCutBtn() { 
         let val = cutOptions[currentCutIdx];
-        els.btnAutoCut.className = val > 0 ? 'btn-sleek active' : 'btn-sleek';
+        els.btnAutoCut.className = val > 0 ? 'btn-sleek active' : 'btn-sleek inactive';
         els.cutDisplay.innerText = val > 0 ? `${val} m` : 'Off';
     }
-    window.toggleAutoCut = () => { currentCutIdx = (currentCutIdx + 1) % cutOptions.length; localStorage.setItem("autocut_idx_v62", currentCutIdx); updateCutBtn(); };
+    window.cycleAutoCut = () => { currentCutIdx = (currentCutIdx + 1) % cutOptions.length; localStorage.setItem("autocut_idx_v63", currentCutIdx); updateCutBtn(); };
     updateCutBtn();
 
-    const defaults = { c1: '#a18cd1', c2: '#fbc2eb', b1: '#8ec5fc', b2: '#e0c3fc', b3: '#99ddff', sz: 60, gn: 100, bl: 50 };
+    // Color Studio
+    const defaults = { c1: '#a18cd1', c2: '#fbc2eb', b1: '#8ec5fc', b2: '#e0c3fc', b3: '#99ddff', sz: 120, gn: 100 };
     function applyPreset(c1, c2, b1=c1, b2=c2, b3='#ffffff') { els.col1.value = c1; els.col2.value = c2; els.blob1.value = b1; els.blob2.value = b2; els.blob3.value = b3; updateDev(); }
-    window.resetDev = () => { applyPreset(defaults.c1, defaults.c2, defaults.b1, defaults.b2, defaults.b3); els.pSize.value = defaults.sz; els.pGain.value = defaults.gn; els.pBlur.value = defaults.bl; updateDev(); showToast("Reset"); };
+    window.resetDev = () => { applyPreset(defaults.c1, defaults.c2, defaults.b1, defaults.b2, defaults.b3); els.pSize.value = defaults.sz; els.pGain.value = defaults.gn; updateDev(); showToast("Reset"); };
 
     function loadDev() {
         els.col1.value = localStorage.getItem('d_c1') || defaults.c1; els.col2.value = localStorage.getItem('d_c2') || defaults.c2;
         els.blob1.value = localStorage.getItem('d_b1') || defaults.b1; els.blob2.value = localStorage.getItem('d_b2') || defaults.b2;
         els.blob3.value = localStorage.getItem('d_b3') || defaults.b3;
         els.pSize.value = localStorage.getItem('d_sz') || defaults.sz; els.pGain.value = localStorage.getItem('d_gn') || defaults.gn;
-        els.pBlur.value = localStorage.getItem('d_bl') || defaults.bl; updateDev();
+        updateDev();
     }
     
     function updateDev() {
         const c1 = els.col1.value; const c2 = els.col2.value;
         document.documentElement.style.setProperty('--c1', c1); document.documentElement.style.setProperty('--c2', c2);
-        els.canvas.style.filter = `blur(${els.pBlur.value}px)`;
         const metaTheme = document.getElementById('theme-color-meta');
         if(metaTheme) metaTheme.setAttribute('content', document.documentElement.getAttribute('data-theme').includes('dark') ? '#000000' : c1);
-        localStorage.setItem('d_c1', c1); localStorage.setItem('d_c2', c2); localStorage.setItem('d_b1', els.blob1.value); localStorage.setItem('d_b2', els.blob2.value); localStorage.setItem('d_b3', els.blob3.value); localStorage.setItem('d_sz', els.pSize.value); localStorage.setItem('d_gn', els.pGain.value); localStorage.setItem('d_bl', els.pBlur.value);
+        localStorage.setItem('d_c1', c1); localStorage.setItem('d_c2', c2); localStorage.setItem('d_b1', els.blob1.value); localStorage.setItem('d_b2', els.blob2.value); localStorage.setItem('d_b3', els.blob3.value); localStorage.setItem('d_sz', els.pSize.value); localStorage.setItem('d_gn', els.pGain.value);
     }
-    [els.col1, els.col2, els.blob1, els.blob2, els.blob3, els.pSize, els.pGain, els.pBlur].forEach(el => el.addEventListener('input', updateDev));
+    [els.col1, els.col2, els.blob1, els.blob2, els.blob3, els.pSize, els.pGain].forEach(el => el.addEventListener('input', updateDev));
     
     let globalStream, mediaRecorder, chunks = [], audioCtx, analyser, dataArray;
     let isRecording = false, isPaused = false, isCancelled = false;
@@ -472,10 +494,9 @@
     let pendingTranscriptions = 0; let sessionBlobs = []; let activeCost = 0; 
     let pendingClipboardText = null; let isPendingCopy = false;
 
-    if(HARDCODED_KEY.length > 5) { els.apiKey.value = HARDCODED_KEY; document.querySelector('.api-wrapper').style.display='none'; } 
-    else { els.apiKey.value = localStorage.getItem("key_v38") || ""; els.apiKey.addEventListener('change', () => localStorage.setItem("key_v38", els.apiKey.value)); }
+    if(HARDCODED_KEY.length > 5) { els.apiKey.value = HARDCODED_KEY; } 
+    else { els.apiKey.value = localStorage.getItem("key_v38") || ""; }
 
-    // Crash Recovery
     function recoverTempData() {
         let tempTxt = localStorage.getItem("temp_active_text");
         if (tempTxt && tempTxt.trim().length > 0) {
@@ -496,7 +517,7 @@
     window.addEventListener('resize', resizeCanvas);
     function autoResizeText(textarea) { textarea.style.height = '40px'; textarea.style.height = (textarea.scrollHeight) + 'px'; }
 
-    // Visualizer
+    // Fluid Mesh Canvas Logik (Viel flüssiger, keine leeren Stellen)
     let smoothedVol = 0; let timeAccum = 0;
     function initVisualizer() {
         const ctx = els.canvas.getContext('2d'); resizeCanvas();
@@ -508,25 +529,35 @@
             let rawVol = 0;
             if(analyser && isRecording && !isPaused) {
                 if(dataArray) { analyser.getByteFrequencyData(dataArray); let sum = 0; for(let i=0; i<dataArray.length; i++) sum += dataArray[i]; rawVol = (sum / dataArray.length); }
-                timeAccum += 0.004 + (rawVol * 0.0001); 
-            } else { timeAccum += 0.0015; }
+                timeAccum += 0.003 + (rawVol * 0.0001); 
+            } else { timeAccum += 0.001; }
 
-            let volNorm = Math.min(rawVol / 100, 1.0); 
-            smoothedVol = smoothedVol * 0.85 + volNorm * 0.15; 
+            smoothedVol = smoothedVol * 0.9 + (Math.min(rawVol / 100, 1.0)) * 0.1; 
             const gain = parseInt(els.pGain.value) / 100;
-            const intensity = Math.min(Math.pow(smoothedVol, 0.7) * gain * 1.5, 2.0); 
+            const intensity = 1.0 + (smoothedVol * gain); 
 
             const maxDim = Math.max(w, h);
-            const baseRadius = (parseInt(els.pSize.value) / 100) * maxDim * 0.3; 
+            // Sehr große Blobs, die sich überlappen -> keine leeren Flächen
+            const baseRadius = (parseInt(els.pSize.value) / 100) * maxDim * 0.6; 
             
-            const drawGlow = (x, y, r, color) => { ctx.beginPath(); ctx.arc(x, y, Math.max(0, r), 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill(); };
-            const colors = [els.blob1.value, els.blob2.value, els.blob3.value, els.col1.value, els.col2.value];
-
-            for(let i=0; i<8; i++) {
-                let r = baseRadius + Math.sin(timeAccum * 0.5 + i) * maxDim * 0.04 + intensity * maxDim * 0.08;
-                let x = w * 0.5 + Math.sin(timeAccum * (0.3 + i*0.05) + i*1.2) * w * 0.4;
-                let y = h * 0.5 + Math.cos(timeAccum * (0.4 + i*0.07) - i*0.8) * h * 0.4;
-                drawGlow(x, y, r, colors[i % colors.length]);
+            const colors = [els.blob1.value, els.blob2.value, els.blob3.value, els.col1.value];
+            
+            // 4 riesige Farb-Blobs, die sanft rotieren
+            for(let i=0; i<4; i++) {
+                let r = baseRadius * intensity;
+                let angle = timeAccum * (0.2 + i*0.1) + i * (Math.PI/2);
+                let dist = maxDim * 0.3 * Math.sin(timeAccum * 0.1 + i);
+                let x = w/2 + Math.cos(angle) * dist;
+                let y = h/2 + Math.sin(angle) * dist;
+                
+                const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
+                grad.addColorStop(0, colors[i] + 'ff');
+                grad.addColorStop(1, colors[i] + '00');
+                
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(x, y, r, 0, Math.PI * 2);
+                ctx.fill();
             }
         } draw();
     } initVisualizer();
@@ -536,10 +567,10 @@
         try {
             const devices = await navigator.mediaDevices.enumerateDevices(); const audioDevs = devices.filter(d => d.kind === 'audioinput');
             if(audioDevs.length > 0) {
-                els.micSelect.innerHTML = '<option value="default">Mic</option>';
+                els.micSelect.innerHTML = '<option value="default">Default</option>';
                 audioDevs.forEach((d, i) => {
                     let cleanName = d.label.replace(/\s*\([a-fA-F0-9]{4}:[a-fA-F0-9]{4}\)\s*/g, '').replace(/Default - /i, '').trim();
-                    const opt = document.createElement('option'); opt.value = d.deviceId; opt.text = `${cleanName}`;
+                    const opt = document.createElement('option'); opt.value = d.deviceId; opt.text = `${cleanName.substring(0,12)}..`;
                     els.micSelect.appendChild(opt);
                 }); micsLoaded = true;
             }
@@ -569,14 +600,12 @@
             els.iconMain.innerHTML = '<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>'; 
             els.btnMain.className = 'btn-circle'; els.btnMain.disabled = false;
             els.btnPause.classList.remove('visible'); els.btnCancel.classList.remove('visible'); 
-            els.glassBlock.style.boxShadow = ''; els.glassBlock.style.borderColor = '';
         } else if (state === 'recording') {
             els.iconMain.innerHTML = '<rect x="6" y="6" width="12" height="12" rx="2" ry="2"></rect>'; 
             els.btnMain.className = 'btn-circle state-recording'; els.btnMain.disabled = false;
             els.iconPause.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>'; 
             els.btnPause.className = 'btn-circle side-btn visible'; els.btnCancel.className = 'btn-circle side-btn visible'; 
             els.timer.style.color = "var(--text)";
-            els.glassBlock.style.boxShadow = '0 0 25px rgba(46, 204, 113, 0.2)'; els.glassBlock.style.borderColor = 'rgba(46, 204, 113, 0.4)';
         } else if (state === 'paused') {
             els.iconPause.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"></polygon>'; 
             els.btnPause.className = 'btn-circle side-btn visible state-paused'; els.timer.style.color = "var(--warn)"; 
@@ -601,7 +630,7 @@
                 els.statusBadge.className = 'status-badge listening';
                 els.statusBadge.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Höre zu...`;
                 els.activeEntry.style.display = 'flex';
-                els.activeText.style.height = '40px'; // Reset height
+                els.activeText.style.height = '40px'; 
             }
             partStartTime = Date.now(); partPauseDelta = 0;
 
