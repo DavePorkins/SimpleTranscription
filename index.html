@@ -18,37 +18,40 @@
         html { scroll-behavior: smooth; transition: background 0.5s ease; }
 
         :root {
-            /* Fallback Colors */
+            /* Fallbacks, werden durch Slider überschrieben */
             --c1: #a18cd1; --c2: #fbc2eb;
             --plasma1: #8ec5fc; --plasma2: #e0c3fc; --plasma3: #99ddff;
             
-            /* 1. Light Clear (Maximales Glas) */
-            --glass-bg: rgba(255, 255, 255, 0.15);
-            --glass-border: rgba(255, 255, 255, 0.35);
-            --text: #111111; --text-muted: #555555;
-            --input-bg: rgba(255, 255, 255, 0.4);
-            --btn-glass: rgba(255, 255, 255, 0.6);
+            /* 1. Light Clear: Volle Transparenz */
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --text: #111111; --text-muted: #444444;
+            --input-bg: rgba(255, 255, 255, 0.3);
+            --btn-glass: rgba(255, 255, 255, 0.5);
             --btn-hover: rgba(255, 255, 255, 0.9);
             --btn-text: #111;
             --rec-btn-bg: linear-gradient(135deg, var(--c2), var(--c1));
             --accent: #c471ed; --danger: #ff4757; --warn: #ffa502; --safe: #2ed573;
-            --badge-bg: rgba(255, 255, 255, 0.5);
-            --title-bg: rgba(255, 255, 255, 0.5);
+            --badge-bg: rgba(255, 255, 255, 0.4);
+            --title-bg: rgba(255, 255, 255, 0.6);
+            --blur-amount: blur(15px);
         }
 
-        /* 2. Light Glass */
+        /* 2. Light Glass: Milchglas */
         html[data-theme="light-glass"] {
-            --glass-bg: rgba(255, 255, 255, 0.55);
-            --input-bg: rgba(255, 255, 255, 0.65);
+            --glass-bg: rgba(255, 255, 255, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --input-bg: rgba(255, 255, 255, 0.7);
             --btn-glass: rgba(255, 255, 255, 0.8);
             --btn-hover: rgba(230, 230, 240, 1);
-            --title-bg: rgba(255, 255, 255, 0.7);
+            --title-bg: rgba(255, 255, 255, 0.8);
+            --blur-amount: blur(40px);
         }
 
-        /* 3. Dark Glass */
+        /* 3. Dark Glass: Milchig Dunkel */
         html[data-theme="dark-glass"] {
             color-scheme: dark; background: #000000;
-            --glass-bg: rgba(45, 45, 50, 0.65);
+            --glass-bg: rgba(40, 40, 45, 0.75);
             --glass-border: rgba(255, 255, 255, 0.15);
             --text: #fdfdfd; --text-muted: #cccccc;
             --input-bg: rgba(0, 0, 0, 0.4);
@@ -56,23 +59,25 @@
             --btn-hover: rgba(255, 255, 255, 0.25);
             --btn-text: #fff;
             --badge-bg: rgba(0, 0, 0, 0.5);
-            --rec-btn-bg: #555; 
+            --rec-btn-bg: #444; 
             --title-bg: rgba(0, 0, 0, 0.5);
+            --blur-amount: blur(40px);
         }
 
-        /* 4. Dark Clear (Tiefschwarz) */
+        /* 4. Dark Clear: Volle Transparenz Dunkel */
         html[data-theme="dark-clear"] {
             color-scheme: dark; background: #000000;
-            --glass-bg: rgba(10, 10, 15, 0.35);
+            --glass-bg: rgba(5, 5, 8, 0.15);
             --glass-border: rgba(255, 255, 255, 0.1);
-            --text: #ffffff; --text-muted: #dddddd;
-            --input-bg: rgba(0, 0, 0, 0.4);
+            --text: #ffffff; --text-muted: #bbbbbb;
+            --input-bg: rgba(0, 0, 0, 0.3);
             --btn-glass: rgba(255, 255, 255, 0.1);
-            --btn-hover: rgba(255, 255, 255, 0.2);
+            --btn-hover: rgba(255, 255, 255, 0.25);
             --btn-text: #fff;
             --badge-bg: rgba(255, 255, 255, 0.15);
             --rec-btn-bg: #333; 
             --title-bg: rgba(0, 0, 0, 0.6);
+            --blur-amount: blur(15px);
         }
 
         body {
@@ -84,10 +89,8 @@
 
         #cloudCanvas {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
-            pointer-events: none; opacity: 1; transition: filter 0.5s ease;
+            pointer-events: none; opacity: 1; 
         }
-        /* Dunklerer Canvas-Filter für starken Kontrast im Dark Mode */
-        html[data-theme^="dark"] #cloudCanvas { filter: brightness(0.4) saturate(1.2); }
 
         .app-container { 
             width: 100%; max-width: 800px; 
@@ -103,10 +106,10 @@
 
         .glass-panel {
             border-radius: 28px; border: 1px solid var(--glass-border);
-            background: var(--glass-bg); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
+            background: var(--glass-bg); backdrop-filter: var(--blur-amount); -webkit-backdrop-filter: var(--blur-amount);
             padding: 15px; box-sizing: border-box; width: 100%;
             box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
+            transition: background 0.3s ease, backdrop-filter 0.3s ease;
         }
 
         /* TITEL PILLE (Immer lesbar) */
@@ -133,7 +136,7 @@
         .icon-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;}
         .icon-btn:hover { transform: scale(1.1); background: var(--btn-hover); color: var(--btn-text);}
 
-        /* ACTION BAR (Auto-Save, Auto-Cut) */
+        /* ACTION BAR */
         .btn-sleek { 
             display:flex; gap:6px; color:var(--text); align-items:center; justify-content: center; 
             cursor: pointer; background: var(--btn-glass); padding: 6px 16px; border-radius: 14px; 
@@ -168,13 +171,15 @@
         .side-btn.visible#btnPause { color: var(--warn); }
         #btnPause.state-paused { background: var(--warn); color: white; border-color: transparent;}
 
-        /* --- THE MAGIC SCROLL CUTOFF --- */
+        /* --- THE MAGIC SCROLL CUTOFF --- 
+           Dieser Wrapper fadet die scrollenden Elemente nach oben hin ins Nichts aus, 
+           damit sie nicht in den Timer rutschen.
+        */
         .scroll-wrapper {
             width: 100%; display: flex; flex-direction: column; gap: 15px;
-            /* Fade-Out Maske: Oben 60px unsichtbar, dann weicher Übergang */
-            mask-image: linear-gradient(to bottom, transparent 0%, black 60px);
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 60px);
             padding-top: 60px; margin-top: -45px; z-index: 1;
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, transparent 40px, black 120px);
+            mask-image: linear-gradient(to bottom, transparent 0%, transparent 40px, black 120px);
         }
 
         /* ACTIVE TEXT ENTRY */
@@ -199,7 +204,7 @@
 
         /* HISTORY FEED */
         #feed { display: flex; flex-direction: column; gap: 15px; width: 100%; }
-        .entry { background: var(--glass-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-radius: 28px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); border: 1px solid var(--glass-border); box-sizing: border-box; width: 100%; animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; gap: 12px;}
+        .entry { background: var(--glass-bg); backdrop-filter: var(--blur-amount); -webkit-backdrop-filter: var(--blur-amount); border-radius: 28px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); border: 1px solid var(--glass-border); box-sizing: border-box; width: 100%; animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; gap: 12px;}
         @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: 0; } }
 
         .entry-header { display: flex; flex-direction: column; align-items: center; width: 100%; gap: 10px;}
@@ -207,7 +212,8 @@
         .date-badge { font-size: 0.85rem; color: var(--text); font-weight: 800; display:flex; align-items:center; gap:6px;}
         
         .entry-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;}
-        .mini-btn { background: var(--badge-bg); border: 1px solid var(--glass-border); color: var(--text); border-radius: 12px; width: 34px; height: 34px; cursor: pointer; display:flex; align-items:center; justify-content:center; transition: 0.2s;}
+        /* Button-Hintergrund für Sichtbarkeit repariert */
+        .mini-btn { background: var(--badge-bg); border: 1px solid var(--glass-border); color: var(--text); border-radius: 12px; width: 34px; height: 34px; cursor: pointer; display:flex; align-items:center; justify-content:center; transition: 0.2s; backdrop-filter: blur(5px);}
         .mini-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2;}
         .mini-btn:hover { background: var(--btn-hover); color: var(--btn-text); transform: translateY(-2px);}
         .mini-btn.danger { color: var(--danger); }
@@ -222,27 +228,33 @@
         .audio-part span { font-size: 0.75rem; font-weight: bold; color: var(--text-muted); flex-shrink: 0;}
         audio { width: 100%; height: 30px; border-radius: 6px; outline: none; }
 
-        /* MODALS - ECHTES PREVIEW */
-        .modal { display: none; position: fixed; bottom: 0; left: 0; right: 0; top: 0; background: rgba(0,0,0,0.05); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);}
+        /* MODALS - PERFEKT TRANSPARENT */
+        .modal { display: none; position: fixed; bottom: 0; left: 0; right: 0; top: 0; background: rgba(0,0,0,0.05); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);}
         .modal.visible { display: flex; animation: fadeIn 0.2s; }
         .modal-box { background: var(--glass-bg); padding: 25px; border-radius: 35px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); width: 90%; max-width: 440px; border: 1px solid var(--glass-border); max-height: 85vh; overflow-y: auto; color: var(--text); box-sizing: border-box;}
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-weight: 800; font-size: 1.2rem; color: var(--text);}
         
-        /* HONEYCOMB ISLAND (Exakt & Sauber) */
-        .honeycomb-island { display: flex; flex-direction: column; align-items: center; padding: 15px 0 30px 0; }
-        .hex-row { display: flex; justify-content: center; margin-bottom: -12px; z-index: 2; position: relative;}
-        .hex { 
-            width: 48px; height: 54px; cursor: pointer; transition: 0.2s; margin: 0 2px;
-            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-            background: rgba(255,255,255,0.4); display: flex; align-items: center; justify-content: center;
+        /* COLOR STUDIO 2.0 (Vibe Slider & Math Engine) */
+        .vibe-container { display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px; align-items: center;}
+        .vibe-label { font-size: 1rem; font-weight: 800; }
+        #vibeSlider {
+            -webkit-appearance: none; width: 100%; height: 16px; border-radius: 20px; outline: none;
+            background: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
-        html[data-theme^="dark"] .hex { background: rgba(0,0,0,0.5); }
-        .hex:hover { transform: scale(1.2); z-index: 10; box-shadow: 0 0 20px rgba(255,255,255,0.8);}
-        /* 92% width for the border effect */
-        .hex-inner { width: 90%; height: 90%; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); }
+        #vibeSlider::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 28px; height: 28px; border-radius: 50%;
+            background: #fff; border: 3px solid #333; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
         
-        /* Pastel Rainbow */
-        .rainbow-hex { background: linear-gradient(124deg, #ffb3ba, #ffdfba, #ffffba, #baffc9, #bae1ff, #d0baff); background-size: 400% 400%; animation: rainbow 3s ease infinite;}
+        .rainbow-btn {
+            background: linear-gradient(124deg, #ffb3ba, #ffdfba, #ffffba, #baffc9, #bae1ff, #d0baff); 
+            background-size: 400% 400%; animation: rainbow 4s ease infinite;
+            border: 2px solid var(--glass-border); border-radius: 16px; padding: 12px;
+            font-weight: 900; color: #111; cursor: pointer; width: 100%; text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.2s;
+        }
+        .rainbow-btn:hover { transform: scale(1.02); }
         @keyframes rainbow { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
 
         .studio-tabs { display: flex; background: var(--input-bg); border-radius: 14px; padding: 4px; margin-bottom: 20px;}
@@ -253,11 +265,13 @@
         .anim-option:hover { background: var(--btn-hover); color: var(--btn-text); }
         .anim-option.active { border-color: var(--accent); color: var(--accent); background: var(--btn-glass); }
 
+        .dev-row { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; font-size: 0.85rem; font-weight: 700; color:var(--text-muted);}
+        .dev-row input[type="color"] { border: 2px solid var(--glass-border); width: 40px; height: 25px; border-radius: 6px; padding: 0; background:transparent;}
+
         .api-input-box { width: 100%; padding: 14px; border-radius: 16px; border: 1px solid var(--glass-border); background: var(--input-bg); color: var(--text); font-size: 1rem; outline: none; box-sizing: border-box; margin-bottom: 10px; font-family: monospace;}
         .info-text { font-size: 0.9rem; color: var(--text); line-height: 1.5; margin-bottom: 15px; font-weight: 600; text-align: center;}
         .info-text a { color: var(--accent); text-decoration: none; font-weight: 800;}
 
-        /* Edles Toast SVG */
         #toast { position: fixed; top: 20px; left: 50%; transform: translate(-50%, -150%); background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); color: var(--text); padding: 12px 30px; border-radius: 50px; font-weight: 800; transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.2s; opacity: 0; z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,0.2); text-align: center; pointer-events: none; display: flex; align-items: center; gap: 8px;}
         #toast.visible { transform: translate(-50%, 0); opacity: 1; }
     </style>
@@ -271,28 +285,39 @@
 <div id="devPanel" class="modal">
     <div class="modal-box" style="padding: 25px 15px;">
         <div class="modal-header">
-            <span style="display:flex; align-items:center; gap:8px;"><svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" fill="none" stroke-width="2"><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10c0 1.25-.895 2.25-2 2.25h-1.63c-.45 0-.82.37-.82.82 0 .22.09.43.24.58.3.31.48.73.48 1.18 0 1.17-.95 2.13-2.12 2.13H12zm-3-12a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm-9 5a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm12 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg> Color Studio</span>
+            <span style="display:flex; align-items:center; gap:8px;"><svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" fill="none" stroke-width="2"><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10c0 1.25-.895 2.25-2 2.25h-1.63c-.45 0-.82.37-.82.82 0 .22.09.43.24.58.3.31.48.73.48 1.18 0 1.17-.95 2.13-2.12 2.13H12zm-3-12a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm-9 5a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm12 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg> Studio</span>
             <div style="display:flex; gap:8px;">
-                <button class="icon-btn" onclick="resetDev()" style="width:auto; height:32px; border-radius:12px; font-size:0.8rem; font-weight:bold; padding: 0 10px;">Reset</button>
                 <button class="icon-btn" onclick="toggleModal('devPanel')" style="width:32px;height:32px;"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
             </div>
         </div>
         
         <div class="studio-tabs">
-            <div class="tab-btn active" id="tabColors" onclick="switchStudioTab('colors')">Farben</div>
+            <div class="tab-btn active" id="tabColors" onclick="switchStudioTab('colors')">Vibe (Farbe)</div>
             <div class="tab-btn" id="tabAnims" onclick="switchStudioTab('anims')">Animation</div>
         </div>
 
-        <div id="viewColors" class="honeycomb-island">
-            <div id="hexContainer" style="display: flex; flex-direction: column; align-items: center;"></div>
+        <div id="viewColors">
+            <div class="vibe-container">
+                <span class="vibe-label">Farbspektrum</span>
+                <input type="range" id="vibeSlider" min="0" max="360" value="280">
+            </div>
+            
+            <div class="rainbow-btn" onclick="applyPreset('#111','#333', '#ffb3ba', '#bae1ff', '#ffffba')">✨ Special: Pastel Rainbow</div>
+            
+            <details class="custom-accordion" style="margin-top: 25px;">
+                <summary><svg viewBox="0 0 24 24"><path d="M12 20V10M18 20V4M6 20v-4"></path><circle cx="12" cy="10" r="2"></circle><circle cx="18" cy="4" r="2"></circle><circle cx="6" cy="16" r="2"></circle></svg> Manuelles Feintuning</summary>
+                <div class="dev-row"><span>Basis 1</span> <input type="color" id="col1"></div>
+                <div class="dev-row"><span>Basis 2</span> <input type="color" id="col2"></div>
+                <div class="dev-row"><span>Plasma 1</span> <input type="color" id="blob1"></div>
+                <div class="dev-row"><span>Plasma 2</span> <input type="color" id="blob2"></div>
+                <div class="dev-row"><span>Plasma 3</span> <input type="color" id="blob3"></div>
+            </details>
         </div>
 
         <div id="viewAnims" style="display:none; padding: 10px 0;">
             <div class="anim-option active" id="anim-nebula" onclick="setAnim('nebula')">Nebula (Wolken) <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg></div>
             <div class="anim-option" id="anim-lava" onclick="setAnim('lava')">Lava (Tropfen) <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"></circle></svg></div>
             <div class="anim-option" id="anim-aurora" onclick="setAnim('aurora')">Aurora (Wellen) <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h4l3-9 5 18 3-9h5"></path></svg></div>
-            
-            <div style="margin-top: 20px; text-align: center; color: var(--text-muted); font-size: 0.8rem; font-weight:bold;">Tipp: Die Animation reagiert auf deine Stimme!</div>
         </div>
     </div>
 </div>
@@ -330,7 +355,7 @@
             <div class="top-row">
                 <div class="title-pill">
                     <h1>Simple Transcription</h1>
-                    <span class="version-tag">V67</span>
+                    <span class="version-tag">V68</span>
                 </div>
                 
                 <div class="header-actions">
@@ -346,6 +371,9 @@
                     </button>
                     <button class="icon-btn" onclick="showQR()" title="App Teilen">
                         <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    </button>
+                    <button class="icon-btn" onclick="document.getElementById('fileUpload').click()" title="Audio Upload">
+                        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
                     </button>
                     <button class="icon-btn" title="Mikrofon Auswahl" style="position:relative;">
                         <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
@@ -418,7 +446,10 @@
         badgeListen: document.getElementById('badgeListen'), badgeTranscribe: document.getElementById('badgeTranscribe'), badgeCut: document.getElementById('badgeCut'),
         apiKey: document.getElementById('apiKey'), fileUpload: document.getElementById('fileUpload'),
         toast: document.getElementById('toast'), toastMsg: document.getElementById('toastMsg'), btnAutoSave: document.getElementById('btnAutoSave'), btnAutoCut: document.getElementById('btnAutoCut'), cutDisplay: document.getElementById('cutDisplay'),
-        devPanel: document.getElementById('devPanel'), hexContainer: document.getElementById('hexContainer'), apiModal: document.getElementById('apiModal'), micSelect: document.getElementById('micSelect')
+        devPanel: document.getElementById('devPanel'), apiModal: document.getElementById('apiModal'), micSelect: document.getElementById('micSelect'),
+        vibeSlider: document.getElementById('vibeSlider'),
+        col1: document.getElementById('col1'), col2: document.getElementById('col2'),
+        blob1: document.getElementById('blob1'), blob2: document.getElementById('blob2'), blob3: document.getElementById('blob3')
     };
 
     // Theme Rotator
@@ -442,98 +473,99 @@
     function saveApiAndClose() { localStorage.setItem("key_v38", els.apiKey.value); toggleModal('apiModal'); showToast("Key gespeichert"); }
 
     // Theme Engine Memory
-    let currentThemeIdx = parseInt(localStorage.getItem('theme_idx_v67') || 0);
+    let currentThemeIdx = parseInt(localStorage.getItem('theme_idx_v68') || 0);
     function cycleTheme() { currentThemeIdx = (currentThemeIdx + 1) % themes.length; applyTheme(currentThemeIdx); }
     function applyTheme(idx) {
         document.documentElement.setAttribute('data-theme', themes[idx]);
         els.themeIcon.innerHTML = `<svg viewBox="0 0 24 24">${svgThemes[idx]}</svg>`;
-        localStorage.setItem('theme_idx_v67', idx);
+        localStorage.setItem('theme_idx_v68', idx);
         updateDev(true); 
     }
     applyTheme(currentThemeIdx);
 
-    // Auto-Save Toggle
-    let isAutoSave = localStorage.getItem("autodl_v67") === 'true';
+    // Auto-Save
+    let isAutoSave = localStorage.getItem("autodl_v68") === 'true';
     function updateSaveBtn() { els.btnAutoSave.className = isAutoSave ? 'btn-sleek' : 'btn-sleek inactive'; }
-    window.toggleSave = () => { isAutoSave = !isAutoSave; localStorage.setItem("autodl_v67", isAutoSave); updateSaveBtn(); showToast(isAutoSave ? "Auto-Save An" : "Auto-Save Aus"); };
+    window.toggleSave = () => { isAutoSave = !isAutoSave; localStorage.setItem("autodl_v68", isAutoSave); updateSaveBtn(); showToast(isAutoSave ? "Auto-Save An" : "Auto-Save Aus"); };
     updateSaveBtn();
 
-    // Auto-Cut (0-5, Default: 2)
+    // Auto-Cut
     const cutOptions = [0, 1, 2, 3, 4, 5];
-    let currentCutIdx = localStorage.getItem("autocut_idx_v67");
+    let currentCutIdx = localStorage.getItem("autocut_idx_v68");
     if(currentCutIdx === null) currentCutIdx = 2; else currentCutIdx = parseInt(currentCutIdx);
     function updateCutBtn() { 
         let val = cutOptions[currentCutIdx];
         els.btnAutoCut.className = val > 0 ? 'btn-sleek' : 'btn-sleek inactive';
         els.cutDisplay.innerText = val > 0 ? `${val} Min` : 'Off';
     }
-    window.cycleAutoCut = () => { currentCutIdx = (currentCutIdx + 1) % cutOptions.length; localStorage.setItem("autocut_idx_v67", currentCutIdx); updateCutBtn(); };
+    window.cycleAutoCut = () => { currentCutIdx = (currentCutIdx + 1) % cutOptions.length; localStorage.setItem("autocut_idx_v68", currentCutIdx); updateCutBtn(); };
     updateCutBtn();
 
     // Studio Tabs
     window.switchStudioTab = (tab) => {
         document.getElementById('tabColors').classList.toggle('active', tab === 'colors');
         document.getElementById('tabAnims').classList.toggle('active', tab === 'anims');
-        document.getElementById('viewColors').style.display = tab === 'colors' ? 'flex' : 'none';
+        document.getElementById('viewColors').style.display = tab === 'colors' ? 'block' : 'none';
         document.getElementById('viewAnims').style.display = tab === 'anims' ? 'block' : 'none';
     };
 
-    // Color Setup (Exakte Hexagon-Generierung)
+    // --- COLOR STUDIO 2.0 (Math Engine) ---
+    function hslToHex(h, s, l) {
+        l /= 100;
+        const a = s * Math.min(l, 1 - l) / 100;
+        const f = n => {
+            const k = (n + h / 30) % 12;
+            const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+            return Math.round(255 * color).toString(16).padStart(2, '0');
+        };
+        return `#${f(0)}${f(8)}${f(4)}`;
+    }
+
+    els.vibeSlider.addEventListener('input', (e) => {
+        let hue = parseInt(e.target.value);
+        let c1 = hslToHex(hue, 80, 70);
+        let c2 = hslToHex((hue + 40) % 360, 80, 70);
+        let b1 = hslToHex((hue - 20 + 360) % 360, 90, 75);
+        let b2 = hslToHex((hue + 20) % 360, 90, 75);
+        let b3 = hslToHex((hue + 60) % 360, 90, 75);
+        applyPreset(c1, c2, b1, b2, b3);
+    });
+
     function applyPreset(c1, c2, b1, b2, b3) { 
+        els.col1.value = c1; els.col2.value = c2;
+        els.blob1.value = b1; els.blob2.value = b2; els.blob3.value = b3;
         document.documentElement.style.setProperty('--c1', c1); document.documentElement.style.setProperty('--c2', c2);
         localStorage.setItem('d_c1', c1); localStorage.setItem('d_c2', c2); 
         localStorage.setItem('d_b1', b1); localStorage.setItem('d_b2', b2); localStorage.setItem('d_b3', b3); 
         updateDev(); 
     }
 
-    const hexPresets = [
-        // Reihe 1: Mono (3)
-        [ {t:['#fff','#ccc'], b:['#0a0a0a','#1a1a1a']}, {t:['#fff','#eee'], b:['#444','#555']}, {t:['#111','#444'], b:['#fff','#eee']} ],
-        // Reihe 2: Silver & Ice (4)
-        [ {t:['#fff','#ccc'], b:['#2c3e50','#000000']}, {t:['#111','#444'], b:['#bdc3c7','#7f8c8d']}, {t:['#111','#333'], b:['#cfd9df','#e2ebf0']}, {t:['#fff','#eee'], b:['#274046','#e6dada']} ],
-        // Reihe 3: Creme & Natur (5)
-        [ {t:['#111','#333'], b:['#f5f7fa','#c3cfe2']}, {t:['#222','#555'], b:['#ffecd2','#fcb69f']}, {t:['#111','#333'], b:['#fccb90','#d57eeb']}, {t:['#111','#222'], b:['#d4fc79','#96e6a1']}, {t:['#111','#333'], b:['#a8edea','#fed6e3']} ],
-        // Reihe 4: Pastell (6)
-        [ {t:['#111','#333'], b:['#a18cd1','#fbc2eb']}, {t:['#111','#333'], b:['#84fab0','#8fd3f4']}, {t:['#111','#333'], b:['#ff9a9e','#fecfef']}, {t:['#111','#333'], b:['#fbc2eb','#a6c1ee']}, {t:['#111','#333'], b:['#4facfe','#00f2fe']}, {t:['#111','#333'], b:['#fa709a','#fee140']} ],
-        // Reihe 5: Deep Vibes (5)
-        [ {t:['#fff','#ccc'], b:['#30cfd0','#330867']}, {t:['#fff','#eee'], b:['#5ee7df','#b490ca']}, {t:['#fff','#eee'], b:['#13547a','#80d0c7']}, {t:['#fff','#ffccaa'], b:['#eb3349','#f45c43']}, {t:['#fff','#eee'], b:['#4cb8c4','#3cd3ad']} ]
-    ];
-
-    hexPresets.forEach((row, rIdx) => {
-        let rDiv = document.createElement('div');
-        rDiv.className = 'hex-row';
-        rDiv.style.zIndex = 10 - rIdx;
-        row.forEach(p => {
-            let h = document.createElement('div'); h.className = 'hex';
-            h.innerHTML = `<div class="hex-inner" style="background: linear-gradient(135deg, ${p.b[0]}, ${p.b[1]});"></div>`;
-            h.onclick = () => applyPreset(p.t[0], p.t[1], p.b[0], p.b[1], p.b[0]); // b3 is just b1 again for simplicity
-            rDiv.appendChild(h);
-        });
-        els.hexContainer.appendChild(rDiv);
-    });
-    // Rainbow Row (1)
-    let rainbowRow = document.createElement('div'); rainbowRow.className = 'hex-row'; rainbowRow.style.zIndex = 1;
-    rainbowRow.innerHTML = `<div class="hex"><div class="hex-inner rainbow-hex" onclick="applyPreset('#111','#333', '#ffb3ba', '#bae1ff', '#ffffba')"></div></div>`;
-    els.hexContainer.appendChild(rainbowRow);
-
-    window.resetDev = () => { applyPreset('#a18cd1', '#fbc2eb', '#8ec5fc', '#e0c3fc', '#99ddff'); showToast("Reset"); };
+    window.resetDev = () => { applyPreset('#a18cd1', '#fbc2eb', '#8ec5fc', '#e0c3fc', '#99ddff'); els.vibeSlider.value = 280; showToast("Reset"); };
 
     function loadDev() {
         const c1 = localStorage.getItem('d_c1') || '#a18cd1';
         const c2 = localStorage.getItem('d_c2') || '#fbc2eb';
+        els.col1.value = c1; els.col2.value = c2;
+        els.blob1.value = localStorage.getItem('d_b1') || '#8ec5fc';
+        els.blob2.value = localStorage.getItem('d_b2') || '#e0c3fc';
+        els.blob3.value = localStorage.getItem('d_b3') || '#99ddff';
         document.documentElement.style.setProperty('--c1', c1); document.documentElement.style.setProperty('--c2', c2);
         updateDev(true);
     }
     
     function updateDev(fromLoad=false) {
         const metaTheme = document.getElementById('theme-color-meta');
-        if(metaTheme) metaTheme.setAttribute('content', document.documentElement.getAttribute('data-theme').includes('dark') ? '#000000' : localStorage.getItem('d_c1')||'#a18cd1');
+        if(metaTheme) metaTheme.setAttribute('content', document.documentElement.getAttribute('data-theme').includes('dark') ? '#000000' : els.col1.value);
+        if(!fromLoad) {
+            applyPreset(els.col1.value, els.col2.value, els.blob1.value, els.blob2.value, els.blob3.value);
+        }
     }
+    [els.col1, els.col2, els.blob1, els.blob2, els.blob3].forEach(el => el.addEventListener('input', () => updateDev(false)));
 
     // Animation Setup
-    let currentAnim = localStorage.getItem('anim_type_v67') || 'nebula';
+    let currentAnim = localStorage.getItem('anim_type_v68') || 'nebula';
     function setAnim(type) {
-        currentAnim = type; localStorage.setItem('anim_type_v67', type);
+        currentAnim = type; localStorage.setItem('anim_type_v68', type);
         document.querySelectorAll('.anim-option').forEach(el => el.classList.remove('active'));
         document.getElementById(`anim-${type}`).classList.add('active');
     }
@@ -552,17 +584,16 @@
     function migrateHistory() { let h = localStorage.getItem("hist_master"); if (!h) { h = "[]"; localStorage.setItem("hist_master", h); } } 
     migrateHistory(); loadDev();
     
-    // Hard-Sortierung (Neueste immer oben)
     function saveToHistory(id, text, ts, blobs, cost, durationStr) { 
         let h = JSON.parse(localStorage.getItem("hist_master")||"[]"); 
         h.push({ id, text, ts, cost, durationStr }); 
-        h.sort((a, b) => b.id - a.id); // Descending (Höchste ID zuerst)
+        h.sort((a, b) => b.id - a.id); 
         if(h.length > 30) h.pop(); 
         localStorage.setItem("hist_master", JSON.stringify(h)); 
     }
     function loadHistory() { 
         let h = JSON.parse(localStorage.getItem("hist_master")||"[]");
-        h.sort((a, b) => b.id - a.id); // Neueste an Index 0
+        h.sort((a, b) => b.id - a.id); 
         els.feed.innerHTML = "";
         h.forEach(e => createHistoryEntry(e.id, e.ts, e.text, [], e.cost || 0, e.durationStr || "00:00", true)); 
     }
@@ -579,51 +610,52 @@
         function draw() {
             requestAnimationFrame(draw);
             const w = els.canvas.width; const h = els.canvas.height;
+            
+            // Dynamic Background based on Theme! 
             const isDark = document.documentElement.getAttribute('data-theme').includes('dark');
-            ctx.fillStyle = isDark ? '#000000' : '#ffffff';
+            ctx.fillStyle = isDark ? 'rgba(0,0,0,1)' : 'rgba(255,255,255,1)';
             ctx.fillRect(0, 0, w, h); 
 
             let rawVol = 0;
             if(analyser && isRecording && !isPaused) {
                 if(dataArray) { analyser.getByteFrequencyData(dataArray); let sum = 0; for(let i=0; i<dataArray.length; i++) sum += dataArray[i]; rawVol = (sum / dataArray.length); }
-                timeAccum += 0.006 + (rawVol * 0.0003); // Starke Reaktion auf Stimme
-            } else { timeAccum += 0.004; } 
+                timeAccum += 0.004 + (rawVol * 0.00005); // Sanfte Reaktion auf Stimme
+            } else { timeAccum += 0.003; } 
 
-            smoothedVol = smoothedVol * 0.85 + (Math.min(rawVol / 100, 1.0)) * 0.15; 
-            const intensity = 1.0 + (smoothedVol * 2.0); // Viel extremer bei Ton
+            smoothedVol = smoothedVol * 0.9 + (Math.min(rawVol / 100, 1.0)) * 0.1; 
+            const intensity = 1.0 + (smoothedVol * 0.5); 
             const maxDim = Math.max(w, h);
 
-            const colors = [localStorage.getItem('d_b1')||'#8ec5fc', localStorage.getItem('d_b2')||'#e0c3fc', localStorage.getItem('d_b3')||'#99ddff', localStorage.getItem('d_c1')||'#a18cd1'];
+            const colors = [els.blob1.value, els.blob2.value, els.blob3.value, els.col1.value];
 
             if(currentAnim === 'nebula') {
-                const baseRadius = maxDim * 0.6; 
-                for(let i=0; i<6; i++) { // Mehr Partikel
+                const baseRadius = maxDim * 0.7; 
+                for(let i=0; i<5; i++) {
                     let cIdx = i % colors.length;
                     let r = baseRadius * intensity * (0.8 + (i*0.1));
                     let x = w/2 + Math.cos(timeAccum * (0.4 + i*0.1) + i) * w * 0.5;
                     let y = h/2 + Math.sin(timeAccum * (0.5 + i*0.1) - i) * h * 0.5;
                     const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
-                    grad.addColorStop(0, colors[cIdx] + 'ff'); grad.addColorStop(1, colors[cIdx] + '00');
+                    grad.addColorStop(0, colors[cIdx] + 'ee'); grad.addColorStop(1, colors[cIdx] + '00');
                     ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
                 }
             } else if (currentAnim === 'aurora') {
-                for(let i=0; i<5; i++) {
+                for(let i=0; i<4; i++) {
                     let cIdx = i % colors.length;
-                    let bandW = w * 1.0 * intensity;
-                    let x = (w/5) * i + Math.sin(timeAccum + i)*200;
-                    let yOffset = Math.sin(timeAccum * 0.5 + i) * h * 0.5;
-                    const grad = ctx.createLinearGradient(x - bandW/2, 0, x + bandW/2, h);
-                    grad.addColorStop(0, colors[cIdx] + '00'); grad.addColorStop(0.5, colors[cIdx] + 'cc'); grad.addColorStop(1, colors[cIdx] + '00');
-                    ctx.fillStyle = grad; ctx.fillRect(0, yOffset - h*0.5, w, h*2);
+                    let bandW = w * 0.6 * intensity;
+                    let x = (w/4) * i + Math.sin(timeAccum + i)*200;
+                    let yOffset = Math.sin(timeAccum * 0.4 + i) * h * 0.3;
+                    const grad = ctx.createLinearGradient(x - bandW/2, 0, x + bandW/2, 0);
+                    grad.addColorStop(0, colors[cIdx] + '00'); grad.addColorStop(0.5, colors[cIdx] + 'ff'); grad.addColorStop(1, colors[cIdx] + '00');
+                    ctx.fillStyle = grad; ctx.fillRect(x - bandW/2, yOffset, bandW, h);
                 }
             } else if (currentAnim === 'lava') {
-                const baseRadius = maxDim * 0.4;
-                for(let i=0; i<8; i++) {
+                const baseRadius = maxDim * 0.35;
+                for(let i=0; i<6; i++) {
                     let cIdx = i % colors.length;
-                    let r = baseRadius * (0.5 + intensity * 0.4);
-                    let x = w/2 + Math.cos(timeAccum * 0.6 + i*15) * w * 0.4;
-                    // Steigen von unten nach oben
-                    let y = h + r - ((timeAccum * 150 + i*300) % (h + r*2)); 
+                    let r = baseRadius * (0.6 + intensity * 0.2);
+                    let x = w/2 + Math.cos(timeAccum * 0.5 + i*15) * w * 0.4;
+                    let y = h + r - ((timeAccum * 50 + i*200) % (h + r*2)); // Langsamer
                     const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
                     grad.addColorStop(0, colors[cIdx] + 'ee'); grad.addColorStop(1, colors[cIdx] + '00');
                     ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
@@ -778,9 +810,11 @@
         setMainButtonState('idle'); els.timer.innerText="00:00"; 
         releaseWakeLock(); if(globalStream) globalStream.getTracks().forEach(t=>t.stop()); 
         updateStatusBadges();
-        els.btnMain.disabled = false; // Important fix for double click
+        els.btnMain.disabled = false; 
     }
 
+    function silentCopy(text) { navigator.clipboard.writeText(text); }
+    
     function showToast(msg) {
         els.toastMsg.innerText = msg; els.toast.className = 'visible'; setTimeout(() => { els.toast.className = ''; }, 2500);
     }
@@ -797,7 +831,7 @@
                 const newText = part > 1 ? `\n---\n${data.text}` : data.text;
                 els.activeText.value = (els.activeText.value + newText).trim();
                 updateLiveStats(); autoResizeText(els.activeText);
-                navigator.clipboard.writeText(els.activeText.value); 
+                silentCopy(els.activeText.value); 
             } else { els.activeText.value += `\n[Error: ${data.error?.message}]`; autoResizeText(els.activeText); }
         } catch(e) { els.activeText.value += `\n[Netzwerk-Fehler]`; autoResizeText(els.activeText); }
         pendingTranscriptions--; updateStatusBadges();
@@ -815,7 +849,7 @@
             saveToHistory(sId, finalTxt, tsFull, bList, cost, durationStr);
             createHistoryEntry(sId, tsFull, finalTxt, bList, cost, durationStr);
             
-            navigator.clipboard.writeText(finalTxt); 
+            silentCopy(finalTxt); 
             if(document.hasFocus()) { showToast("Kopiert & Gespeichert!"); }
             if(isAutoSave) dlEntryZip(sId);
         }
@@ -834,13 +868,14 @@
         let audioHtml = "";
         if(blobs.length > 0) {
             let players = blobs.map((b, i) => `<div class="audio-part"><span>T ${i+1}</span><audio controls playsinline src="${URL.createObjectURL(b)}" onloadedmetadata="window.fixDuration(this)"></audio></div>`).join("");
+            /* BLACK CIRCLE FIX: SVG width & height added! */
             audioHtml = `<details class="custom-accordion"><summary><svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg> Audios (${blobs.length})</summary><div class="audio-list">${players}</div></details>`;
         }
 
         d.innerHTML = `
             <div class="entry-header">
                 <div class="entry-meta-info">
-                    <span class="date-badge"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ${ts}</span>
+                    <span class="date-badge"><svg width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" stroke-width="2"></circle><polyline points="12 6 12 12 16 14" stroke="currentColor" fill="none" stroke-width="2"></polyline></svg> ${ts}</span>
                     <div class="stats-badges" style="margin-top:4px;">
                         <span class="stat-pill">⏱ ${durationStr}</span>
                         <span class="stat-pill">${words} W</span><span class="stat-pill">${tokens} T</span>
