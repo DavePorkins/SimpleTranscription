@@ -3,180 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Simple Transcription V59</title>
+    <title>Simple Transcription V60</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" id="theme-color-meta" content="#a18cd1">
     
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%99%EF%B8%8F%3C/text%3E%3C/svg%3E">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23a18cd1'/%3E%3Ctext x='50' y='50' font-size='60' text-anchor='middle' dominant-baseline='central'%3E%F0%9F%8E%99%EF%B8%8F%3C/text%3E%3C/svg%3E">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 10a15 15 0 0 0-15 15v30a15 15 0 0 0 30 0V25A15 15 0 0 0 50 10z' fill='%23a18cd1'/%3E%3Cpath d='M25 55v5a25 25 0 0 0 50 0v-5' fill='none' stroke='%23a18cd1' stroke-width='8' stroke-linecap='round'/%3E%3Cpath d='M50 85v15M35 100h30' stroke='%23a18cd1' stroke-width='8' stroke-linecap='round'/%3E%3C/svg%3E">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     
     <style>
-        html { color-scheme: light; background: var(--c1); transition: background 0.5s ease; }
+        html { color-scheme: light; background: var(--c1); transition: background 0.5s ease; scroll-behavior: smooth; }
         html[data-theme="dark"] { color-scheme: dark; background: #000000; }
 
         :root {
             --c1: #a18cd1; --c2: #fbc2eb;
             --glass-bg: rgba(255, 255, 255, 0.45);
-            --glass-border: rgba(255, 255, 255, 0.6);
-            --text: #222; --text-muted: #666;
-            --input-bg: rgba(255, 255, 255, 0.35); /* Transparenter */
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --text: #222; --text-muted: #555;
+            --input-bg: rgba(255, 255, 255, 0.5);
             --btn-bg: rgba(255, 255, 255, 0.9);
             --accent: #c471ed; --danger: #ff4757; --warn: #ffa502; --safe: #2ed573;
-            --badge-bg: rgba(255, 255, 255, 0.5);
+            --badge-bg: rgba(255, 255, 255, 0.4);
         }
 
         body[data-theme="dark"] {
-            --glass-bg: rgba(20, 20, 20, 0.55);
+            --glass-bg: rgba(20, 20, 25, 0.55);
             --glass-border: rgba(255, 255, 255, 0.1);
-            --text: #e0e0e0; 
-            --text-muted: #888;
-            --input-bg: rgba(0, 0, 0, 0.3); /* Transparenter */
-            --btn-bg: rgba(30, 30, 30, 0.95);
-            --badge-bg: rgba(255, 255, 255, 0.1);
+            --text: #f0f0f0; 
+            --text-muted: #aaaaaa;
+            --input-bg: rgba(0, 0, 0, 0.4);
+            --btn-bg: rgba(30, 30, 35, 0.95);
+            --badge-bg: rgba(255, 255, 255, 0.12);
         }
 
+        /* V60 FIX: Natives Scrollen erlaubt */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            color: var(--text); margin: 0;
-            height: 100dvh; width: 100vw; overflow: hidden;
+            color: var(--text); margin: 0; min-height: 100vh;
             display: flex; flex-direction: column; align-items: center;
-            -webkit-tap-highlight-color: transparent;
+            -webkit-tap-highlight-color: transparent; padding-bottom: 50px;
         }
 
         #cloudCanvas {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
             pointer-events: none; opacity: 1; transition: filter 0.5s ease;
         }
-        body[data-theme="dark"] #cloudCanvas { filter: brightness(0.6) saturate(1.3); }
+        body[data-theme="dark"] #cloudCanvas { filter: brightness(0.65) saturate(1.2); }
 
         .app-container { 
-            width: 100%; max-width: 800px; height: 100%; 
-            display: flex; flex-direction: column; 
+            width: 100%; max-width: 800px; 
+            display: flex; flex-direction: column; gap: 15px; 
             padding: 15px; box-sizing: border-box; position: relative; z-index: 2;
         }
 
-        /* SCHWEBENDE EBENEN */
-        .fixed-top-area {
-            display: flex; flex-direction: column; gap: 12px; z-index: 10;
-            margin-bottom: 10px; flex-shrink: 0;
-        }
-
-        .glass-panel {
+        /* EBENE 1 & 2: STICKY COCKPIT */
+        .sticky-cockpit {
+            position: sticky; top: 15px; z-index: 100;
+            display: flex; flex-direction: column; gap: 12px;
             border-radius: 28px; border: 1px solid var(--glass-border);
             box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            background: var(--glass-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-            padding: 15px 20px; box-sizing: border-box; width: 100%;
-            transition: all 0.3s ease;
+            background: var(--glass-bg); backdrop-filter: blur(35px); -webkit-backdrop-filter: blur(35px);
+            padding: 15px; box-sizing: border-box; width: 100%;
         }
 
         /* HEADER */
-        .top-row { display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;}
-        h1 { margin: 0; font-size: 1.4rem; font-weight: 900; background: linear-gradient(90deg, var(--c2), var(--c1)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; display: flex; align-items: baseline; gap: 8px; text-shadow: 0 2px 5px rgba(0,0,0,0.1);}
-        body[data-theme="dark"] h1 { filter: drop-shadow(0 2px 5px rgba(0,0,0,0.6)); }
-        .version-tag { font-size: 0.55em; opacity: 0.7; font-weight: 700; color: var(--text-muted); -webkit-text-fill-color: initial; text-shadow: none;}
+        .top-row { display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 10px;}
+        h1 { margin: 0; font-size: 1.3rem; font-weight: 900; background: linear-gradient(90deg, var(--c2), var(--c1)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; display: flex; align-items: baseline; gap: 8px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));}
+        body[data-theme="dark"] h1 { filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5)); }
+        .version-tag { font-size: 0.55em; opacity: 0.7; font-weight: 700; color: var(--text-muted); -webkit-text-fill-color: initial; filter: none;}
 
-        .header-actions { display: flex; gap: 6px; }
-        .icon-btn { background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text); border-radius: 50%; width: 38px; height: 38px; font-size: 1.1rem; cursor: pointer; display:flex; align-items:center; justify-content:center; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.03);}
-        .icon-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;}
+        .header-actions { display: flex; gap: 5px; }
+        .icon-btn { background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text); border-radius: 50%; width: 36px; height: 36px; cursor: pointer; display:flex; align-items:center; justify-content:center; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.03);}
+        .icon-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;}
         .icon-btn:hover { transform: scale(1.1); background: var(--btn-bg); color: var(--accent);}
 
-        /* KOMPAKTE SETTINGS (Ohne Emojis, mit SVGs) */
-        .settings-row { display: flex; gap: 8px; width: 100%; justify-content: flex-start; align-items: stretch; flex-wrap: wrap;}
+        /* KOMPAKTE SETTINGS (NUR SVGs) */
+        .settings-row { display: flex; gap: 6px; width: 100%; justify-content: flex-start; align-items: stretch; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px;}
+        .settings-row::-webkit-scrollbar { display: none; }
         
-        .api-wrapper { display: flex; align-items: center; gap: 6px; background: var(--input-bg); padding: 5px 12px; border-radius: 12px; border: 1px solid var(--glass-border); flex: 1 1 120px; min-width: 100px;}
-        .api-wrapper svg { width: 16px; height: 16px; opacity: 0.7; stroke: currentColor; fill: none; stroke-width: 2;}
+        .api-wrapper { display: flex; align-items: center; gap: 4px; background: var(--input-bg); padding: 4px 10px; border-radius: 10px; border: 1px solid var(--glass-border); flex: 1 1 100px; min-width: 90px;}
+        .api-wrapper svg { width: 14px; height: 14px; opacity: 0.7; stroke: currentColor; fill: none; stroke-width: 2;}
         .api-wrapper input { border: none; background: transparent; color: var(--text); width: 100%; font-size: 0.8rem; outline: none;}
         
-        .btn-sleek { display:flex; gap:6px; color:var(--text); align-items:center; justify-content: center; cursor: pointer; background: var(--input-bg); padding: 5px 12px; border-radius: 12px; border: 1px solid var(--glass-border); font-size: 0.8rem; font-weight: 600; white-space: nowrap; transition: 0.2s; height: 34px; box-sizing: border-box;}
+        .btn-sleek { display:flex; gap:4px; color:var(--text); align-items:center; justify-content: center; cursor: pointer; background: var(--input-bg); padding: 4px 10px; border-radius: 10px; border: 1px solid var(--glass-border); font-size: 0.8rem; font-weight: 600; white-space: nowrap; transition: 0.2s; height: 32px; box-sizing: border-box;}
         .btn-sleek:hover { background: var(--btn-bg); }
         .btn-sleek.active { background: var(--safe); color: white; border-color: var(--safe); }
-        .btn-sleek svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;}
+        .btn-sleek svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2;}
         
-        /* Auto-Cut Kombi */
-        .cut-wrapper { display: flex; align-items: center; gap: 5px; cursor: pointer;}
-        .cut-input { width: 28px; background: rgba(0,0,0,0.05); border: none; border-radius: 6px; color: inherit; font-weight: bold; text-align: center; outline: none; padding: 2px; font-family: inherit;}
-        body[data-theme="dark"] .cut-input { background: rgba(255,255,255,0.1); }
+        .cut-wrapper { display: flex; align-items: center; gap: 4px; cursor: pointer;}
+        .cut-input { width: 22px; background: transparent; border: none; border-bottom: 1px solid var(--text-muted); color: inherit; font-weight: bold; text-align: center; outline: none; padding: 0; font-family: inherit;}
         
         select.icon-select { background: transparent; border: none; color: inherit; font-size: 0.8rem; font-weight: 600; outline: none; cursor: pointer; -webkit-appearance: none; text-align: center; padding-left: 5px;}
 
-        /* ACTION CENTER (Verschmolzen mit Active Text) */
-        .action-center { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 15px 20px;}
+        /* ACTION CENTER */
+        .action-center { display: flex; flex-direction: column; align-items: center; gap: 10px;}
+        .timer { font-size: 3rem; font-weight: 300; letter-spacing: 1px; line-height: 1; font-variant-numeric: tabular-nums; color: var(--text); text-shadow: 0 2px 10px rgba(0,0,0,0.05);}
         
-        .timer-box { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 100%;}
-        .timer { font-size: 3.2rem; font-weight: 300; letter-spacing: 1px; line-height: 1; font-variant-numeric: tabular-nums; color: var(--text); text-shadow: 0 2px 10px rgba(0,0,0,0.05);}
-        
-        .live-badges { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; opacity: 0; transition: opacity 0.3s;}
-        .badge { background: var(--badge-bg); padding: 4px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--glass-border); color: var(--text-muted);}
-
-        .rec-controls { display: flex; justify-content: center; align-items: center; gap: 20px; width: 100%; }
-        .btn-circle { border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 8px 15px rgba(0,0,0,0.1); background: var(--btn-bg); color: var(--text); border-radius: 50%; width: 50px; height: 50px;}
+        .rec-controls { display: flex; justify-content: center; align-items: center; gap: 15px; width: 100%; }
+        .btn-circle { border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 8px 15px rgba(0,0,0,0.1); background: var(--btn-bg); color: var(--text); border-radius: 50%; width: 45px; height: 45px;}
         .btn-circle:active { transform: scale(0.9); }
-        .btn-circle svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;}
+        .btn-circle svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2;}
 
-        #btnMain { width: 75px; height: 75px; background: linear-gradient(135deg, var(--c2), var(--c1)); color: white; box-shadow: 0 10px 25px rgba(0,0,0,0.2);}
-        #btnMain.state-recording { background: var(--btn-bg); border-radius: 25px; transform: scale(0.9); color: var(--danger); }
-        #btnMain svg { fill: currentColor; stroke: none; width: 28px; height: 28px;}
+        #btnMain { width: 65px; height: 65px; background: linear-gradient(135deg, var(--c2), var(--c1)); color: white; box-shadow: 0 10px 25px rgba(0,0,0,0.2);}
+        #btnMain.state-recording { background: var(--btn-bg); border-radius: 20px; transform: scale(0.9); color: var(--danger); }
+        #btnMain svg { stroke: currentColor; fill: currentColor; width: 28px; height: 28px; stroke-width:0;} /* Mic is filled */
+        #btnMain.state-recording svg { fill: currentColor; }
 
         .side-btn { opacity: 0; pointer-events: none; transform: scale(0.5); width: 0; margin: 0; }
-        .side-btn.visible { opacity: 1; pointer-events: all; transform: scale(1); width: 50px; margin: 0 5px; }
-        .side-btn.visible#btnCancel { background: rgba(255, 71, 87, 0.15); color: var(--danger); font-size: 1.1rem; font-weight: bold;}
+        .side-btn.visible { opacity: 1; pointer-events: all; transform: scale(1); width: 45px; margin: 0 5px; }
+        .side-btn.visible#btnCancel { background: rgba(255, 71, 87, 0.15); color: var(--danger); font-size: 1rem; font-weight: bold;}
         .side-btn.visible#btnPause { background: rgba(255, 165, 2, 0.15); color: var(--warn); }
         #btnPause.state-paused { background: var(--warn); color: white; }
 
-        /* V59: INTEGRIERTER ACTIVE TEXT BEREICH */
-        #activeEntryContainer {
-            width: 100%; display: none; flex-direction: column; gap: 10px;
-            margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--glass-border);
-            animation: fadeIn 0.3s ease;
-        }
-        .active-meta { display: flex; justify-content: center; width: 100%; }
-        .active-date { font-size: 0.8rem; color: var(--text-muted); font-weight: 700; background: var(--badge-bg); padding: 5px 12px; border-radius: 12px; border: 1px solid var(--glass-border); }
+        /* V60: CLEAN READING FEED */
+        #feed { display: flex; flex-direction: column; gap: 15px; width: 100%; }
+
+        /* V60: Neue nahtlose Glaskarten */
+        .entry { background: var(--glass-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid var(--glass-border); box-sizing: border-box; width: 100%; animation: slideUp 0.3s ease-out;}
+        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: 0; } }
+
+        /* V60: Header mit Buttons Oben! */
+        .entry-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; width: 100%; flex-wrap: wrap; gap: 10px;}
         
-        .auto-resize {
-            width: 100%; background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text); 
-            padding: 15px; border-radius: 15px; font-family: inherit; resize: none; 
-            box-sizing: border-box; line-height: 1.6; font-size: 15px; outline: none;
-            overflow: hidden; min-height: 60px;
-        }
-
-        /* DER SCROLL-FEED */
-        .feed-wrapper {
-            flex-grow: 1; width: 100%; position: relative; overflow: hidden;
-            mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 100%);
-            -webkit-mask-image: -webkit-linear-gradient(top, transparent 0%, black 5%, black 100%);
-        }
-        #feed { 
-            height: 100%; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; 
-            padding: 10px 5px 40px 5px; box-sizing: border-box; scrollbar-width: none; 
-        }
-        #feed::-webkit-scrollbar { display: none; }
-
-        /* History Entries */
-        .entry { background: var(--glass-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-radius: 25px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid var(--glass-border); box-sizing: border-box; width: 100%; flex-shrink: 0; animation: slideUp 0.4s ease-out;}
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: 0; } }
-
-        .entry-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; width: 100%; flex-wrap: wrap; gap:10px;}
+        .entry-meta-info { display: flex; flex-direction: column; gap: 6px; }
+        .date-badge { font-size: 0.8rem; color: var(--text); font-weight: 700; display:flex; align-items:center; gap:6px;}
+        .date-badge svg { width: 14px; height: 14px; stroke: var(--accent); fill:none; stroke-width:2;}
+        
         .stats-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+        .stat-pill { background: var(--badge-bg); padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 600; color: var(--text-muted); display:flex; align-items:center; gap:4px; border: 1px solid var(--glass-border);}
         
-        details.audio-accordion { background: var(--badge-bg); border: 1px solid var(--glass-border); border-radius: 12px; padding: 8px 12px; margin-bottom: 12px; }
-        details.audio-accordion summary { font-size: 0.8rem; font-weight: bold; color: var(--text); cursor: pointer; outline: none; user-select: none; }
-        .audio-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
-        .audio-part { display: flex; align-items: center; gap: 10px; background: var(--input-bg); padding: 6px 12px; border-radius: 10px;}
-        .audio-part span { font-size: 0.7rem; font-weight: bold; color: var(--text-muted); flex-shrink: 0;}
-        audio { width: 100%; height: 35px; border-radius: 8px; outline: none; }
+        /* V60: Mini-Buttons oben rechts */
+        .entry-actions { display: flex; gap: 6px; flex-wrap: wrap;}
+        .mini-btn { background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text); border-radius: 10px; width: 32px; height: 32px; cursor: pointer; display:flex; align-items:center; justify-content:center; transition: 0.2s;}
+        .mini-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2;}
+        .mini-btn:hover { background: var(--btn-bg); transform: translateY(-2px);}
+        .mini-btn.danger { color: var(--danger); }
+        .mini-btn.safe { color: var(--safe); }
 
-        /* Buttons unterm Text (SVGs statt Emojis) */
-        .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
-        .btn-action { padding: 8px 12px; border: none; border-radius: 10px; background: var(--btn-bg); color: var(--text); font-size: 0.8rem; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.03); cursor: pointer; display: flex; align-items: center; gap: 6px; border: 1px solid var(--glass-border); flex: 1 1 auto; justify-content: center; transition: 0.2s;}
-        .btn-action:hover { background: var(--input-bg); transform: translateY(-2px); }
-        .btn-action svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;}
-        .btn-del { color: var(--danger); flex: 0 1 auto;} 
-        .btn-retry { color: var(--safe); flex: 0 1 auto;} 
+        /* V60: Nahtloses Textfeld (Kein Win95 Rahmen) */
+        .seamless-text { 
+            width: 100%; background: transparent; border: none; color: var(--text); 
+            font-family: inherit; resize: none; min-height: 40px; 
+            box-sizing: border-box; line-height: 1.6; font-size: 15px; outline: none; padding: 0;
+        }
+
+        /* Active Entry Special Look */
+        #activeEntry { display:none; border: 1px solid var(--safe); box-shadow: 0 0 15px rgba(46, 204, 113, 0.15); }
+        #activeEntry .date-badge svg { stroke: var(--safe); }
+
+        /* Audio Dropdown */
+        details.audio-accordion { background: var(--badge-bg); border: 1px solid var(--glass-border); border-radius: 10px; padding: 8px 12px; margin-top: 15px; }
+        details.audio-accordion summary { font-size: 0.8rem; font-weight: bold; color: var(--text); cursor: pointer; outline: none; user-select: none; display: flex; align-items: center; gap:6px;}
+        details.audio-accordion summary svg { width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2;}
+        .audio-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+        .audio-part { display: flex; align-items: center; gap: 10px; background: var(--input-bg); padding: 4px 10px; border-radius: 8px;}
+        .audio-part span { font-size: 0.7rem; font-weight: bold; color: var(--text-muted); flex-shrink: 0;}
+        audio { width: 100%; height: 30px; border-radius: 6px; outline: none; }
 
         /* MODALS */
         .modal { display: none; position: fixed; bottom: 0; left: 0; right: 0; top: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
@@ -191,7 +176,7 @@
         .dev-row input[type="color"] { border: 2px solid var(--glass-border); width: 50px; height: 35px; border-radius: 8px; padding: 0; }
         .dev-row input[type="range"] { accent-color: var(--accent); }
 
-        #toast { position: fixed; top: 20px; left: 50%; transform: translate(-50%, -150%); background: var(--btn-bg); color: var(--text); padding: 12px 30px; border-radius: 50px; font-weight: 700; transition: 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 2px solid var(--accent); text-align: center; pointer-events: none;}
+        #toast { position: fixed; top: 20px; left: 50%; transform: translate(-50%, -150%); background: var(--btn-bg); color: var(--text); padding: 12px 30px; border-radius: 50px; font-weight: 700; transition: 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 1px solid var(--accent); text-align: center; pointer-events: none;}
         #toast.visible { transform: translate(-50%, 0); }
     </style>
 </head>
@@ -204,7 +189,7 @@
 <div id="devPanel" class="modal">
     <div class="modal-box">
         <div class="modal-header">
-            <span>🎨 Color Studio</span>
+            <span style="display:flex; align-items:center; gap:8px;"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c1.06 0 2-.94 2-2 0-.53-.21-1.04-.59-1.41-.36-.36-.59-.86-.59-1.4 0-1.06.94-2 2-2h1.5c2.76 0 5.5-2.24 5.5-5.5C22 7.36 17.52 2 12 2z"/></svg> Color Studio</span>
             <div style="display:flex; gap:8px;">
                 <button class="icon-btn" onclick="resetDev()" style="width:auto; height:30px; border-radius:10px; font-size:0.8rem; font-weight:bold;">Reset</button>
                 <button class="icon-btn" onclick="toggleModal('devPanel')" style="width:30px;height:30px;"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
@@ -215,11 +200,9 @@
                 <div class="preset-btn" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb)" onclick="applyPreset('#a18cd1','#fbc2eb')"></div>
                 <div class="preset-btn" style="background: linear-gradient(135deg, #84fab0, #8fd3f4)" onclick="applyPreset('#84fab0','#8fd3f4')"></div>
                 <div class="preset-btn" style="background: linear-gradient(135deg, #fccb90, #d57eeb)" onclick="applyPreset('#fccb90','#d57eeb')"></div>
-                <div class="preset-btn" style="background: linear-gradient(135deg, #bdc3c7, #2c3e50)" onclick="applyPreset('#bdc3c7','#2c3e50')" title="Silver Mono"></div>
+                <div class="preset-btn" style="background: linear-gradient(135deg, #bdc3c7, #2c3e50)" onclick="applyPreset('#bdc3c7','#2c3e50')" title="Silber Mono"></div>
                 <div class="preset-btn" style="background: linear-gradient(135deg, #1e3c72, #2a5298)" onclick="applyPreset('#1e3c72','#2a5298')" title="Deep Blue"></div>
-                <div class="preset-btn" style="background: linear-gradient(135deg, #0f2027, #203a43)" onclick="applyPreset('#0f2027','#203a43')" title="OLED Stealth"></div>
-                <div class="preset-btn" style="background: linear-gradient(135deg, #ff9a9e, #fecfef)" onclick="applyPreset('#ff9a9e','#fecfef', '#ff9a9e', '#fbc2eb', '#a18cd1')" title="Tri-Chrome Sunset"></div>
-                <div class="preset-btn" style="background: linear-gradient(135deg, #43e97b, #38f9d7)" onclick="applyPreset('#43e97b','#38f9d7', '#4facfe', '#00f2fe', '#43e97b')" title="Tri-Chrome Ocean"></div>
+                <div class="preset-btn" style="background: linear-gradient(135deg, #ffecd2, #fcb69f)" onclick="applyPreset('#ffecd2','#fcb69f', '#ffecd2', '#fcb69f', '#a18cd1')" title="Sunset Ombre"></div>
             </div>
             <div class="dev-row"><span>Color 1</span> <input type="color" id="col1"></div>
             <div class="dev-row"><span>Color 2</span> <input type="color" id="col2"></div>
@@ -243,66 +226,53 @@
 
 <div class="app-container">
     
-    <div class="fixed-top-area">
-        <div class="glass-panel top-cockpit">
-            <div class="top-row">
-                <h1>Simple Transcription <span class="version-tag">V59</span></h1>
-                <div class="header-actions">
-                    <button class="icon-btn" onclick="toggleTheme()" title="Dark Mode" id="themeIcon">
-                        <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path></svg>
+    <div class="sticky-cockpit">
+        <div class="top-row">
+            <h1>Simple Transcription <span class="version-tag">V60</span></h1>
+            <div class="header-actions">
+                <button class="icon-btn" onclick="toggleTheme()" title="Theme" id="themeIcon">
                     </button>
-                    <button class="icon-btn" onclick="dlZip()" title="ZIP Download">
-                        <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                    </button>
-                    <button class="icon-btn" onclick="showQR()" title="App Teilen">
-                        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                    </button>
-                    <button class="icon-btn" onclick="toggleModal('devPanel')" title="Color Studio">
-                        <svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
-                    </button>
-                </div>
+                <button class="icon-btn" onclick="dlZip()" title="ZIP Download">
+                    <svg viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
+                </button>
+                <button class="icon-btn" onclick="showQR()" title="App Teilen">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                </button>
+                <button class="icon-btn" onclick="toggleModal('devPanel')" title="Color Studio">
+                    <svg viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c1.06 0 2-.94 2-2 0-.53-.21-1.04-.59-1.41-.36-.36-.59-.86-.59-1.4 0-1.06.94-2 2-2h1.5c2.76 0 5.5-2.24 5.5-5.5C22 7.36 17.52 2 12 2z"/></svg>
+                </button>
+            </div>
+        </div>
+        
+        <div class="settings-row">
+            <div class="api-wrapper">
+                <svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+                <input type="password" id="apiKey" placeholder="API Key">
+                <button class="eye-btn" onclick="toggleApiKey()"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
             </div>
             
-            <div class="settings-row">
-                <div class="api-wrapper">
-                    <svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
-                    <input type="password" id="apiKey" placeholder="API Key">
-                    <button class="eye-btn" onclick="toggleApiKey()">
-                        <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                    </button>
-                </div>
-                
-                <div class="btn-sleek" id="btnAutoSave" onclick="toggleSave()" title="Auto-Save">
-                    <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Save
-                </div>
-                
-                <label class="btn-sleek cut-wrapper">
-                    <input type="checkbox" id="autoCutToggle" style="accent-color:var(--accent);">
-                    <svg viewBox="0 0 24 24" style="margin-left:2px;"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg> 
-                    <input type="number" id="autoCutMin" value="2" min="0.5" step="0.5" class="cut-input">m
-                </label>
-                
-                <div class="btn-sleek" style="padding: 0 8px;" title="Mikrofon">
-                    <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-                    <select id="micSelect" class="icon-select"><option value="default">Mic</option></select>
-                </div>
-                
-                <div class="btn-sleek" onclick="document.getElementById('fileUpload').click()" style="padding: 0 10px;" title="Upload">
-                    <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                </div>
+            <div class="btn-sleek" id="btnAutoSave" onclick="toggleSave()" title="Auto-Save">
+                <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Save
+            </div>
+            
+            <label class="btn-sleek cut-wrapper">
+                <input type="checkbox" id="autoCutToggle" style="accent-color:var(--accent);">
+                <svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg> 
+                <input type="number" id="autoCutMin" value="2" min="0.5" step="0.5" class="cut-input">m
+            </label>
+            
+            <div class="btn-sleek" style="padding: 0 8px;" title="Mikrofon">
+                <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                <select id="micSelect" class="icon-select"><option value="default">Mic</option></select>
+            </div>
+            
+            <div class="btn-sleek" onclick="document.getElementById('fileUpload').click()" style="padding: 0 10px;" title="Upload">
+                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
             </div>
         </div>
 
-        <div class="glass-panel action-center">
-            <div class="timer-box">
-                <div class="timer" id="timer">00:00</div>
-                <div class="live-badges" id="liveBadges">
-                    <span class="badge" id="liveWords">0 W</span>
-                    <span class="badge" id="liveCost">0.0 ct</span>
-                    <span class="badge" id="liveCut" style="display:none; color:var(--warn);">Cut...</span>
-                </div>
-            </div>
-            
+        <div class="action-center">
+            <div class="timer" id="timer">00:00</div>
             <div class="rec-controls">
                 <button id="btnCancel" class="btn-circle side-btn" title="Verwerfen" onclick="cancelRec(this)">
                     <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -314,18 +284,25 @@
                     <svg id="iconPause" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
                 </button>
             </div>
-            
-            <div id="activeEntryContainer">
-                <div class="active-meta"><span class="active-date" id="activeDateBadge">Höre zu...</span></div>
-                <textarea id="activeText" class="auto-resize" readonly placeholder="Höre zu..."></textarea>
-            </div>
         </div>
     </div>
 
-    <div class="feed-wrapper">
-        <div id="feed">
-            <div id="historyFeed" style="display:flex; flex-direction:column; gap:20px;"></div>
+    <div id="feed">
+        <div id="activeEntry" class="entry" style="display:none;">
+            <div class="entry-header">
+                <div class="entry-meta-info">
+                    <span class="date-badge" id="activeDateBadge"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Höre zu...</span>
+                    <div class="stats-badges" id="liveBadges">
+                        <span class="stat-pill" id="liveWords">0 W</span>
+                        <span class="stat-pill" id="liveCost">0.0 ct</span>
+                        <span class="stat-pill" id="liveCut" style="display:none; color:var(--warn); border-color:var(--warn);">✂️ Cut</span>
+                    </div>
+                </div>
+            </div>
+            <textarea id="activeText" class="seamless-text" readonly placeholder="Sprich in das Mikrofon..."></textarea>
         </div>
+        
+        <div id="historyFeed" style="display:flex; flex-direction:column; gap:15px;"></div>
     </div>
 </div>
 
@@ -336,8 +313,7 @@
         btnMain: document.getElementById('btnMain'), btnPause: document.getElementById('btnPause'), btnCancel: document.getElementById('btnCancel'),
         iconMain: document.getElementById('iconMain'), iconPause: document.getElementById('iconPause'), themeIcon: document.getElementById('themeIcon'),
         timer: document.getElementById('timer'), liveBadges: document.getElementById('liveBadges'), liveWords: document.getElementById('liveWords'), liveCost: document.getElementById('liveCost'), liveCut: document.getElementById('liveCut'),
-        canvas: document.getElementById('cloudCanvas'), feed: document.getElementById('historyFeed'), feedScroll: document.getElementById('feed'),
-        activeEntryContainer: document.getElementById('activeEntryContainer'), activeText: document.getElementById('activeText'), activeDateBadge: document.getElementById('activeDateBadge'),
+        canvas: document.getElementById('cloudCanvas'), feed: document.getElementById('historyFeed'), activeEntry: document.getElementById('activeEntry'), activeText: document.getElementById('activeText'), activeDateBadge: document.getElementById('activeDateBadge'),
         apiKey: document.getElementById('apiKey'), fileUpload: document.getElementById('fileUpload'),
         toast: document.getElementById('toast'), btnAutoSave: document.getElementById('btnAutoSave'), 
         autoCutToggle: document.getElementById('autoCutToggle'), autoCutMin: document.getElementById('autoCutMin'),
@@ -347,22 +323,40 @@
         pSize: document.getElementById('pSize'), pGain: document.getElementById('pGain'), pBlur: document.getElementById('pBlur')
     };
 
+    const svgSun = `<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>`;
+    const svgMoon = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>`;
+    const svgCopy = `<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path>`;
+    const svgTxt = `<path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline>`;
+    const svgAudio = `<path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle>`;
+    const svgTrash = `<polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>`;
+    const svgRetry = `<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path>`;
+
     function toggleModal(id) { document.getElementById(id).classList.toggle('visible'); }
     function toggleApiKey() { els.apiKey.type = els.apiKey.type === 'password' ? 'text' : 'password'; }
 
     function showQR() {
         document.getElementById('qrcode').innerHTML = ""; 
-        new QRCode(document.getElementById("qrcode"), {
-            text: window.location.href.split('#')[0].split('?')[0], 
-            width: 150, height: 150, colorDark: "#000000", colorLight: "#ffffff"
-        });
+        new QRCode(document.getElementById("qrcode"), { text: window.location.href.split('#')[0].split('?')[0], width: 150, height: 150, colorDark: "#000000", colorLight: "#ffffff" });
         toggleModal('qrModal');
+    }
+
+    // V60: Absolute Crash Recovery
+    function recoverTempData() {
+        let tempTxt = localStorage.getItem("temp_active_text");
+        if (tempTxt && tempTxt.trim().length > 0) {
+            const ts = new Date().toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' });
+            const id = Date.now();
+            saveToHistory(id, tempTxt, ts, [], 0); // Rette als Text
+            localStorage.removeItem("temp_active_text");
+            showToast("Wiederhergestellt!");
+        }
     }
 
     function migrateHistory() {
         let h = localStorage.getItem("hist_master");
         if (!h) { h = localStorage.getItem("hist_v56") || localStorage.getItem("hist_v53") || "[]"; localStorage.setItem("hist_master", h); }
-    } migrateHistory();
+    } 
+    migrateHistory(); recoverTempData();
 
     let wakeLock = null;
     async function requestWakeLock() { try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {} }
@@ -371,27 +365,23 @@
     function toggleTheme(forceInitDark) {
         const isDark = forceInitDark !== undefined ? !forceInitDark : document.body.getAttribute('data-theme') === 'dark';
         if(isDark) { 
-            document.body.removeAttribute('data-theme'); document.documentElement.removeAttribute('data-theme'); localStorage.setItem('theme_v59', 'light'); 
-            els.themeIcon.innerHTML = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>';
+            document.body.removeAttribute('data-theme'); document.documentElement.removeAttribute('data-theme'); localStorage.setItem('theme_v60', 'light'); 
+            els.themeIcon.innerHTML = `<svg viewBox="0 0 24 24">${svgMoon}</svg>`;
         } else { 
-            document.body.setAttribute('data-theme', 'dark'); document.documentElement.setAttribute('data-theme', 'dark'); localStorage.setItem('theme_v59', 'dark'); 
-            els.themeIcon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+            document.body.setAttribute('data-theme', 'dark'); document.documentElement.setAttribute('data-theme', 'dark'); localStorage.setItem('theme_v60', 'dark'); 
+            els.themeIcon.innerHTML = `<svg viewBox="0 0 24 24">${svgSun}</svg>`;
         }
         if(els.col1) updateDev(); 
     }
-    if(localStorage.getItem('theme_v59') === 'dark') { toggleTheme(true); } 
+    if(localStorage.getItem('theme_v60') === 'dark') { toggleTheme(true); } else { toggleTheme(false); }
 
-    let isAutoSave = localStorage.getItem("autodl_v59") === 'true';
+    let isAutoSave = localStorage.getItem("autodl_v60") === 'true';
     function updateSaveBtn() { els.btnAutoSave.className = isAutoSave ? 'btn-sleek active' : 'btn-sleek'; }
-    window.toggleSave = () => { isAutoSave = !isAutoSave; localStorage.setItem("autodl_v59", isAutoSave); updateSaveBtn(); showToast(isAutoSave ? "Auto-Save An" : "Auto-Save Aus"); };
+    window.toggleSave = () => { isAutoSave = !isAutoSave; localStorage.setItem("autodl_v60", isAutoSave); updateSaveBtn(); showToast(isAutoSave ? "Auto-Save An" : "Auto-Save Aus"); };
     updateSaveBtn();
 
     const defaults = { c1: '#a18cd1', c2: '#fbc2eb', b1: '#8ec5fc', b2: '#e0c3fc', b3: '#99ddff', sz: 60, gn: 100, bl: 50 };
-    // V59: Custom Colors for presets
-    function applyPreset(c1, c2, b1=c1, b2=c2, b3='#ffffff') { 
-        els.col1.value = c1; els.col2.value = c2; els.blob1.value = b1; els.blob2.value = b2; els.blob3.value = b3; updateDev(); 
-    }
-
+    function applyPreset(c1, c2, b1=c1, b2=c2, b3='#ffffff') { els.col1.value = c1; els.col2.value = c2; els.blob1.value = b1; els.blob2.value = b2; els.blob3.value = b3; updateDev(); }
     window.resetDev = () => { applyPreset(defaults.c1, defaults.c2, defaults.b1, defaults.b2, defaults.b3); els.pSize.value = defaults.sz; els.pGain.value = defaults.gn; els.pBlur.value = defaults.bl; updateDev(); showToast("Reset"); };
 
     function loadDev() {
@@ -424,21 +414,20 @@
     if(HARDCODED_KEY.length > 5) { els.apiKey.value = HARDCODED_KEY; document.querySelector('.api-wrapper').style.display='none'; } 
     else { els.apiKey.value = localStorage.getItem("key_v38") || ""; els.apiKey.addEventListener('change', () => localStorage.setItem("key_v38", els.apiKey.value)); }
 
-    if(localStorage.getItem("autocut_on_v59") !== null) { els.autoCutToggle.checked = localStorage.getItem("autocut_on_v59") === 'true'; } 
-    else { els.autoCutToggle.checked = true; } // Default ON
-    els.autoCutToggle.addEventListener('change', () => localStorage.setItem("autocut_on_v59", els.autoCutToggle.checked));
+    if(localStorage.getItem("autocut_on_v60") !== null) { els.autoCutToggle.checked = localStorage.getItem("autocut_on_v60") === 'true'; } 
+    else { els.autoCutToggle.checked = true; } 
+    els.autoCutToggle.addEventListener('change', () => localStorage.setItem("autocut_on_v60", els.autoCutToggle.checked));
 
     loadHistory(); loadDev();
     function resizeCanvas() { els.canvas.width = window.innerWidth; els.canvas.height = window.innerHeight; }
     window.addEventListener('resize', resizeCanvas);
 
-    // Auto-Resize Textarea
-    function autoResizeText() {
-        els.activeText.style.height = 'auto';
-        els.activeText.style.height = (els.activeText.scrollHeight) + 'px';
-        els.feedScroll.scrollTop = 0; // Scrollt Feed nach oben, da Panel wächst
+    function autoResizeText(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = (textarea.scrollHeight) + 'px';
     }
 
+    // V60: Neue Lavalampe (Lissajous Math)
     let smoothedVol = 0; let timeAccum = 0;
     function initVisualizer() {
         const ctx = els.canvas.getContext('2d'); resizeCanvas();
@@ -450,8 +439,8 @@
             let rawVol = 0;
             if(analyser && isRecording && !isPaused) {
                 if(dataArray) { analyser.getByteFrequencyData(dataArray); let sum = 0; for(let i=0; i<dataArray.length; i++) sum += dataArray[i]; rawVol = (sum / dataArray.length); }
-                timeAccum += 0.003 + (rawVol * 0.0001); 
-            } else { timeAccum += 0.001; }
+                timeAccum += 0.004 + (rawVol * 0.0001); 
+            } else { timeAccum += 0.0015; }
 
             let volNorm = Math.min(rawVol / 100, 1.0); 
             smoothedVol = smoothedVol * 0.85 + volNorm * 0.15; 
@@ -465,9 +454,10 @@
             const colors = [els.blob1.value, els.blob2.value, els.blob3.value, els.col1.value, els.col2.value];
 
             for(let i=0; i<8; i++) {
-                let r = baseRadius + Math.sin(timeAccum + i) * maxDim * 0.05 + intensity * maxDim * 0.12;
-                let x = w * 0.5 + Math.cos(timeAccum * (0.3 + i*0.1) + i) * w * 0.4;
-                let y = h * 0.5 + Math.sin(timeAccum * (0.4 + i*0.15) - i) * h * 0.4;
+                let r = baseRadius + Math.sin(timeAccum * 0.5 + i) * maxDim * 0.04 + intensity * maxDim * 0.08;
+                // Lissajous-Kurven für organisches Mischen
+                let x = w * 0.5 + Math.sin(timeAccum * (0.3 + i*0.05) + i*1.2) * w * 0.4;
+                let y = h * 0.5 + Math.cos(timeAccum * (0.4 + i*0.07) - i*0.8) * h * 0.4;
                 drawGlow(x, y, r, colors[i % colors.length]);
             }
         } draw();
@@ -478,10 +468,10 @@
         try {
             const devices = await navigator.mediaDevices.enumerateDevices(); const audioDevs = devices.filter(d => d.kind === 'audioinput');
             if(audioDevs.length > 0) {
-                els.micSelect.innerHTML = '<option value="default">🎙️ Default</option>';
+                els.micSelect.innerHTML = '<option value="default">Mic</option>';
                 audioDevs.forEach((d, i) => {
                     let cleanName = d.label.replace(/\s*\([a-fA-F0-9]{4}:[a-fA-F0-9]{4}\)\s*/g, '').replace(/Default - /i, '').trim();
-                    const opt = document.createElement('option'); opt.value = d.deviceId; opt.text = `🎙️ ${cleanName || `Mic ${i + 1}`}`;
+                    const opt = document.createElement('option'); opt.value = d.deviceId; opt.text = `${cleanName.substring(0,8)}..`;
                     els.micSelect.appendChild(opt);
                 }); micsLoaded = true;
             }
@@ -493,35 +483,33 @@
     
     window.cancelRec = (btn) => { 
         if(!btn.classList.contains('confirm')) {
-            btn.classList.add('confirm'); btn.innerHTML = '<span style="font-size:1.1rem; font-weight:bold;">🗑️?</span>'; btn.style.color = 'white'; btn.style.background = 'var(--danger)';
+            btn.classList.add('confirm'); btn.innerHTML = '<span style="font-size:1rem; font-weight:bold;">🗑️?</span>'; btn.style.color = 'white'; btn.style.background = 'var(--danger)';
             setTimeout(() => { 
-                if(isRecording || isPaused) { 
-                    btn.classList.remove('confirm'); btn.style.background = ''; btn.style.color = ''; btn.innerHTML = '<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
-                }
+                if(isRecording || isPaused) { btn.classList.remove('confirm'); btn.style.background = ''; btn.style.color = 'var(--danger)'; btn.innerHTML = '<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'; }
             }, 3000); return;
         }
-        isCancelled = true; if(mediaRecorder) mediaRecorder.stop(); 
-        btn.classList.remove('confirm'); btn.style.background = ''; btn.style.color = ''; btn.innerHTML = '<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+        isCancelled = true; if(mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop(); 
+        btn.classList.remove('confirm'); btn.style.background = ''; btn.style.color = 'var(--danger)'; btn.innerHTML = '<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
     };
 
     function setMainButtonState(state) {
         if(state === 'idle') {
-            els.iconMain.innerHTML = '<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>'; els.btnMain.className = 'btn-circle'; 
+            els.iconMain.innerHTML = '<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>'; 
+            els.btnMain.className = 'btn-circle'; els.btnMain.disabled = false;
             els.btnPause.classList.remove('visible'); els.btnCancel.classList.remove('visible'); 
-            els.liveBadges.style.opacity = '0';
-            els.activeEntryContainer.style.display = 'none';
         } else if (state === 'recording') {
-            els.iconMain.innerHTML = '<rect x="6" y="6" width="12" height="12" rx="2" ry="2"></rect>'; els.btnMain.className = 'btn-circle state-recording';
-            els.iconPause.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>'; els.btnPause.className = 'btn-circle side-btn visible';
-            els.btnCancel.className = 'btn-circle side-btn visible'; els.timer.style.color = "var(--text)";
-            els.liveBadges.style.opacity = '1';
-            els.activeEntryContainer.style.display = 'flex';
+            els.iconMain.innerHTML = '<rect x="6" y="6" width="12" height="12" rx="2" ry="2"></rect>'; 
+            els.btnMain.className = 'btn-circle state-recording'; els.btnMain.disabled = false;
+            els.iconPause.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>'; 
+            els.btnPause.className = 'btn-circle side-btn visible'; els.btnCancel.className = 'btn-circle side-btn visible'; 
+            els.timer.style.color = "var(--text)";
         } else if (state === 'paused') {
-            els.iconPause.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"></polygon>'; els.btnPause.className = 'btn-circle side-btn visible state-paused';
-            els.timer.style.color = "var(--warn)"; 
+            els.iconPause.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"></polygon>'; 
+            els.btnPause.className = 'btn-circle side-btn visible state-paused'; els.timer.style.color = "var(--warn)"; 
         }
     }
 
+    // V60: Bulletproof Start & Stop
     async function startRec() {
         els.btnMain.disabled = true;
         try {
@@ -530,8 +518,7 @@
             
             try {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)(); analyser = audioCtx.createAnalyser(); analyser.fftSize = 64; 
-                audioCtx.createMediaStreamSource(stream).connect(analyser);
-                dataArray = new Uint8Array(analyser.frequencyBinCount);
+                audioCtx.createMediaStreamSource(stream).connect(analyser); dataArray = new Uint8Array(analyser.frequencyBinCount);
             } catch(e) { console.warn("Visualizer stumm", e); analyser = null; }
 
             chunks = []; isCancelled = false; let options = { bitsPerSecond: 32000 };
@@ -542,7 +529,8 @@
                 sessionStartTime = Date.now(); totalPauseDelta = 0; 
                 els.activeText.value = ''; updateLiveStats();
                 const ts = new Date().toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' });
-                els.activeDateBadge.innerText = ts;
+                els.activeDateBadge.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ${ts}`;
+                els.activeEntry.style.display = 'block';
             }
             partStartTime = Date.now(); partPauseDelta = 0;
 
@@ -550,7 +538,7 @@
             mediaRecorder.ondataavailable = e => { if(e.data.size > 0) chunks.push(e.data); };
             
             mediaRecorder.onstop = () => {
-                if(isCancelled) { resetUI(); showToast("Aufnahme verworfen"); return; }
+                if(isCancelled) { resetUI(); els.activeEntry.style.display = 'none'; showToast("Verworfen"); return; }
                 const blob = new Blob(chunks, { type: chunks[0].type });
                 sessionBlobs.push(blob);
                 
@@ -563,7 +551,7 @@
                     isAutoCutting = false; chunks = []; currentPart++;
                     mediaRecorder.start(); partStartTime = Date.now(); partPauseDelta = 0; 
                 } else {
-                    // WICHTIG: Setze UI sofort auf Idle, damit User wieder starten kann, während Transkription läuft
+                    // V60: Sofortiges Reset, App ist wieder frei, Processing läuft im Hintergrund
                     resetUI(); 
                     finalizeSessionWhenReady(currentSessionId, sessionBlobs, activeCost);
                 }
@@ -571,13 +559,13 @@
             
             mediaRecorder.start(); isRecording = true; isPaused = false; 
             if(!timerInt) timerInt = setInterval(updateTimer, 1000); setMainButtonState('recording');
-        } catch(e) { showToast("Mikrofon Fehler!", true); resetUI(); } finally { els.btnMain.disabled = false; }
+        } catch(e) { showToast("Mikrofon Fehler!", true); setMainButtonState('idle'); } 
     }
 
-    function performAutoCut() { if(mediaRecorder && mediaRecorder.state === 'recording') { isAutoCutting = true; els.liveCut.style.display = 'inline-block'; mediaRecorder.stop(); } }
+    function performAutoCut() { if(mediaRecorder && mediaRecorder.state === 'recording') { isAutoCutting = true; els.liveCut.style.display = 'inline-block'; mediaRecorder.stop(); setTimeout(()=>{els.liveCut.style.display='none';}, 4000); } }
     function pauseRec() { if(mediaRecorder && mediaRecorder.state === "recording") { mediaRecorder.pause(); isPaused=true; pauseStart=Date.now(); setMainButtonState('paused'); } }
     function resumeRec() { if(mediaRecorder && mediaRecorder.state === "paused") { mediaRecorder.resume(); isPaused=false; const delta = Date.now() - pauseStart; totalPauseDelta += delta; partPauseDelta += delta; setMainButtonState('recording'); } }
-    function stopRec() { if(mediaRecorder) { isAutoCutting = false; mediaRecorder.stop(); els.btnMain.disabled=true; els.btnPause.classList.remove('visible'); els.btnCancel.classList.remove('visible'); } }
+    function stopRec() { if(mediaRecorder) { isAutoCutting = false; mediaRecorder.stop(); els.btnMain.disabled=true; } }
 
     function updateTimer() {
         if(isPaused) return; 
@@ -595,35 +583,37 @@
         els.liveWords.innerText = `${words} W`; els.liveCost.innerText = `~${activeCost.toFixed(1)} ct`;
     }
 
-    function resetUI() { isRecording=false; isPaused=false; isAutoCutting=false; clearInterval(timerInt); timerInt=null; setMainButtonState('idle'); els.timer.innerText="00:00"; releaseWakeLock(); if(globalStream) globalStream.getTracks().forEach(t=>t.stop()); }
+    // V60: Super sauberes Reset
+    function resetUI() { 
+        isRecording=false; isPaused=false; isAutoCutting=false; 
+        clearInterval(timerInt); timerInt=null; 
+        setMainButtonState('idle'); els.timer.innerText="00:00"; 
+        releaseWakeLock(); if(globalStream) globalStream.getTracks().forEach(t=>t.stop()); 
+    }
 
     function silentCopy(text) {
         if(document.hasFocus()) { navigator.clipboard.writeText(text); } 
         else { 
             pendingClipboardText = text; isPendingCopy = true;
-            els.toast.innerHTML = "⏳ <b>Bereit!</b><br>Klicke ins Fenster zum Kopieren.";
-            els.toast.style.background = "var(--warn)"; els.toast.style.color = "#000"; els.toast.className = 'visible'; 
+            els.toast.innerHTML = "⏳ <b>Bereit!</b><br>Klicke ins Fenster zum Kopieren."; els.toast.className = 'visible'; 
         } 
     }
     const executePendingCopy = () => {
         if(isPendingCopy && pendingClipboardText) {
-            navigator.clipboard.writeText(pendingClipboardText);
-            isPendingCopy = false; pendingClipboardText = null;
-            els.toast.innerHTML = "📋 Kopiert!"; els.toast.style.background = "var(--safe)"; els.toast.style.color = "#fff";
-            setTimeout(() => { els.toast.className = ''; els.toast.style.background = ''; els.toast.style.color = ''; }, 2500);
+            navigator.clipboard.writeText(pendingClipboardText); isPendingCopy = false; pendingClipboardText = null;
+            els.toast.innerHTML = "📋 Kopiert!"; els.toast.className = 'visible'; setTimeout(() => { els.toast.className = ''; }, 2500);
         }
     };
     window.addEventListener('focus', executePendingCopy); window.addEventListener('click', executePendingCopy);
 
     async function processSessionAudio(blob, part) {
         pendingTranscriptions++;
-        if(!els.apiKey.value) { els.activeText.value += `\n\n[Wartet auf API Key...]`; autoResizeText(); pendingTranscriptions--; return; }
+        if(!els.apiKey.value) { els.activeText.value += `\n\n[Wartet auf API Key...]`; autoResizeText(els.activeText); pendingTranscriptions--; return; }
 
-        const placeholder = `\n\n[...Schreibe Teil ${part}...]`;
-        els.activeText.value = els.activeText.value + placeholder; autoResizeText();
+        const placeholder = `\n\n[...Teil ${part}...]`;
+        els.activeText.value = els.activeText.value + placeholder; autoResizeText(els.activeText);
         
-        const fd = new FormData();
-        fd.append("file", blob, `audio.webm`); fd.append("model", "whisper-1");
+        const fd = new FormData(); fd.append("file", blob, `audio.webm`); fd.append("model", "whisper-1");
 
         try {
             const res = await fetch("https://api.openai.com/v1/audio/transcriptions", { method: "POST", headers: { "Authorization": `Bearer ${els.apiKey.value}` }, body: fd });
@@ -631,30 +621,23 @@
             els.activeText.value = els.activeText.value.replace(placeholder, "").replace(placeholder.trim(), "");
 
             if(res.ok) {
-                // V59: Cleanes \n---\n Format
-                const newText = part > 1 ? `\n---\n${data.text}` : data.text;
+                const newText = part > 1 ? `\n\n---\n\n${data.text}` : data.text;
                 els.activeText.value = (els.activeText.value + newText).trim();
-                updateLiveStats(); autoResizeText();
-                
-                // Temp save during long sessions
+                updateLiveStats(); autoResizeText(els.activeText);
                 localStorage.setItem("temp_active_text", els.activeText.value);
-
                 if(isAutoSave) download(blob, `rec_${currentSessionId}_part${part}.webm`);
                 silentCopy(els.activeText.value);
-            } else { els.activeText.value += `\n\n[Error: ${data.error?.message}]`; autoResizeText(); }
+            } else { els.activeText.value += `\n\n[Error: ${data.error?.message}]`; autoResizeText(els.activeText); }
         } catch(e) { 
             els.activeText.value = els.activeText.value.replace(placeholder, "").replace(placeholder.trim(), "");
-            els.activeText.value += `\n\n[Netzwerk-Fehler]`; autoResizeText();
+            els.activeText.value += `\n\n[Netzwerk-Fehler]`; autoResizeText(els.activeText);
         }
         
-        pendingTranscriptions--; els.liveCut.style.display = 'none';
+        pendingTranscriptions--; 
     }
 
     function finalizeSessionWhenReady(sId, bList, cost) {
-        if(pendingTranscriptions > 0) {
-            els.activeDateBadge.innerText = "⏳ Beende...";
-            setTimeout(() => finalizeSessionWhenReady(sId, bList, cost), 1000); return;
-        }
+        if(pendingTranscriptions > 0) { setTimeout(() => finalizeSessionWhenReady(sId, bList, cost), 1000); return; }
         
         const finalTxt = els.activeText.value.trim();
         if(finalTxt) {
@@ -663,24 +646,21 @@
             createHistoryEntry(sId, ts, finalTxt, bList, cost);
             
             silentCopy(finalTxt);
-            if(document.hasFocus()) {
-                els.toast.innerHTML = "✅ Abgeschlossen!"; els.toast.style.background = "var(--safe)"; els.toast.style.color = "#fff"; els.toast.className = 'visible';
-                setTimeout(() => { els.toast.className = ''; els.toast.style.background = ''; els.toast.style.color = ''; }, 3000);
-            }
+            if(document.hasFocus()) { els.toast.innerHTML = "✅ Abgeschlossen!"; els.toast.className = 'visible'; setTimeout(() => { els.toast.className = ''; }, 3000); }
             if(isAutoSave) dlTxt(sId);
         }
         
         localStorage.removeItem("temp_active_text");
+        els.activeEntry.style.display = 'none'; 
     }
 
     function saveToHistory(id, text, ts, blobs, cost) { let h = JSON.parse(localStorage.getItem("hist_master")||"[]"); h.unshift({ id, text, ts, cost }); if(h.length > 20) h.pop(); localStorage.setItem("hist_master", JSON.stringify(h)); }
     function loadHistory() { JSON.parse(localStorage.getItem("hist_master")||"[]").forEach(e => createHistoryEntry(e.id, e.ts, e.text, [], e.cost || 0, true)); }
     function clearAll() { if(confirm("Wirklich ALLES löschen?")) { localStorage.removeItem("hist_master"); els.feed.innerHTML = ""; showToast("Verlauf gelöscht."); } }
 
-    window.fixDuration = function(audio, id) {
-        if(audio.duration === Infinity || isNaN(audio.duration)) { audio.currentTime = 1e101; audio.ontimeupdate = function() { this.ontimeupdate = null; this.currentTime = 0; } }
-    }
+    window.fixDuration = function(audio) { if(audio.duration === Infinity || isNaN(audio.duration)) { audio.currentTime = 1e101; audio.ontimeupdate = function() { this.ontimeupdate = null; this.currentTime = 0; } } }
 
+    // V60: Neues Entry Design (Nahtlos, Buttons Oben)
     function createHistoryEntry(id, ts, text, blobs=[], cost=0, isHistoryLoad=false) {
         const d = document.createElement('div'); d.className = 'entry'; d.id = `e-${id}`;
         d.audioBlobs = blobs;
@@ -688,74 +668,60 @@
         
         let audioHtml = "";
         if(blobs.length > 0) {
-            let players = blobs.map((b, i) => `<div class="audio-part"><span>T ${i+1}</span><audio controls playsinline src="${URL.createObjectURL(b)}" onloadedmetadata="window.fixDuration(this, ${id})"></audio></div>`).join("");
-            audioHtml = `<details class="audio-accordion"><summary><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg> Audios (${blobs.length})</summary><div class="audio-list">${players}</div></details>`;
+            let players = blobs.map((b, i) => `<div class="audio-part"><span>T ${i+1}</span><audio controls playsinline src="${URL.createObjectURL(b)}" onloadedmetadata="window.fixDuration(this)"></audio></div>`).join("");
+            audioHtml = `<details class="audio-accordion"><summary><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg> Audios (${blobs.length})</summary><div class="audio-list">${players}</div></details>`;
         }
 
         d.innerHTML = `
-            <div class="entry-meta">
-                <div class="date-badge">${ts}</div>
-                <div class="stats-badges">
-                    <span class="stat-pill">📝 ${words} W</span><span class="stat-pill">🪙 ~${Math.ceil(words * 1.33)} T</span><span class="stat-pill">💵 ~${cost.toFixed(1)} ct</span>
+            <div class="entry-header">
+                <div class="entry-meta-info">
+                    <span class="date-badge"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ${ts}</span>
+                    <div class="stats-badges">
+                        <span class="stat-pill">📝 ${words} W</span><span class="stat-pill">🪙 ~${Math.ceil(words * 1.33)} T</span><span class="stat-pill">💵 ~${cost.toFixed(1)} ct</span>
+                    </div>
+                </div>
+                <div class="entry-actions">
+                    <button class="mini-btn" onclick="doCopy(${id}, true)" title="Copy"><svg viewBox="0 0 24 24">${svgCopy}</svg></button>
+                    <button class="mini-btn" onclick="dlTxt(${id})" title="Text"><svg viewBox="0 0 24 24">${svgTxt}</svg></button>
+                    ${blobs.length > 0 ? `<button class="mini-btn" onclick="dlAudio(${id})" title="Audio"><svg viewBox="0 0 24 24">${svgAudio}</svg></button>` : ''}
+                    <button class="mini-btn safe" onclick="retrySession(${id})" title="Retry"><svg viewBox="0 0 24 24">${svgRetry}</svg></button>
+                    <button class="mini-btn danger" onclick="delEntry(${id}, this)" title="Löschen"><svg viewBox="0 0 24 24">${svgTrash}</svg></button>
                 </div>
             </div>
-            <textarea id="txt-${id}" oninput="this.style.height='';this.style.height=this.scrollHeight+'px'">${text}</textarea>
+            <textarea id="txt-${id}" class="seamless-text" oninput="autoResizeText(this)">${text}</textarea>
             ${audioHtml}
-            <div class="actions">
-                <button class="btn-action" onclick="doCopy(${id}, true)"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg> Copy</button>
-                <button class="btn-action" onclick="dlTxt(${id})"><svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Text</button>
-                ${blobs.length > 0 ? `<button class="btn-action" onclick="dlAudio(${id})"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg> Zip</button>` : ''}
-                <button class="btn-action btn-retry" onclick="retrySession(${id})"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg></button>
-                <button class="btn-action btn-del" onclick="delEntry(${id}, this)"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
-            </div>`;
+        `;
         els.feed.prepend(d); 
-        // Resize textareas after injection
-        setTimeout(() => { const ta = d.querySelector('textarea'); ta.style.height=''; ta.style.height=ta.scrollHeight+'px'; }, 100);
+        setTimeout(() => { autoResizeText(d.querySelector('textarea')); }, 50);
     }
 
-    window.doCopy = (id, showPopup=false) => { 
-        navigator.clipboard.writeText(document.getElementById(`txt-${id}`).value); 
-        if(showPopup) { els.toast.innerHTML = "📋 Kopiert!"; els.toast.style.background = "var(--safe)"; els.toast.style.color="white"; els.toast.className = 'visible'; setTimeout(() => { els.toast.className = ''; }, 2000); }
-    };
+    window.doCopy = (id, showPopup=false) => { navigator.clipboard.writeText(document.getElementById(`txt-${id}`).value); if(showPopup) { showToast("📋 Kopiert!"); } };
     
     window.delEntry = (id, btn) => { 
         if(!btn.classList.contains('confirm')) {
-            btn.classList.add('confirm'); btn.innerHTML = '🗑️?'; btn.style.background = 'var(--danger)'; btn.style.color = 'white';
-            setTimeout(() => { if(document.getElementById(`e-${id}`)) { btn.classList.remove('confirm'); btn.style.background = ''; btn.style.color = 'var(--danger)'; btn.innerHTML = '<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>'; } }, 3000); return;
+            btn.classList.add('confirm'); btn.innerHTML = '<span style="font-size:0.9rem; font-weight:bold;">?</span>'; btn.style.background = 'var(--danger)'; btn.style.color = 'white';
+            setTimeout(() => { if(document.getElementById(`e-${id}`)) { btn.classList.remove('confirm'); btn.style.background = ''; btn.style.color = 'var(--danger)'; btn.innerHTML = `<svg viewBox="0 0 24 24">${svgTrash}</svg>`; } }, 3000); return;
         }
         document.getElementById(`e-${id}`).remove(); let h = JSON.parse(localStorage.getItem("hist_master")||"[]"); localStorage.setItem("hist_master", JSON.stringify(h.filter(x => x.id != id))); 
     };
 
     window.dlTxt = (id) => { download(new Blob([document.getElementById(`txt-${id}`).value]), `transkript_${id}.txt`); };
     window.dlAudio = async (id) => { 
-        const el = document.getElementById(`e-${id}`); 
-        if(!el.audioBlobs || el.audioBlobs.length === 0) return;
+        const el = document.getElementById(`e-${id}`); if(!el.audioBlobs || el.audioBlobs.length === 0) return;
         if(el.audioBlobs.length === 1) { download(el.audioBlobs[0], `rec_${id}.${el.audioBlobs[0].type.includes('mp4') ? 'mp4' : 'webm'}`); } 
-        else {
-            showToast("Zip wird erstellt...");
-            if(!window.JSZip) return; const zip = new JSZip();
-            el.audioBlobs.forEach((blob, index) => { zip.file(`rec_${id}_part${index+1}.${blob.type.includes('mp4') ? 'mp4' : 'webm'}`, blob); });
-            download(await zip.generateAsync({type:"blob"}), `Session_${id}_Audios.zip`);
-        }
+        else { showToast("Zip wird erstellt..."); if(!window.JSZip) return; const zip = new JSZip(); el.audioBlobs.forEach((blob, index) => { zip.file(`rec_${id}_part${index+1}.${blob.type.includes('mp4') ? 'mp4' : 'webm'}`, blob); }); download(await zip.generateAsync({type:"blob"}), `Session_${id}_Audios.zip`); }
     };
 
     window.retrySession = async (id) => { 
-        const el = document.getElementById(`e-${id}`);
-        if(!el.audioBlobs || el.audioBlobs.length === 0) { showToast("Kein Audio für Retry", true); return; }
-        const blob = el.audioBlobs[el.audioBlobs.length - 1];
-        showToast("Starte Retry (Temp 0.8)...");
-        
-        // Temp active text environment for retry
-        els.activeEntryContainer.style.display = 'flex';
-        els.activeText.value = document.getElementById(`txt-${id}`).value;
-        currentSessionId = id;
-        
-        processSessionAudio(blob, el.audioBlobs.length); 
+        const el = document.getElementById(`e-${id}`); if(!el.audioBlobs || el.audioBlobs.length === 0) { showToast("Kein Audio für Retry", true); return; }
+        const blob = el.audioBlobs[el.audioBlobs.length - 1]; showToast("Starte Retry (Temp 0.8)...");
+        els.activeEntry.style.display = 'block'; els.activeText.value = document.getElementById(`txt-${id}`).value; currentSessionId = id; processSessionAudio(blob, el.audioBlobs.length); 
     };
     
     window.dlZip = async () => {
         if(!window.JSZip) return; const zip = new JSZip(); let allTxt = "--- PROTOKOLL ---\n\n";
         document.querySelectorAll('.entry').forEach(e => {
+            if(e.id === "activeEntry") return;
             const id = e.id.replace('e-',''); const txt = e.querySelector('textarea').value; const ts = e.querySelector('.date-badge').innerText;
             allTxt += `[${ts}]\n${txt}\n\n---\n\n`; 
             if(e.audioBlobs) { e.audioBlobs.forEach((blob, index) => { zip.folder("audio").file(`rec_${id}_part${index+1}.webm`, blob); }); }
@@ -767,21 +733,17 @@
         const file = e.target.files[0]; if(!file) return;
         const id = Date.now(); const ts = new Date().toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' });
         createHistoryEntry(id, ts, "Lädt...", [file]);
-        
-        const textArea = document.getElementById(`txt-${id}`);
-        const fd = new FormData(); fd.append("file", file, file.name); fd.append("model", "whisper-1");
-        
+        const textArea = document.getElementById(`txt-${id}`); const fd = new FormData(); fd.append("file", file, file.name); fd.append("model", "whisper-1");
         try {
             const res = await fetch("https://api.openai.com/v1/audio/transcriptions", { method: "POST", headers: { "Authorization": `Bearer ${els.apiKey.value}` }, body: fd });
             const data = await res.json();
-            if(res.ok) { textArea.value = data.text; saveToHistory(id, data.text, ts, [file], 0); silentCopy(data.text); updateTextStats(id); textArea.style.height=''; textArea.style.height=textArea.scrollHeight+'px';} 
-            else { textArea.value = `Error: ${data.error?.message}`; }
+            if(res.ok) { textArea.value = data.text; saveToHistory(id, data.text, ts, [file], 0); autoResizeText(textArea); } else { textArea.value = `Error: ${data.error?.message}`; }
         } catch(e) { textArea.value = `Fehler: ${e.message}`; }
         els.fileUpload.value='';
     });
 
     function download(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
-    function showToast(txt, err=false) { els.toast.innerText = txt; els.toast.className = err ? 'visible error' : 'visible'; setTimeout(()=>els.toast.className='', 3000); }
+    function showToast(txt, err=false) { els.toast.innerText = txt; els.toast.className = 'visible'; setTimeout(()=>els.toast.className='', 3000); }
 </script>
 </body>
 </html>
