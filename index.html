@@ -356,27 +356,66 @@
         #btnMain {
             width: 65px;
             height: 65px;
-            background: var(--rec-btn-bg);
-            color: white;
+            background: var(--btn-glass);
+            color: var(--text);
             border: none;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        /* The soft glowing nebula inside the button */
+        #btnMain::before {
+            content: '';
+            position: absolute;
+            inset: -20%;
+            background: linear-gradient(135deg, var(--c1), var(--c2), var(--c1));
+            background-size: 200% 200%;
+            filter: blur(12px);
+            opacity: 0.6;
+            z-index: -1;
+            transition: opacity 0.4s;
+            animation: drift 4s ease infinite alternate;
         }
 
         #btnMain:hover {
-            opacity: 0.9;
             transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        #btnMain:hover::before {
+            opacity: 0.85;
         }
 
         #btnMain.state-recording {
-            background: var(--btn-glass);
-            color: var(--danger);
-            border-radius: 22px;
-            border: 1px solid var(--glass-border);
-            box-shadow: inset 0 0 15px rgba(255, 71, 87, 0.2);
+            border-radius: 20px;
+            color: white;
+            border-color: transparent;
+        }
+
+        #btnMain.state-recording::before {
+            background: linear-gradient(135deg, var(--danger), var(--c1), var(--danger));
+            opacity: 0.7;
+            filter: blur(14px);
+            animation: drift 2.5s ease infinite alternate;
         }
 
         #btnMain.state-recording:hover {
-            background: var(--btn-hover);
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        @keyframes drift {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            100% {
+                background-position: 100% 50%;
+            }
         }
 
         #btnMain svg {
@@ -832,6 +871,31 @@
             transform: scale(1.05);
         }
 
+        .color-thumb {
+            position: absolute;
+            top: 50%;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid var(--text);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+            transform: translate(-50%, -50%);
+            cursor: grab;
+            z-index: 10;
+            touch-action: none;
+            /* Prevent scroll when dragging on mobile */
+            user-select: none;
+            /* Prevent text selection */
+            -webkit-user-select: none;
+            /* Safari */
+        }
+
+        .color-thumb:active {
+            cursor: grabbing;
+            transform: translate(-50%, -50%) scale(1.2);
+        }
+
         .anim-option {
             display: flex;
             align-items: center;
@@ -960,6 +1024,42 @@
                 box-shadow: 0 0 0 0 rgba(46, 213, 115, 0);
             }
         }
+
+        /* Dual Range Slider CSS */
+        .range-slider {
+            position: relative;
+            width: 100%;
+            height: 28px;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+            margin-top: 4px;
+        }
+
+        .range-slider input[type=range] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            pointer-events: none;
+            background: transparent;
+            margin: 0;
+            z-index: 2;
+        }
+
+        .range-slider input[type=range]::-webkit-slider-thumb {
+            pointer-events: all;
+            width: 24px;
+            height: 24px;
+            -webkit-appearance: none;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -1001,7 +1101,7 @@
             </div>
 
             <div class="studio-tabs">
-                <div class="tab-btn active" id="tabColors" onclick="switchStudioTab('colors')">Vibe & Colors</div>
+                <div class="tab-btn active" id="tabColors" onclick="switchStudioTab('colors')">Colors</div>
                 <div class="tab-btn" id="tabAnims" onclick="switchStudioTab('anims')">Animations</div>
             </div>
 
@@ -1010,37 +1110,35 @@
                 <div style="margin-bottom: 20px; padding: 0 5px;">
                     <div
                         style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:700; color:var(--text); margin-bottom:8px;">
-                        <span>Farbton</span>
+                        <span>Farbspektrum (Einzelne Farben)</span>
                     </div>
-                    <div
-                        style="position:relative; height:28px; border-radius:14px; overflow:hidden; border:1px solid var(--glass-border);">
-                        <div id="hueSpectrumBg"
-                            style="position:absolute;inset:0;background:linear-gradient(90deg,#ff0000,#ffff00,#00ff00,#00ffff,#0000ff,#ff00ff,#ff0000);opacity:0.85;">
-                        </div>
-                        <input type="range" id="globalHue" min="0" max="360" value="0"
-                            style="position:absolute;inset:0;width:100%;height:100%;opacity:0.01;cursor:pointer;margin:0;">
-                        <div id="hueThumb"
-                            style="position:absolute;top:2px;width:24px;height:24px;background:white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);pointer-events:none;transition:left 0.05s;">
-                        </div>
-                    </div>
-                    <div style="margin-top:12px;">
+                    <div id="huePicker"
+                        style="position:relative; height:28px; border-radius:14px; border:1px solid var(--glass-border); cursor:pointer; margin-bottom: 5px;">
                         <div
-                            style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:700; color:var(--text); margin-bottom:6px;">
-                            <span>Farbintensität</span>
+                            style="position:absolute;inset:0;background:linear-gradient(90deg, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00); border-radius:14px; opacity:0.8;">
                         </div>
-                        <input type="range" id="colorVariety" min="0" max="100" value="50"
-                            style="width:100%; accent-color: var(--accent);">
+                        <div id="thumbContainer" style="position:absolute;inset:0;"></div>
                     </div>
+                    <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:15px; text-align:center;">
+                        Tippen um Farbe hinzuzufügen/zu entfernen. Ziehen zum Verschieben.</div>
                     <div id="gradientBar"
                         style="height: 24px; border-radius: 12px; margin-top: 15px; border: 1px solid var(--glass-border); transition: filter 0.3s;">
                     </div>
-                    <div style="margin-top:16px;">
-                        <div
-                            style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:700; color:var(--text); margin-bottom:6px;">
-                            <span>Transparenz</span>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:16px;">
+                        <div>
+                            <div style="font-size:0.85rem; font-weight:700; color:var(--text); margin-bottom:6px;">
+                                <span>Farbintensität</span>
+                            </div>
+                            <input type="range" id="colorVariety" min="0" max="200" value="100"
+                                style="width:100%; accent-color: var(--accent);">
                         </div>
-                        <input type="range" id="uiTransparency" min="0" max="100" value="70"
-                            style="width:100%; accent-color: var(--accent);">
+                        <div>
+                            <div style="font-size:0.85rem; font-weight:700; color:var(--text); margin-bottom:6px;">
+                                <span>Transparenz</span>
+                            </div>
+                            <input type="range" id="uiTransparency" min="0" max="100" value="70"
+                                style="width:100%; accent-color: var(--accent);">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1050,8 +1148,8 @@
                     style="font-size:0.95rem; font-weight:800; color:var(--text); margin-bottom:12px; text-align:center;">
                     Hintergrund-Animation</div>
                 <div style="border-top: 1px solid var(--glass-border); padding-top: 12px;">
-                    <div class="dev-row">
-                        <span>🎤 Stimmreaktiv</span>
+                    <div style="display:none;" class="dev-row">
+                        <span>Stimmreaktiv</span>
                         <label style="position:relative; width:36px; height:20px; cursor:pointer; flex-shrink:0;">
                             <input type="checkbox" id="voiceReactive" checked style="display:none;">
                             <span id="voiceToggleTrack"
@@ -1061,9 +1159,9 @@
                         </label>
                     </div>
                     <div class="dev-row"><span>Geschwindigkeit</span> <input type="range" id="animSpeed" min="10"
-                            max="100" value="30"></div>
+                            max="100" value="50"></div>
                     <div class="dev-row"><span>Weichzeichner</span> <input type="range" id="animBlur" min="0" max="60"
-                            value="20"></div>
+                            value="60"></div>
                     <div class="dev-row"><span>Größe</span> <input type="range" id="animSize" min="10" max="100"
                             value="60"></div>
                 </div>
@@ -1118,7 +1216,7 @@
                 <div class="top-row">
                     <div class="title-pill">
                         <h1>Simple Transcription</h1>
-                        <span class="version-tag">V77</span>
+                        <span class="version-tag">V84</span>
                     </div>
 
                     <div class="header-actions">
@@ -1249,9 +1347,11 @@
                     <div class="status-container" id="statusContainer">
                         <span class="status-badge" id="badgeListen"><svg viewBox="0 0 24 24" width="14" height="14"
                                 fill="none" stroke="currentColor" stroke-width="2">
-                                <path
-                                    d="M13 3h-2v1.5c-1.37.52-2.58 1.48-3.41 2.76A8.04 8.04 0 006 11.5v6.28l-2 2.5V22h16v-1.72l-2-2.5V11.5c0-1.63-.56-3.13-1.5-4.24-.86-.99-2-1.79-3.32-2.2V3h-1.68z">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z">
                                 </path>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                <line x1="12" y1="19" x2="12" y2="23"></line>
+                                <line x1="8" y1="23" x2="16" y2="23"></line>
                             </svg> Höre zu...</span>
                         <!-- Transcribing state -->
                         <span class="status-badge highlight" id="badgeTranscribe" style="display:none;"><svg
@@ -1292,10 +1392,6 @@
     <input type="file" id="fileUpload" hidden accept=".flac,.m4a,.mp3,.mp4,.mpeg,.mpga,.oga,.ogg,.wav,.webm,.opus,.amr">
     <!-- External JS at the end -->
     <script>
-        var _dbg = document.createElement('div');
-        _dbg.style.cssText = 'position:fixed;bottom:5px;left:5px;z-index:99999;background:red;color:white;padding:4px 10px;border-radius:8px;font-size:12px;font-weight:bold;font-family:monospace;max-width:90vw;word-break:break-all;';
-        _dbg.textContent = 'JS: ...';
-        document.body.appendChild(_dbg);
         try {
             // === ALL STATE VARIABLES AT TOP ===
             var globalStream, mediaRecorder, chunks = [], audioCtx, analyser, dataArray;
@@ -1305,6 +1401,7 @@
             var currentSessionId = null, currentPart = 1, isAutoCutting = false;
             var pendingTranscriptions = 0, sessionBlobs = [], activeCost = 0;
             var allTokensUsed = 0;
+            var customHues = [200, 300], draggingThumb = null;
             var particlesArray = [], drops = [], matrixChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*';
             var smoothedVol = 0, timeAccum = 0;
             var wakeLock = null;
@@ -1326,7 +1423,8 @@
                 animSpeed: document.getElementById('animSpeed'), animBlur: document.getElementById('animBlur'),
                 animSize: document.getElementById('animSize'),
                 edgeGlow: document.getElementById('edgeGlow'), voiceReactiveEl: document.getElementById('voiceReactive'),
-                colorVariety: document.getElementById('colorVariety'), hueThumb: document.getElementById('hueThumb')
+                colorVariety: document.getElementById('colorVariety'),
+                hueStart: document.getElementById('hueStart'), hueEnd: document.getElementById('hueEnd'), hueHighlight: document.getElementById('hueHighlight')
             };
 
             const svgThemes = [
@@ -1431,26 +1529,100 @@
                 return `#${f(0)}${f(8)}${f(4)}`;
             }
 
+            function renderThumbs() {
+                const tc = document.getElementById('thumbContainer');
+                if (!tc) return;
+                tc.innerHTML = '';
+                customHues.forEach((hue, idx) => {
+                    let btn = document.createElement('div');
+                    btn.className = 'color-thumb';
+                    btn.style.left = (hue / 360 * 100) + '%';
+                    btn.style.backgroundColor = `hsl(${hue}, 100%, 50%)`;
+
+                    let isDragging = false;
+                    btn.onpointerdown = (e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        btn.setPointerCapture(e.pointerId);
+                        draggingThumb = idx;
+
+                        let rect = document.getElementById('huePicker').getBoundingClientRect();
+                        // store the exact offset of where the mouse grabbed the thumb relative to its center
+                        let grabOffsetPx = e.clientX - (rect.left + (hue / 360) * rect.width);
+                        let moved = false;
+
+                        const onMove = (ev) => {
+                            moved = true;
+                            isDragging = true;
+                            let currentRect = document.getElementById('huePicker').getBoundingClientRect();
+                            // Subtract the initial grab offset so the thumb center stays perfectly locked to the exact spot on the finger
+                            let targetX = ev.clientX - grabOffsetPx;
+                            let newHue = ((targetX - currentRect.left) / currentRect.width) * 360;
+                            newHue = Math.max(0, Math.min(360, newHue));
+                            customHues[idx] = newHue;
+                            btn.style.left = (newHue / 360 * 100) + '%';
+                            btn.style.backgroundColor = `hsl(${newHue}, 100%, 50%)`;
+                            updateHue();
+                        };
+
+                        const onUp = (ev) => {
+                            btn.releasePointerCapture(ev.pointerId);
+                            btn.removeEventListener('pointermove', onMove);
+                            btn.removeEventListener('pointerup', onUp);
+                            btn.removeEventListener('pointercancel', onUp);
+                            draggingThumb = null;
+                            setTimeout(() => isDragging = false, 50);
+                            localStorage.setItem('custom_hues_v84', JSON.stringify(customHues));
+                        };
+
+                        btn.addEventListener('pointermove', onMove);
+                        btn.addEventListener('pointerup', onUp);
+                        btn.addEventListener('pointercancel', onUp);
+                    };
+
+                    btn.onclick = (e) => {
+                        e.stopPropagation();
+                        if (!isDragging && customHues.length > 1) {
+                            customHues.splice(idx, 1);
+                            renderThumbs(); updateHue();
+                            localStorage.setItem('custom_hues_v84', JSON.stringify(customHues));
+                        }
+                    };
+                    tc.appendChild(btn);
+                });
+            }
+
+            function initMultiThumbSlider() {
+                const picker = document.getElementById('huePicker');
+                if (!picker) return;
+                try { customHues = JSON.parse(localStorage.getItem('custom_hues_v84') || "[200, 300]"); } catch (e) { customHues = [200, 300]; }
+
+                // Use click to add new thumbs, not mousedown, to prevent conflict with thumb dragging
+                picker.onclick = (e) => {
+                    if (e.target.classList.contains('color-thumb')) return; // handled by thumb
+                    let rect = picker.getBoundingClientRect();
+                    let hue = Math.max(0, Math.min(360, ((e.clientX - rect.left) / rect.width) * 360));
+                    customHues.push(hue);
+                    renderThumbs();
+                    updateHue();
+                    localStorage.setItem('custom_hues_v84', JSON.stringify(customHues));
+                };
+                renderThumbs();
+            }
+
             function updateHue() {
-                if (!els.globalHue) els.globalHue = document.getElementById('globalHue');
-                if (!els.hueThumb) els.hueThumb = document.getElementById('hueThumb');
                 if (!els.colorVariety) els.colorVariety = document.getElementById('colorVariety');
-                let shift = els.globalHue ? parseInt(els.globalHue.value) || 0 : 0;
-                let variety = els.colorVariety ? parseInt(els.colorVariety.value) : 50;
-                // 0=grayscale, 50=original saturation, 100=vivid (1.5x)
-                let satScale = (variety / 50) * 1.0; // 0→0, 50→1.0, 100→2.0
-                satScale = Math.min(satScale, 1.5); // cap at 1.5 to avoid wash-out
+                let variety = els.colorVariety ? parseInt(els.colorVariety.value) : 100;
+                // Allow up to 3.0x scaling of base HSL saturation (from 2.0x) so colors can get insanely bright.
+                let satScale = Math.min((variety / 50), 3.0);
 
-                // Move thumb
-                if (els.hueThumb && els.globalHue) {
-                    let pct = shift / 360;
-                    let parentW = els.globalHue.parentElement ? els.globalHue.parentElement.offsetWidth : 300;
-                    els.hueThumb.style.left = (pct * (parentW - 24)) + 'px';
-                }
+                let sortedHues = [...customHues].sort((a, b) => a - b);
+                if (sortedHues.length === 0) sortedHues = [200];
 
-                let currentHexes = baseColors.map(hex => {
+                let currentHexes = baseColors.map((hex, index) => {
                     let [h, s, l] = hexToHSL(hex);
-                    return hslToHex((h + shift) % 360, Math.min(s * satScale, 100), l);
+                    let thumbHue = sortedHues[index % sortedHues.length];
+                    return hslToHex(thumbHue, Math.min(s * satScale, 100), l);
                 });
 
                 document.documentElement.style.setProperty('--c1', currentHexes[0]); document.documentElement.style.setProperty('--c2', currentHexes[1]);
@@ -1464,32 +1636,21 @@
                 };
 
                 if (document.getElementById('gradientBar')) {
-                    document.getElementById('gradientBar').style.background = `linear-gradient(90deg, ${currentHexes.join(', ')})`;
-                    document.getElementById('gradientBar').style.opacity = '0.6';
-                }
-
-                // Update hue spectrum bar to show actual shifted colors
-                let specBg = document.getElementById('hueSpectrumBg');
-                if (specBg) {
-                    // Generate 7 evenly spaced hue samples from current base
-                    let specColors = [];
-                    for (let i = 0; i <= 6; i++) {
-                        let sampleShift = (i / 6) * 360;
-                        let midColor = baseColors[2]; // use a mid blob color as reference
-                        let [h, s, l] = hexToHSL(midColor);
-                        specColors.push(hslToHex((h + sampleShift) % 360, Math.min(s * satScale, 100), l));
-                    }
-                    specBg.style.background = `linear-gradient(90deg, ${specColors.join(', ')})`;
+                    let gradStops = sortedHues.map((h, i) => `hsl(${h}, 90%, 50%) ${(i / Math.max(1, sortedHues.length - 1)) * 100}%`).join(', ');
+                    if (sortedHues.length === 1) gradStops = `hsl(${sortedHues[0]}, 90%, 50%) 0%, hsl(${sortedHues[0]}, 90%, 50%) 100%`;
+                    document.getElementById('gradientBar').style.background = `linear-gradient(90deg, ${gradStops})`;
+                    document.getElementById('gradientBar').style.opacity = '0.8';
                 }
 
                 const metaTheme = document.getElementById('theme-color-meta');
                 if (metaTheme) metaTheme.setAttribute('content', document.documentElement.getAttribute('data-theme').includes('dark') ? '#000000' : currentHexes[0]);
 
-                localStorage.setItem('global_hue_v72', shift);
-                localStorage.setItem('color_variety_v74', variety);
+                if (typeof updateAnimParams === 'function') updateAnimParams(true);
             }
-            if (els.globalHue) { els.globalHue.addEventListener('input', updateHue); }
-            if (els.colorVariety) { els.colorVariety.addEventListener('input', updateHue); }
+            if (els.colorVariety) {
+                els.colorVariety.addEventListener('input', updateHue);
+                els.colorVariety.addEventListener('change', () => localStorage.setItem('color_variety_v79', els.colorVariety.value));
+            }
             // Transparency slider
             (function () {
                 let ts = document.getElementById('uiTransparency');
@@ -1520,13 +1681,16 @@
             }
 
             window.resetDev = () => {
-                if (!els.globalHue) els.globalHue = document.getElementById('globalHue');
-                if (els.globalHue) els.globalHue.value = 0;
-                if (els.colorVariety) els.colorVariety.value = 50;
+                customHues = [200, 300];
+                if (els.colorVariety) els.colorVariety.value = 100;
+                localStorage.setItem('custom_hues_v84', JSON.stringify(customHues));
+                localStorage.setItem('color_variety_v79', 100);
+                if (els.colorVariety) els.colorVariety.value = 100;
                 let ts = document.getElementById('uiTransparency');
                 if (ts) ts.value = 70;
+                renderThumbs();
                 updateHue();
-                els.animSpeed.value = 30; els.animBlur.value = 20;
+                els.animSpeed.value = 50; els.animBlur.value = 60;
                 if (els.animSize) els.animSize.value = 60;
                 if (els.voiceReactiveEl) { els.voiceReactiveEl.checked = true; voiceReactive = true; }
                 localStorage.setItem('voice_reactive_v73', 'true');
@@ -1537,26 +1701,21 @@
             };
 
             function loadDev() {
-                if (!els.globalHue) {
-                    els.globalHue = document.getElementById('globalHue');
-                    if (els.globalHue) els.globalHue.addEventListener('input', updateHue);
-                }
                 if (!els.colorVariety) {
                     els.colorVariety = document.getElementById('colorVariety');
                     if (els.colorVariety) els.colorVariety.addEventListener('input', updateHue);
                 }
-                let savedHue = localStorage.getItem('global_hue_v72');
-                if (els.globalHue) {
-                    if (savedHue !== null) { els.globalHue.value = savedHue; } else { els.globalHue.value = 0; }
-                }
-                let savedVariety = localStorage.getItem('color_variety_v74');
+
+                let savedVariety = localStorage.getItem('color_variety_v79');
                 if (els.colorVariety) {
-                    if (savedVariety !== null) { els.colorVariety.value = savedVariety; } else { els.colorVariety.value = 50; }
+                    if (savedVariety !== null) { els.colorVariety.value = savedVariety; } else { els.colorVariety.value = 100; }
                 }
+
+                initMultiThumbSlider();
                 updateHue();
 
-                els.animSpeed.value = localStorage.getItem('anim_speed_v72') || 30;
-                els.animBlur.value = localStorage.getItem('anim_blur_v72') || 20;
+                els.animSpeed.value = localStorage.getItem('anim_speed_v72') || 50;
+                els.animBlur.value = localStorage.getItem('anim_blur_v72') || 60;
                 if (els.edgeGlow) els.edgeGlow.value = localStorage.getItem('edge_glow_v73') || 0;
                 updateAnimParams(true);
             }
@@ -1571,20 +1730,35 @@
 
             function updateAnimParams(isLoad = false) {
                 if (!isLoad) {
-                    localStorage.setItem('anim_density_v72', els.animDensity.value);
                     localStorage.setItem('anim_speed_v72', els.animSpeed.value);
                     localStorage.setItem('anim_blur_v72', els.animBlur.value);
                     if (els.edgeGlow) localStorage.setItem('edge_glow_v73', els.edgeGlow.value);
                 }
+
                 let blurVal = parseInt(els.animBlur.value);
+                let variety = els.colorVariety ? parseInt(els.colorVariety.value) : 100;
+
+                // Allow massive saturation scaling when variety > 100.
+                let darkSaturate = 1.0 + ((variety - 100) / 50);
+                darkSaturate = Math.max(0, darkSaturate);
+
+                // Boost brightness slightly above 100 to combat the heavy 0.6 darkening 
+                let darkBrightness = 0.6 + ((variety - 100) / 125);
+                darkBrightness = Math.max(0.6, Math.min(1.4, darkBrightness));
+
                 let isDark = document.documentElement.getAttribute('data-theme').includes('dark');
                 if (blurVal === 0) {
                     els.canvas.style.filter = '';
                 } else {
-                    els.canvas.style.filter = `blur(${blurVal}px) ${isDark ? 'brightness(0.3) saturate(1.5)' : 'brightness(0.9) saturate(1.1)'}`;
+                    els.canvas.style.filter = `blur(${blurVal}px) ${isDark ? 'brightness(' + darkBrightness.toFixed(2) + ') saturate(' + darkSaturate.toFixed(2) + ')' : 'brightness(0.9) saturate(1.1)'}`;
                 }
             }
-            [els.animSpeed, els.animBlur, els.animSize].filter(Boolean).forEach(el => el.addEventListener('input', () => updateAnimParams(false)));
+
+            // Decouple localStorage saving (change) from 60fps slider visual updates (input)
+            [els.animSpeed, els.animBlur, els.animSize].filter(Boolean).forEach(el => {
+                el.addEventListener('input', () => updateAnimParams(true));
+                el.addEventListener('change', () => updateAnimParams(false));
+            });
             function initVisualizer() {
                 const ctx = els.canvas.getContext('2d');
                 function resizeCanvas() { els.canvas.width = window.innerWidth; els.canvas.height = window.innerHeight; }
@@ -1718,11 +1892,7 @@
                 btn.classList.remove('confirm'); btn.style.background = 'var(--btn-glass)'; btn.style.color = 'var(--danger)'; btn.innerHTML = '<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
                 resetUI();
 
-                els.activeEntry.classList.add('collapse-anim');
-                setTimeout(() => {
-                    els.activeEntry.style.display = 'none';
-                    els.activeEntry.classList.remove('collapse-anim');
-                }, 400);
+                els.activeEntry.style.display = 'none';
             };
 
             function setMainButtonState(state) {
@@ -1822,6 +1992,10 @@
                             isAutoCutting = false; chunks = []; currentPart++;
                             mediaRecorder.start(); partStartTime = Date.now(); partPauseDelta = 0;
                         } else {
+                            if (pendingTranscriptions > 0) {
+                                els.activeText.value += '\n\n[Wartet auf finale Transkription...]';
+                                autoResizeText(els.activeText);
+                            }
                             resetUI(); finalizeSessionWhenReady(currentSessionId, sessionBlobs, activeCost, finalDurationStr);
                         }
                     };
@@ -1907,29 +2081,28 @@
             function finalizeSessionWhenReady(sId, bList, cost, durationStr) {
                 if (pendingTranscriptions > 0) { setTimeout(() => finalizeSessionWhenReady(sId, bList, cost, durationStr), 1000); return; }
 
-                const finalTxt = els.activeText.value.trim();
+                const finalTxt = els.activeText.value.replace(/\n\n\[Wartet auf finale Transkription\.\.\.\]/g, '').trim();
+                els.activeText.value = finalTxt; // Display clean text quickly
+
                 if (finalTxt) {
                     const tsFull = `${new Date().toLocaleDateString('de-DE', { dateStyle: 'short' })} | ${new Date(sessionStartTime).toLocaleTimeString('de-DE', { timeStyle: 'short' })} - ${new Date().toLocaleTimeString('de-DE', { timeStyle: 'short' })}`;
                     saveToHistory(sId, finalTxt, tsFull, bList, cost, durationStr);
 
-                    els.activeEntry.classList.add('finished-transition');
-                    els.activeEntry.classList.add('collapse-anim');
+                    // Instantly hide the active box to prevent massive layout shifts
+                    els.activeEntry.style.display = 'none';
 
+                    // Create the new entry immediately so it slides in via its own popIn animation
+                    createHistoryEntry(sId, tsFull, finalTxt, bList, cost, durationStr, false);
+
+                    silentCopy(finalTxt); if (document.hasFocus()) showToast("Gespeichert!");
+                    if (isAutoSave) dlEntryZip(sId);
+
+                    // Smooth scroll to top after a tiny delay to allow the DOM to render the new card
                     setTimeout(() => {
-                        els.activeEntry.style.display = 'none';
-                        els.activeEntry.classList.remove('collapse-anim');
-                        els.activeEntry.classList.remove('finished-transition');
-                        createHistoryEntry(sId, tsFull, finalTxt, bList, cost, durationStr, false);
-                        silentCopy(finalTxt); if (document.hasFocus()) showToast("Gespeichert!");
-                        if (isAutoSave) dlEntryZip(sId);
-                        document.querySelector('.scroll-zone').scrollTo({ top: 0, behavior: 'smooth' });
-                    }, 400);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }, 50);
                 } else {
-                    els.activeEntry.classList.add('collapse-anim');
-                    setTimeout(() => {
-                        els.activeEntry.style.display = 'none';
-                        els.activeEntry.classList.remove('collapse-anim');
-                    }, 400);
+                    els.activeEntry.style.display = 'none';
                 }
             }
 
