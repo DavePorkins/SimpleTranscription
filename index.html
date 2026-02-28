@@ -64,7 +64,7 @@
 
         html[data-theme="dark"] {
             color-scheme: dark;
-            --glass-bg: rgba(30, 30, 35, 0.3);
+            --glass-bg: rgba(30, 30, 35, 0.15);
             --glass-border: rgba(255, 255, 255, 0.12);
             --text: #ffffff;
             --text-muted: #cccccc;
@@ -212,11 +212,20 @@
         }
 
         .header-actions {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(42px, 1fr));
             gap: 8px;
-            flex-wrap: wrap;
-            justify-content: center;
+            justify-items: center;
             width: 100%;
+            margin-bottom: 6px;
+        }
+
+        .action-flex {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            flex-wrap: wrap;
         }
 
         .icon-btn {
@@ -224,8 +233,10 @@
             border: 1px solid var(--glass-border);
             color: var(--text);
             border-radius: 50%;
-            width: 38px;
-            height: 38px;
+            width: 100%;
+            max-width: 50px;
+            aspect-ratio: 1/1;
+            height: auto;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -375,7 +386,7 @@
             background: linear-gradient(135deg, var(--c1), var(--c2), var(--c1));
             background-size: 200% 200%;
             filter: blur(12px);
-            opacity: 0.6;
+            opacity: 0.35;
             z-index: -1;
             transition: opacity 0.4s;
             animation: drift 4s ease infinite alternate;
@@ -387,7 +398,7 @@
         }
 
         #btnMain:hover::before {
-            opacity: 0.85;
+            opacity: 0.5;
         }
 
         #btnMain.state-recording {
@@ -398,7 +409,7 @@
 
         #btnMain.state-recording::before {
             background: linear-gradient(135deg, var(--danger), var(--c1), var(--danger));
-            opacity: 0.7;
+            opacity: 0.45;
             filter: blur(14px);
             animation: drift 2.5s ease infinite alternate;
         }
@@ -1288,7 +1299,7 @@
                         </button>
                     </div>
 
-                    <div class="header-actions" style="margin-top: 4px;">
+                    <div class="action-flex" style="margin-top: 4px;">
                         <div class="btn-sleek inactive" id="btnAutoSave" onclick="toggleSave()"
                             title="Auto-Save Backup">
                             <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
@@ -1398,6 +1409,39 @@
             var isRecording = false, isPaused = false, isCancelled = false;
             var sessionStartTime = 0, partStartTime = 0, totalPauseDelta = 0, partPauseDelta = 0, pauseStart = 0, timerInt;
             var micsLoaded = false;
+
+            // Wake Lock API handles retaining screen-on state during recording
+            var wakeLock = null;
+            async function requestWakeLock() {
+                try {
+                    if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
+                } catch (err) { console.log('Wake Lock Error:', err.message); }
+            }
+            async function releaseWakeLock() {
+                try {
+                    if (wakeLock !== null) { await wakeLock.release(); wakeLock = null; }
+                } catch (err) { console.log('Wake Lock Release Error:', err.message); }
+            }
+
+            // PWA Manifest Injection
+            (function injectPWA() {
+                const manifest = {
+                    "name": "Simple Transcription",
+                    "short_name": "Transcribe",
+                    "start_url": ".",
+                    "display": "standalone",
+                    "background_color": "#050505",
+                    "theme_color": "#050505",
+                    "icons": [{ "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iI2M0NzFlZCIvPjwvc3ZnPg==", "sizes": "512x512", "type": "image/svg+xml" }]
+                };
+                const stringManifest = JSON.stringify(manifest);
+                const blob = new Blob([stringManifest], { type: 'application/json' });
+                const manifestURL = URL.createObjectURL(blob);
+                let manifestLink = document.createElement('link');
+                manifestLink.rel = 'manifest';
+                manifestLink.href = manifestURL;
+                document.head.appendChild(manifestLink);
+            })();
             var currentSessionId = null, currentPart = 1, isAutoCutting = false;
             var pendingTranscriptions = 0, sessionBlobs = [], activeCost = 0;
             var allTokensUsed = 0;
@@ -1540,11 +1584,13 @@
                     btn.style.backgroundColor = `hsl(${hue}, 100%, 50%)`;
 
                     let isDragging = false;
+                    let touchStartTime = 0;
                     btn.onpointerdown = (e) => {
                         e.stopPropagation();
                         e.preventDefault();
                         btn.setPointerCapture(e.pointerId);
                         draggingThumb = idx;
+                        touchStartTime = Date.now();
 
                         let rect = document.getElementById('huePicker').getBoundingClientRect();
                         // store the exact offset of where the mouse grabbed the thumb relative to its center
@@ -1552,12 +1598,15 @@
                         let moved = false;
 
                         const onMove = (ev) => {
-                            moved = true;
                             isDragging = true;
                             let currentRect = document.getElementById('huePicker').getBoundingClientRect();
                             // Subtract the initial grab offset so the thumb center stays perfectly locked to the exact spot on the finger
                             let targetX = ev.clientX - grabOffsetPx;
                             let newHue = ((targetX - currentRect.left) / currentRect.width) * 360;
+
+                            // Only mark as truly moved if hue shifts noticeably to prevent micro-jitters cancelling a tap
+                            if (Math.abs(newHue - hue) > 3) moved = true;
+
                             newHue = Math.max(0, Math.min(360, newHue));
                             customHues[idx] = newHue;
                             btn.style.left = (newHue / 360 * 100) + '%';
@@ -1572,21 +1621,21 @@
                             btn.removeEventListener('pointercancel', onUp);
                             draggingThumb = null;
                             setTimeout(() => isDragging = false, 50);
+
+                            // Mobile Touch: if finger was lifted quickly and didn't slide the thumb, delete it
+                            let touchDuration = Date.now() - touchStartTime;
+                            if (!moved && touchDuration < 350 && customHues.length > 1) {
+                                customHues.splice(idx, 1);
+                                renderThumbs();
+                                updateHue();
+                            }
+
                             localStorage.setItem('custom_hues_v84', JSON.stringify(customHues));
                         };
 
                         btn.addEventListener('pointermove', onMove);
                         btn.addEventListener('pointerup', onUp);
                         btn.addEventListener('pointercancel', onUp);
-                    };
-
-                    btn.onclick = (e) => {
-                        e.stopPropagation();
-                        if (!isDragging && customHues.length > 1) {
-                            customHues.splice(idx, 1);
-                            renderThumbs(); updateHue();
-                            localStorage.setItem('custom_hues_v84', JSON.stringify(customHues));
-                        }
                     };
                     tc.appendChild(btn);
                 });
@@ -1643,7 +1692,7 @@
                 }
 
                 const metaTheme = document.getElementById('theme-color-meta');
-                if (metaTheme) metaTheme.setAttribute('content', document.documentElement.getAttribute('data-theme').includes('dark') ? '#000000' : currentHexes[0]);
+                if (metaTheme) metaTheme.setAttribute('content', document.documentElement.getAttribute('data-theme').includes('dark') ? '#050505' : '#ffffff');
 
                 if (typeof updateAnimParams === 'function') updateAnimParams(true);
             }
@@ -1687,7 +1736,8 @@
                 localStorage.setItem('color_variety_v79', 100);
                 if (els.colorVariety) els.colorVariety.value = 100;
                 let ts = document.getElementById('uiTransparency');
-                if (ts) ts.value = 70;
+                // Mobile typically prefers high transparency (less milky)
+                if (ts) ts.value = 90;
                 renderThumbs();
                 updateHue();
                 els.animSpeed.value = 50; els.animBlur.value = 60;
@@ -1851,9 +1901,6 @@
                     }
                 } catch (e) { }
             }
-
-            async function requestWakeLock() { try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) { } }
-            function releaseWakeLock() { if (wakeLock !== null) { wakeLock.release().then(() => wakeLock = null); } }
 
             if (HARDCODED_KEY.length > 5) { els.apiKey.value = HARDCODED_KEY; } else { els.apiKey.value = localStorage.getItem("key_v38") || ""; }
             function migrateHistory() { let h = localStorage.getItem("hist_master"); if (!h) localStorage.setItem("hist_master", "[]"); } migrateHistory(); loadDev();
