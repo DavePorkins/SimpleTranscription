@@ -15,7 +15,6 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
 
-        /* Container Scroll Architektur */
         body {
             font-family: 'Inter', -apple-system, sans-serif;
             margin: 0; 
@@ -29,10 +28,11 @@
 
         :root {
             --c1: #a18cd1; --c2: #fbc2eb;
-            --plasma1: #8ec5fc; --plasma2: #e0c3fc; --plasma3: #99ddff;
+            --plasma1: #8ec5fc; --plasma2: #e0c3fc; --plasma3: #99ddff; 
+            --plasma4: #b5e8ff; --plasma5: #d4fc79;
             
-            /* 1. Light Clear */
-            --glass-bg: rgba(255, 255, 255, 0.08);
+            /* Light Clear */
+            --glass-bg: rgba(255, 255, 255, 0.1);
             --glass-border: rgba(255, 255, 255, 0.4);
             --text: #111111; --text-muted: #555555;
             --input-bg: rgba(255, 255, 255, 0.4);
@@ -43,11 +43,11 @@
             --accent: #c471ed; --danger: #ff4757; --warn: #ffa502; --safe: #2ed573;
             --badge-bg: rgba(255, 255, 255, 0.5);
             --title-bg: rgba(255, 255, 255, 0.65);
-            --blur-amount: blur(15px);
-            --canvas-brightness: brightness(0.9) saturate(1.1);
+            --blur-amount: blur(25px);
+            --canvas-brightness: brightness(0.9) saturate(1.2);
         }
 
-        /* 2. Light Glass */
+        /* Light Glass */
         html[data-theme="light-glass"] {
             --glass-bg: rgba(255, 255, 255, 0.65);
             --glass-border: rgba(255, 255, 255, 0.6);
@@ -55,11 +55,11 @@
             --btn-glass: rgba(255, 255, 255, 0.8);
             --btn-hover: rgba(240, 240, 245, 1);
             --title-bg: rgba(255, 255, 255, 0.8);
-            --blur-amount: blur(35px);
-            --canvas-brightness: brightness(1) saturate(1);
+            --blur-amount: blur(40px);
+            --canvas-brightness: brightness(1) saturate(1.1);
         }
 
-        /* 3. Dark Glass */
+        /* Dark Glass */
         html[data-theme="dark-glass"] {
             color-scheme: dark; 
             --glass-bg: rgba(30, 30, 35, 0.45);
@@ -72,25 +72,25 @@
             --badge-bg: rgba(0, 0, 0, 0.4);
             --rec-btn-bg: #444; 
             --title-bg: rgba(0, 0, 0, 0.5);
-            --blur-amount: blur(30px);
-            --canvas-brightness: brightness(0.4) saturate(1.3);
+            --blur-amount: blur(35px);
+            --canvas-brightness: brightness(0.4) saturate(1.4);
         }
 
-        /* 4. Dark Clear */
+        /* Dark Clear */
         html[data-theme="dark-clear"] {
             color-scheme: dark; 
             --glass-bg: rgba(5, 5, 8, 0.15);
             --glass-border: rgba(255, 255, 255, 0.1);
             --text: #ffffff; --text-muted: #bbbbbb;
             --input-bg: rgba(0, 0, 0, 0.4);
-            --btn-glass: rgba(255, 255, 255, 0.1);
-            --btn-hover: rgba(255, 255, 255, 0.25);
+            --btn-glass: rgba(255, 255, 255, 0.15);
+            --btn-hover: rgba(255, 255, 255, 0.3);
             --btn-text: #fff;
             --badge-bg: rgba(255, 255, 255, 0.15);
             --rec-btn-bg: #333; 
             --title-bg: rgba(0, 0, 0, 0.5);
-            --blur-amount: blur(10px);
-            --canvas-brightness: brightness(0.35) saturate(1.4);
+            --blur-amount: blur(15px);
+            --canvas-brightness: brightness(0.3) saturate(1.5);
         }
 
         #cloudCanvas {
@@ -100,24 +100,16 @@
         }
 
         .app-wrapper {
-            width: 100%; max-width: 800px;
-            display: flex; flex-direction: column;
-            height: 100dvh;
-            padding: 10px; box-sizing: border-box;
-            position: relative;
+            width: 100%; max-width: 800px; display: flex; flex-direction: column;
+            height: 100dvh; padding: 10px; box-sizing: border-box; position: relative;
         }
 
         .sticky-zone {
-            flex-shrink: 0; 
-            display: flex; flex-direction: column; gap: 12px; 
-            width: 100%; z-index: 100;
+            flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; width: 100%; z-index: 100;
         }
 
-        /* Fade-Out Maske für das Scrollen */
         .scroll-zone {
-            flex-grow: 1; 
-            overflow-y: auto; 
-            overscroll-behavior-y: auto; /* Erlaubt Mobile Pull-to-Refresh Bubble! */
+            flex-grow: 1; overflow-y: auto; overscroll-behavior-y: auto; 
             display: flex; flex-direction: column; gap: 15px; 
             padding-top: 15px; padding-bottom: 40px; width: 100%;
             mask-image: linear-gradient(to bottom, transparent 0%, black 30px);
@@ -131,7 +123,6 @@
             background: var(--glass-bg); backdrop-filter: var(--blur-amount); -webkit-backdrop-filter: var(--blur-amount);
             padding: 15px; box-sizing: border-box; width: 100%;
             box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            transition: background 0.3s ease, backdrop-filter 0.3s ease;
         }
 
         .top-row { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; gap: 12px; margin-bottom: 5px;}
@@ -205,10 +196,16 @@
             width: 100%; background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text); 
             font-family: inherit; resize: none; min-height: 80px; overflow-y: hidden; height: auto;
             box-sizing: border-box; line-height: 1.6; font-size: 15px; outline: none; padding: 18px; border-radius: 24px;
+            backdrop-filter: var(--blur-amount); -webkit-backdrop-filter: var(--blur-amount);
         }
 
         #feed { display: flex; flex-direction: column; gap: 15px; width: 100%; }
-        .entry { background: var(--glass-bg); backdrop-filter: var(--blur-amount); -webkit-backdrop-filter: var(--blur-amount); border-radius: 28px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); border: 1px solid var(--glass-border); box-sizing: border-box; width: 100%; animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; gap: 12px;}
+        .entry { 
+            background: var(--glass-bg); border-radius: 28px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); 
+            border: 1px solid var(--glass-border); box-sizing: border-box; width: 100%; 
+            animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; gap: 12px;
+            backdrop-filter: var(--blur-amount); -webkit-backdrop-filter: var(--blur-amount);
+        }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: 0; } }
 
         .entry-header { display: flex; flex-direction: column; align-items: center; width: 100%; gap: 10px;}
@@ -217,7 +214,7 @@
         
         .entry-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;}
         .mini-btn { background: var(--btn-glass); border: 1px solid var(--glass-border); color: var(--text); border-radius: 12px; width: 34px; height: 34px; cursor: pointer; display:flex; align-items:center; justify-content:center; transition: 0.2s;}
-        .mini-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2;}
+        .mini-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;}
         .mini-btn:hover { background: var(--btn-hover); color: var(--btn-text); transform: translateY(-2px);}
         .mini-btn.danger { color: var(--danger); }
         .mini-btn.safe { color: var(--safe); }
@@ -231,33 +228,23 @@
         .audio-part span { font-size: 0.75rem; font-weight: bold; color: var(--text-muted); flex-shrink: 0;}
         audio { width: 100%; height: 30px; border-radius: 6px; outline: none; }
 
-        .modal { display: none; position: fixed; bottom: 0; left: 0; right: 0; top: 0; background: rgba(0,0,0,0.1); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);}
+        /* STUDIO MODAL - WENIGER BLUR FÜR BESSERES PREVIEW */
+        .modal { display: none; position: fixed; bottom: 0; left: 0; right: 0; top: 0; background: rgba(0,0,0,0.1); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);}
         .modal.visible { display: flex; animation: fadeIn 0.2s; }
-        .modal-box { background: var(--glass-bg); padding: 25px; border-radius: 35px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); width: 90%; max-width: 440px; border: 1px solid var(--glass-border); color: var(--text); box-sizing: border-box;}
+        .modal-box { background: var(--glass-bg); padding: 25px; border-radius: 35px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); width: 90%; max-width: 440px; border: 1px solid var(--glass-border); color: var(--text); box-sizing: border-box; max-height: 85vh; overflow-y: auto;}
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-weight: 800; font-size: 1.2rem; color: var(--text);}
         
-        /* COLOR STUDIO 2.0 (Zero Lag Slider) */
         .vibe-container { display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px; align-items: center; width: 100%; box-sizing: border-box;}
         .vibe-label { font-size: 1rem; font-weight: 800; }
         #vibeSlider {
             -webkit-appearance: none; width: 100%; height: 16px; border-radius: 20px; outline: none;
             background: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); box-sizing: border-box;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); box-sizing: border-box; cursor: pointer;
         }
         #vibeSlider::-webkit-slider-thumb {
             -webkit-appearance: none; width: 28px; height: 28px; border-radius: 50%;
             background: #fff; border: 3px solid #333; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-        
-        .rainbow-btn {
-            background: linear-gradient(124deg, #ffb3ba, #ffdfba, #ffffba, #baffc9, #bae1ff, #d0baff); 
-            background-size: 400% 400%; animation: rainbow 4s ease infinite;
-            border: 2px solid rgba(255,255,255,0.8); border-radius: 16px; padding: 12px;
-            font-weight: 900; color: #333; cursor: pointer; width: 100%; text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.2s; box-sizing: border-box;
-        }
-        .rainbow-btn:hover { transform: scale(1.02); }
-        @keyframes rainbow { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
 
         .studio-tabs { display: flex; background: var(--input-bg); border-radius: 14px; padding: 4px; margin-bottom: 20px;}
         .tab-btn { flex: 1; text-align: center; font-size: 0.85rem; font-weight: 700; padding: 10px; cursor: pointer; border-radius: 10px; color: var(--text-muted); transition: 0.2s;}
@@ -268,7 +255,8 @@
         .anim-option.active { border-color: var(--accent); color: var(--accent); background: var(--btn-glass); }
 
         .dev-row { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; font-size: 0.85rem; font-weight: 700; color:var(--text-muted);}
-        .dev-row input[type="color"] { border: 2px solid var(--glass-border); width: 40px; height: 25px; border-radius: 6px; padding: 0; background:transparent;}
+        .dev-row input[type="color"] { border: 2px solid var(--glass-border); width: 35px; height: 25px; border-radius: 6px; padding: 0; background:transparent; cursor: pointer;}
+        .dev-row input[type="range"] { flex-grow: 1; margin-left: 15px; accent-color: var(--accent); }
 
         .api-input-box { width: 100%; padding: 14px; border-radius: 16px; border: 1px solid var(--glass-border); background: var(--input-bg); color: var(--text); font-size: 1rem; outline: none; box-sizing: border-box; margin-bottom: 10px; font-family: monospace;}
         .info-text { font-size: 0.9rem; color: var(--text); line-height: 1.5; margin-bottom: 15px; font-weight: 600; text-align: center;}
@@ -297,12 +285,12 @@
             </span>
             <div style="display:flex; gap:8px;">
                 <button class="icon-btn" onclick="resetDev()" style="width:auto; height:32px; border-radius:12px; font-size:0.8rem; font-weight:bold; padding: 0 10px;">Reset</button>
-                <button class="icon-btn" onclick="toggleModal('devPanel')" style="width:32px;height:32px;"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                <button class="icon-btn" onclick="toggleModal('devPanel')" style="width:32px;height:32px;"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
             </div>
         </div>
         
         <div class="studio-tabs">
-            <div class="tab-btn active" id="tabColors" onclick="switchStudioTab('colors')">Vibe (Farbe)</div>
+            <div class="tab-btn active" id="tabColors" onclick="switchStudioTab('colors')">Farbe (Vibe)</div>
             <div class="tab-btn" id="tabAnims" onclick="switchStudioTab('anims')">Animation</div>
         </div>
 
@@ -312,36 +300,42 @@
                 <input type="range" id="vibeSlider" min="0" max="360" value="280">
             </div>
             
-            <div class="rainbow-btn" onclick="applyPreset('#ffffff','#fbc2eb', '#ffb3ba', '#bae1ff', '#ffffba', true)">✨ Special: Pastel Rainbow</div>
-            
-            <details class="custom-accordion" style="margin-top: 25px;">
-                <summary><svg viewBox="0 0 24 24"><path d="M12 20V10M18 20V4M6 20v-4"></path><circle cx="12" cy="10" r="2"></circle><circle cx="18" cy="4" r="2"></circle><circle cx="6" cy="16" r="2"></circle></svg> Manuelles Feintuning</summary>
-                <div class="dev-row"><span>UI Farbe 1</span> <input type="color" id="col1"></div>
-                <div class="dev-row"><span>UI Farbe 2</span> <input type="color" id="col2"></div>
-                <div class="dev-row"><span>Plasma 1</span> <input type="color" id="blob1"></div>
-                <div class="dev-row"><span>Plasma 2</span> <input type="color" id="blob2"></div>
-                <div class="dev-row"><span>Plasma 3</span> <input type="color" id="blob3"></div>
+            <details class="custom-accordion" style="margin-top: 15px;">
+                <summary><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M12 20V10M18 20V4M6 20v-4"></path><circle cx="12" cy="10" r="2"></circle><circle cx="18" cy="4" r="2"></circle><circle cx="6" cy="16" r="2"></circle></svg> Manuelles Feintuning</summary>
+                <div class="dev-row"><span>UI 1</span> <input type="color" id="col1"></div>
+                <div class="dev-row"><span>UI 2</span> <input type="color" id="col2"></div>
+                <div class="dev-row"><span>P 1</span> <input type="color" id="blob1"></div>
+                <div class="dev-row"><span>P 2</span> <input type="color" id="blob2"></div>
+                <div class="dev-row"><span>P 3</span> <input type="color" id="blob3"></div>
+                <div class="dev-row"><span>P 4</span> <input type="color" id="blob4"></div>
+                <div class="dev-row"><span>P 5</span> <input type="color" id="blob5"></div>
             </details>
         </div>
 
         <div id="viewAnims" style="display:none; padding: 10px 0;">
-            <div class="anim-option active" id="anim-blobs" onclick="setAnim('blobs')">Blobs (Klar) <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"></circle></svg></div>
-            <div class="anim-option" id="anim-lava" onclick="setAnim('lava')">Lava (Tropfen) <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg></div>
-            <div class="anim-option" id="anim-waves" onclick="setAnim('waves')">Waves (Wellen) <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h4l3-9 5 18 3-9h5"></path></svg></div>
+            <div class="anim-option active" id="anim-blobs" onclick="setAnim('blobs')">Blobs (Dicht) <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"></circle></svg></div>
+            <div class="anim-option" id="anim-lava" onclick="setAnim('lava')">Lava (Aufsteigend) <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg></div>
+            <div class="anim-option" id="anim-waves" onclick="setAnim('waves')">Waves (Ozean) <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h4l3-9 5 18 3-9h5"></path></svg></div>
+            
+            <div style="margin-top: 20px; border-top: 1px solid var(--glass-border); padding-top: 15px;">
+                <div class="dev-row"><span>Dichte (Menge)</span> <input type="range" id="animDensity" min="1" max="4" value="2"></div>
+                <div class="dev-row"><span>Geschwindigkeit</span> <input type="range" id="animSpeed" min="10" max="100" value="30"></div>
+                <div class="dev-row"><span>Hintergrund Blur</span> <input type="range" id="animBlur" min="0" max="60" value="0"></div>
+            </div>
         </div>
     </div>
 </div>
 
 <div id="apiModal" class="modal">
     <div class="modal-box">
-        <div class="modal-header"><span>OpenAI API Key</span><button class="icon-btn" onclick="toggleModal('apiModal')" style="width:32px;height:32px;"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div>
+        <div class="modal-header"><span>OpenAI API Key</span><button class="icon-btn" onclick="toggleModal('apiModal')" style="width:32px;height:32px;"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div>
         <input type="password" id="apiKey" class="api-input-box" placeholder="sk-...">
         <div style="display:flex; justify-content:space-between; margin-bottom: 20px;">
             <button class="btn-sleek active" onclick="saveApiAndClose()" style="width:48%; height: 40px; font-size:1rem;">Speichern</button>
             <button class="btn-sleek" onclick="toggleApiVisibility()" style="width:48%; height: 40px; font-size:1rem;">Sichtbar</button>
         </div>
         <div class="info-text">
-            Simple Transcription nutzt die <a href="https://platform.openai.com/" target="_blank">Whisper API von OpenAI</a>. Audios werden direkt verarbeitet.<br><br>
+            Simple Transcription nutzt die <a href="https://platform.openai.com/" target="_blank">Whisper API von OpenAI</a>.<br><br>
             <b>Kosten:</b> Ca. <b>0,6 Cent pro Minute</b>.
         </div>
     </div>
@@ -349,12 +343,9 @@
 
 <div id="qrModal" class="modal">
     <div class="modal-box" style="text-align:center;">
-        <div class="modal-header"><span>App teilen</span><button class="icon-btn" onclick="toggleModal('qrModal')" style="width:32px;height:32px;"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div>
+        <div class="modal-header"><span>App teilen</span><button class="icon-btn" onclick="toggleModal('qrModal')" style="width:32px;height:32px;"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div>
         <div id="qrcode" style="display:flex; justify-content:center; padding: 20px; background: white; border-radius: 20px; margin-bottom: 20px;"></div>
         <p style="font-size:1.3rem; font-weight:900; color:var(--text); margin-bottom: 8px;">Simple Transcription</p>
-        <p style="font-size:0.95rem; color:var(--text); line-height: 1.5; font-weight:600;">
-            ist eine Web-App, die von mir ge-vibe-coded wurde.
-        </p>
     </div>
 </div>
 
@@ -364,38 +355,38 @@
             <div class="top-row">
                 <div class="title-pill">
                     <h1>Simple Transcription</h1>
-                    <span class="version-tag">V70</span>
+                    <span class="version-tag">V71</span>
                 </div>
                 
                 <div class="header-actions">
                     <button class="icon-btn" onclick="toggleModal('apiModal')" title="API Key">
-                        <svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+                        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
                     </button>
                     <button class="icon-btn" onclick="cycleTheme()" title="Theme Rotator" id="themeIcon"></button>
                     <button class="icon-btn" onclick="toggleModal('devPanel')" title="Color Studio">
                         <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 0 1 0 -18c4.97 0 9 3.58 9 8c0 1.06 -.47 2.53 -1.33 3.09c-.83 .54 -1.67 -.17 -2.34 -.81c-.56 -.53 -1.33 -1.28 -2.33 -1.28c-1 0 -1.77 .75 -2.33 1.28c-.67 .64 -1.5 1.35 -2.33 .81c-.86 -.56 -1.34 -2.03 -1.34 -3.09z"></path><circle cx="8.5" cy="10.5" r="1" fill="currentColor" stroke="none"></circle><circle cx="11.5" cy="7.5" r="1" fill="currentColor" stroke="none"></circle><circle cx="15.5" cy="8.5" r="1" fill="currentColor" stroke="none"></circle></svg>
                     </button>
-                    <button class="icon-btn" onclick="window.location.reload()" title="App neu laden (Refresh)">
-                        <svg viewBox="0 0 24 24"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 1 0 2.13-5.83L21 8"></path></svg>
+                    <button class="icon-btn" onclick="window.location.reload()" title="App neu laden">
+                        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 1 0 2.13-5.83L21 8"></path></svg>
                     </button>
                     <button class="icon-btn" onclick="dlAllZip()" title="Master ZIP Download">
-                        <svg viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
+                        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
                     </button>
                     <button class="icon-btn" onclick="showQR()" title="App Teilen">
-                        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                     </button>
                     <button class="icon-btn" title="Mikrofon" style="position:relative;">
-                        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
                         <select id="micSelect" style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer;"><option value="default">Default</option></select>
                     </button>
                 </div>
 
                 <div class="header-actions" style="margin-top: 4px;">
                     <div class="btn-sleek inactive" id="btnAutoSave" onclick="toggleSave()" title="Auto-Save Backup">
-                        <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Auto
+                        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Auto
                     </div>
                     <div class="btn-sleek" id="btnAutoCut" onclick="cycleAutoCut()" title="Auto-Cut Intervall">
-                        <svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg> 
+                        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg> 
                         <span id="cutDisplay">2 Min</span>
                     </div>
                 </div>
@@ -407,18 +398,20 @@
                 <div class="timer" id="timer">00:00</div>
                 <div class="rec-controls">
                     <button id="btnCancel" class="btn-circle side-btn" title="Verwerfen" onclick="cancelRec(this)">
-                        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </button>
                     <button id="btnMain" class="btn-circle" title="Aufnahme / Stop">
-                        <svg id="iconMain" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                        <svg id="iconMain" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
                     </button>
                     <button id="btnPause" class="btn-circle side-btn" title="Pause / Weiter">
-                        <svg id="iconPause" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                        <svg id="iconPause" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
                     </button>
                 </div>
             </div>
         </div>
-    </div> <div class="scroll-zone">
+    </div>
+
+    <div class="scroll-zone">
         
         <div id="activeEntry" class="glass-panel" style="display:none;">
             <div class="active-top-bar" style="margin-bottom: 15px;">
@@ -439,12 +432,12 @@
 
         <div id="feed"></div>
         
-    </div> </div>
+    </div>
+</div>
 
 <input type="file" id="fileUpload" hidden accept=".flac,.m4a,.mp3,.mp4,.mpeg,.mpga,.oga,.ogg,.wav,.webm,.opus,.amr">
 
 <script>
-    // Force Scroll to Top on Refresh
     window.onload = () => { document.querySelector('.scroll-zone').scrollTo(0, 0); };
 
     const els = {
@@ -458,10 +451,10 @@
         devPanel: document.getElementById('devPanel'), apiModal: document.getElementById('apiModal'), micSelect: document.getElementById('micSelect'),
         vibeSlider: document.getElementById('vibeSlider'),
         col1: document.getElementById('col1'), col2: document.getElementById('col2'),
-        blob1: document.getElementById('blob1'), blob2: document.getElementById('blob2'), blob3: document.getElementById('blob3')
+        blob1: document.getElementById('blob1'), blob2: document.getElementById('blob2'), blob3: document.getElementById('blob3'), blob4: document.getElementById('blob4'), blob5: document.getElementById('blob5'),
+        animDensity: document.getElementById('animDensity'), animSpeed: document.getElementById('animSpeed'), animBlur: document.getElementById('animBlur')
     };
 
-    // Theme Rotator
     const svgThemes = [
         `<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>`, 
         `<path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"></path>`, 
@@ -470,41 +463,35 @@
     ];
     const themes = ['light-clear', 'light-glass', 'dark-glass', 'dark-clear'];
 
-    const svgCopy = `<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path>`;
-    const svgTxt = `<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline>`;
-    const svgAudio = `<path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle>`;
-    const svgTrash = `<polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>`;
-    const svgRetry = `<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path>`;
-    const svgZip = `<path d="M21 8v13H3V8"></path><polyline points="1 3 23 3 23 8 1 8 1 3"></polyline><line x1="10" y1="12" x2="14" y2="12"></line>`;
-
     function toggleModal(id) { document.getElementById(id).classList.toggle('visible'); }
     function toggleApiVisibility() { els.apiKey.type = els.apiKey.type === 'password' ? 'text' : 'password'; }
     function saveApiAndClose() { localStorage.setItem("key_v38", els.apiKey.value); toggleModal('apiModal'); showToast("Key gespeichert"); }
+    function showQR() { document.getElementById('qrcode').innerHTML = ""; new QRCode(document.getElementById("qrcode"), { text: window.location.href.split('#')[0].split('?')[0], width: 150, height: 150, colorDark: "#000000", colorLight: "#ffffff" }); toggleModal('qrModal'); }
 
-    let currentThemeIdx = parseInt(localStorage.getItem('theme_idx_v70') || 0);
+    let currentThemeIdx = parseInt(localStorage.getItem('theme_idx_v71') || 0);
     function cycleTheme() { currentThemeIdx = (currentThemeIdx + 1) % themes.length; applyTheme(currentThemeIdx); }
     function applyTheme(idx) {
         document.documentElement.setAttribute('data-theme', themes[idx]);
-        els.themeIcon.innerHTML = `<svg viewBox="0 0 24 24">${svgThemes[idx]}</svg>`;
-        localStorage.setItem('theme_idx_v70', idx);
+        els.themeIcon.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">${svgThemes[idx]}</svg>`;
+        localStorage.setItem('theme_idx_v71', idx);
         updateDev(true); 
     }
     applyTheme(currentThemeIdx);
 
-    let isAutoSave = localStorage.getItem("autodl_v70") === 'true';
+    let isAutoSave = localStorage.getItem("autodl_v71") === 'true';
     function updateSaveBtn() { els.btnAutoSave.className = isAutoSave ? 'btn-sleek' : 'btn-sleek inactive'; }
-    window.toggleSave = () => { isAutoSave = !isAutoSave; localStorage.setItem("autodl_v70", isAutoSave); updateSaveBtn(); showToast(isAutoSave ? "Auto-Save An" : "Auto-Save Aus"); };
+    window.toggleSave = () => { isAutoSave = !isAutoSave; localStorage.setItem("autodl_v71", isAutoSave); updateSaveBtn(); showToast(isAutoSave ? "Auto-Save An" : "Auto-Save Aus"); };
     updateSaveBtn();
 
     const cutOptions = [0, 1, 2, 3, 4, 5];
-    let currentCutIdx = localStorage.getItem("autocut_idx_v70");
+    let currentCutIdx = localStorage.getItem("autocut_idx_v71");
     if(currentCutIdx === null) currentCutIdx = 2; else currentCutIdx = parseInt(currentCutIdx);
     function updateCutBtn() { 
         let val = cutOptions[currentCutIdx];
         els.btnAutoCut.className = val > 0 ? 'btn-sleek' : 'btn-sleek inactive';
         els.cutDisplay.innerText = val > 0 ? `${val} Min` : 'Off';
     }
-    window.cycleAutoCut = () => { currentCutIdx = (currentCutIdx + 1) % cutOptions.length; localStorage.setItem("autocut_idx_v70", currentCutIdx); updateCutBtn(); };
+    window.cycleAutoCut = () => { currentCutIdx = (currentCutIdx + 1) % cutOptions.length; localStorage.setItem("autocut_idx_v71", currentCutIdx); updateCutBtn(); };
     updateCutBtn();
 
     window.switchStudioTab = (tab) => {
@@ -514,14 +501,13 @@
         document.getElementById('viewAnims').style.display = tab === 'anims' ? 'block' : 'none';
     };
 
-    // --- COLOR STUDIO 2.0 (BUGFIX & ZERO LAG) ---
+    // --- COLOR STUDIO 2.0 (Zero Lag & 5 Plasmas) ---
     function hslToHex(h, s, l) {
         l /= 100; const a = s * Math.min(l, 1 - l) / 100;
         const f = n => { const k = (n + h / 30) % 12; const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1); return Math.round(255 * color).toString(16).padStart(2, '0'); };
         return `#${f(0)}${f(8)}${f(4)}`;
     }
 
-    // Live-Preview OHNE Lag (kein LocalStorage hier!)
     els.vibeSlider.addEventListener('input', (e) => {
         let hue = parseInt(e.target.value);
         let c1 = hslToHex(hue, 80, 65);
@@ -529,57 +515,81 @@
         let b1 = hslToHex((hue + 320) % 360, 90, 70);
         let b2 = hslToHex((hue + 20) % 360, 90, 70);
         let b3 = hslToHex((hue + 60) % 360, 90, 70);
+        let b4 = hslToHex((hue + 100) % 360, 90, 70);
+        let b5 = hslToHex((hue + 180) % 360, 90, 70);
         
         els.col1.value = c1; els.col2.value = c2;
-        els.blob1.value = b1; els.blob2.value = b2; els.blob3.value = b3;
+        els.blob1.value = b1; els.blob2.value = b2; els.blob3.value = b3; els.blob4.value = b4; els.blob5.value = b5;
         document.documentElement.style.setProperty('--c1', c1); 
         document.documentElement.style.setProperty('--c2', c2);
     });
 
-    // Speichern erst beim Loslassen
     els.vibeSlider.addEventListener('change', () => {
         localStorage.setItem('d_c1', els.col1.value); localStorage.setItem('d_c2', els.col2.value); 
         localStorage.setItem('d_b1', els.blob1.value); localStorage.setItem('d_b2', els.blob2.value); localStorage.setItem('d_b3', els.blob3.value); 
+        localStorage.setItem('d_b4', els.blob4.value); localStorage.setItem('d_b5', els.blob5.value);
         updateDev(true);
     });
 
-    function applyPreset(c1, c2, b1, b2, b3, isRainbow=false) { 
-        els.col1.value = c1; els.col2.value = c2;
-        els.blob1.value = b1; els.blob2.value = b2; els.blob3.value = b3;
-        document.documentElement.style.setProperty('--c1', c1); document.documentElement.style.setProperty('--c2', c2);
-        localStorage.setItem('d_c1', c1); localStorage.setItem('d_c2', c2); 
-        localStorage.setItem('d_b1', b1); localStorage.setItem('d_b2', b2); localStorage.setItem('d_b3', b3); 
+    function applyPreset() {
+        // Wrapper for manual inputs
+        localStorage.setItem('d_c1', els.col1.value); localStorage.setItem('d_c2', els.col2.value); 
+        localStorage.setItem('d_b1', els.blob1.value); localStorage.setItem('d_b2', els.blob2.value); localStorage.setItem('d_b3', els.blob3.value); 
+        localStorage.setItem('d_b4', els.blob4.value); localStorage.setItem('d_b5', els.blob5.value);
         updateDev(); 
-        if(!isRainbow) els.vibeSlider.value = 280;
     }
 
-    window.resetDev = () => { applyPreset('#a18cd1', '#fbc2eb', '#8ec5fc', '#e0c3fc', '#99ddff'); els.vibeSlider.value = 280; showToast("Reset"); };
+    window.resetDev = () => { 
+        els.vibeSlider.value = 280;
+        els.vibeSlider.dispatchEvent(new Event('input'));
+        els.vibeSlider.dispatchEvent(new Event('change'));
+        els.animDensity.value = 2; els.animSpeed.value = 30; els.animBlur.value = 0;
+        updateAnimParams();
+        showToast("Reset"); 
+    };
 
     function loadDev() {
-        const c1 = localStorage.getItem('d_c1') || '#a18cd1';
-        const c2 = localStorage.getItem('d_c2') || '#fbc2eb';
-        els.col1.value = c1; els.col2.value = c2;
+        els.col1.value = localStorage.getItem('d_c1') || '#a18cd1';
+        els.col2.value = localStorage.getItem('d_c2') || '#fbc2eb';
         els.blob1.value = localStorage.getItem('d_b1') || '#8ec5fc';
         els.blob2.value = localStorage.getItem('d_b2') || '#e0c3fc';
         els.blob3.value = localStorage.getItem('d_b3') || '#99ddff';
-        document.documentElement.style.setProperty('--c1', c1); document.documentElement.style.setProperty('--c2', c2);
+        els.blob4.value = localStorage.getItem('d_b4') || '#b5e8ff';
+        els.blob5.value = localStorage.getItem('d_b5') || '#d4fc79';
+        
+        els.animDensity.value = localStorage.getItem('anim_density_v71') || 2;
+        els.animSpeed.value = localStorage.getItem('anim_speed_v71') || 30;
+        els.animBlur.value = localStorage.getItem('anim_blur_v71') || 0;
+        updateAnimParams(true);
+        
+        document.documentElement.style.setProperty('--c1', els.col1.value); document.documentElement.style.setProperty('--c2', els.col2.value);
         updateDev(true);
     }
     
     function updateDev(fromLoad=false) {
         const metaTheme = document.getElementById('theme-color-meta');
         if(metaTheme) metaTheme.setAttribute('content', document.documentElement.getAttribute('data-theme').includes('dark') ? '#000000' : els.col1.value);
-        if(!fromLoad) { applyPreset(els.col1.value, els.col2.value, els.blob1.value, els.blob2.value, els.blob3.value); }
     }
-    [els.col1, els.col2, els.blob1, els.blob2, els.blob3].forEach(el => el.addEventListener('input', () => updateDev(false)));
+    [els.col1, els.col2, els.blob1, els.blob2, els.blob3, els.blob4, els.blob5].forEach(el => el.addEventListener('input', applyPreset));
 
-    let currentAnim = localStorage.getItem('anim_type_v70') || 'blobs';
+    // Animation Toggles & Params
+    let currentAnim = localStorage.getItem('anim_type_v71') || 'blobs';
     function setAnim(type) {
-        currentAnim = type; localStorage.setItem('anim_type_v70', type);
+        currentAnim = type; localStorage.setItem('anim_type_v71', type);
         document.querySelectorAll('.anim-option').forEach(el => el.classList.remove('active'));
         document.getElementById(`anim-${type}`).classList.add('active');
     }
     setAnim(currentAnim);
+
+    function updateAnimParams(isLoad=false) {
+        if(!isLoad) {
+            localStorage.setItem('anim_density_v71', els.animDensity.value);
+            localStorage.setItem('anim_speed_v71', els.animSpeed.value);
+            localStorage.setItem('anim_blur_v71', els.animBlur.value);
+        }
+        els.canvas.style.filter = `blur(${els.animBlur.value}px) ${document.documentElement.getAttribute('data-theme').includes('dark') ? 'brightness(0.3) saturate(1.5)' : 'brightness(0.9) saturate(1.1)'}`;
+    }
+    [els.animDensity, els.animSpeed, els.animBlur].forEach(el => el.addEventListener('input', () => updateAnimParams(false)));
     
     let globalStream, mediaRecorder, chunks = [], audioCtx, analyser, dataArray;
     let isRecording = false, isPaused = false, isCancelled = false;
@@ -613,7 +623,7 @@
     window.addEventListener('resize', resizeCanvas);
     function autoResizeText(textarea) { textarea.style.height = 'auto'; textarea.style.height = (textarea.scrollHeight) + 'px'; }
 
-    // --- SCHARFE, DEUTLICHE ANIMATIONEN ---
+    // --- SCHARFE & VOLLE ANIMATIONEN ---
     let smoothedVol = 0; let timeAccum = 0;
     function initVisualizer() {
         const ctx = els.canvas.getContext('2d'); resizeCanvas();
@@ -624,40 +634,44 @@
             ctx.fillStyle = isDark ? 'rgba(0,0,0,1)' : 'rgba(255,255,255,1)';
             ctx.fillRect(0, 0, w, h); 
 
+            const density = parseInt(els.animDensity.value); // 1 to 4
+            const speedScale = parseInt(els.animSpeed.value) / 50; // 0.2 to 2.0
+
             let rawVol = 0;
             if(analyser && isRecording && !isPaused) {
                 if(dataArray) { analyser.getByteFrequencyData(dataArray); let sum = 0; for(let i=0; i<dataArray.length; i++) sum += dataArray[i]; rawVol = (sum / dataArray.length); }
-                timeAccum += 0.003 + (rawVol * 0.00003); // Sehr sanfte Voice-Reaktion
-            } else { timeAccum += 0.002; } 
+                timeAccum += (0.002 * speedScale) + (rawVol * 0.00005); 
+            } else { timeAccum += (0.002 * speedScale); } 
 
-            smoothedVol = smoothedVol * 0.95 + (Math.min(rawVol / 100, 1.0)) * 0.05; 
-            const intensity = 1.0 + (smoothedVol * 0.2); 
+            smoothedVol = smoothedVol * 0.9 + (Math.min(rawVol / 100, 1.0)) * 0.1; 
+            const intensity = 1.0 + (smoothedVol * 0.3); 
             const maxDim = Math.max(w, h);
-            const colors = [els.blob1.value, els.blob2.value, els.blob3.value, els.col1.value];
+            const colors = [els.blob1.value, els.blob2.value, els.blob3.value, els.blob4.value, els.blob5.value, els.col1.value];
 
             if(currentAnim === 'blobs') {
-                // Scharfe Blobs
+                const count = 4 * density;
                 const baseRadius = maxDim * 0.4; 
-                for(let i=0; i<5; i++) {
+                for(let i=0; i<count; i++) {
                     let cIdx = i % colors.length;
-                    let r = baseRadius * intensity * (0.6 + (i*0.1));
-                    let x = w/2 + Math.cos(timeAccum * 0.8 + i*1.2) * w * 0.5;
-                    let y = h/2 + Math.sin(timeAccum * 0.7 + i*1.5) * h * 0.5;
+                    let r = baseRadius * intensity * (0.5 + (i*0.1));
+                    let x = w/2 + Math.cos(timeAccum * 0.8 + i*1.2) * w * 0.6;
+                    let y = h/2 + Math.sin(timeAccum * 0.7 + i*1.5) * h * 0.6;
                     const grad = ctx.createRadialGradient(x, y, r*0.1, x, y, r);
                     grad.addColorStop(0, colors[cIdx] + 'ff');
-                    grad.addColorStop(0.6, colors[cIdx] + '99'); 
+                    grad.addColorStop(0.6, colors[cIdx] + '88'); 
                     grad.addColorStop(1, colors[cIdx] + '00');
                     ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
                 }
             } else if (currentAnim === 'waves') {
-                // Klare, geometrische Wellen
-                for(let i=0; i<3; i++) {
+                // Volle Wellen von oben nach unten
+                const count = 3 * density;
+                for(let i=0; i<count; i++) {
                     let cIdx = i % colors.length;
-                    let yOffset = h/2 + Math.sin(timeAccum * 0.8 + i)*150;
+                    let yOffset = (h / count) * i + Math.sin(timeAccum * 0.8 + i)*100;
                     ctx.beginPath();
                     ctx.moveTo(0, yOffset);
                     for(let j=0; j<=w; j+=20) {
-                        let waveY = yOffset + Math.sin((j/w)*Math.PI*2 + timeAccum*1.5 + i) * 100 * intensity;
+                        let waveY = yOffset + Math.sin((j/w)*Math.PI*2 + timeAccum*1.5 + i) * 150 * intensity;
                         ctx.lineTo(j, waveY);
                     }
                     ctx.lineTo(w, h); ctx.lineTo(0, h);
@@ -665,16 +679,16 @@
                     ctx.fill();
                 }
             } else if (currentAnim === 'lava') {
-                // Echte, scharfe Lava Tropfen
+                const count = 4 * density;
                 const baseRadius = maxDim * 0.25;
-                for(let i=0; i<6; i++) {
+                for(let i=0; i<count; i++) {
                     let cIdx = i % colors.length;
-                    let r = baseRadius * (0.8 + Math.sin(timeAccum + i)*0.2) * intensity;
-                    let x = w/2 + Math.sin(timeAccum * 0.5 + i*2) * w * 0.4;
-                    let y = h + r - ((timeAccum * 60 + i*200) % (h + r*2)); 
+                    let r = baseRadius * (0.6 + Math.sin(timeAccum + i)*0.3) * intensity;
+                    let x = w/2 + Math.sin(timeAccum * 0.5 + i*2) * w * 0.5;
+                    let y = h + r - ((timeAccum * 100 + i*300) % (h + r*2)); 
                     const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
                     grad.addColorStop(0, colors[cIdx] + 'ff');
-                    grad.addColorStop(0.7, colors[cIdx] + 'dd');
+                    grad.addColorStop(0.7, colors[cIdx] + 'cc');
                     grad.addColorStop(1, colors[cIdx] + '00');
                     ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
                 }
@@ -708,11 +722,11 @@
         if(!btn.classList.contains('confirm')) {
             btn.classList.add('confirm'); btn.innerHTML = '<span style="font-size:1rem; font-weight:bold;">🗑️?</span>'; btn.style.color = 'white'; btn.style.background = 'var(--danger)';
             setTimeout(() => { 
-                if(isRecording || isPaused) { btn.classList.remove('confirm'); btn.style.background = 'var(--btn-glass)'; btn.style.color = 'var(--danger)'; btn.innerHTML = '<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'; }
+                if(isRecording || isPaused) { btn.classList.remove('confirm'); btn.style.background = 'var(--btn-glass)'; btn.style.color = 'var(--danger)'; btn.innerHTML = '<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'; }
             }, 3000); return;
         }
         isCancelled = true; if(mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop(); 
-        btn.classList.remove('confirm'); btn.style.background = 'var(--btn-glass)'; btn.style.color = 'var(--danger)'; btn.innerHTML = '<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+        btn.classList.remove('confirm'); btn.style.background = 'var(--btn-glass)'; btn.style.color = 'var(--danger)'; btn.innerHTML = '<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
     };
 
     function setMainButtonState(state) {
@@ -886,7 +900,6 @@
         let audioHtml = "";
         if(blobs.length > 0) {
             let players = blobs.map((b, i) => `<div class="audio-part"><span>T ${i+1}</span><audio controls playsinline src="${URL.createObjectURL(b)}" onloadedmetadata="window.fixDuration(this)"></audio></div>`).join("");
-            /* DER SCHWARZE KREIS BUGFIX (width/height im SVG!) */
             audioHtml = `<details class="custom-accordion"><summary><svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg> Audios (${blobs.length})</summary><div class="audio-list">${players}</div></details>`;
         }
 
@@ -901,12 +914,12 @@
                     </div>
                 </div>
                 <div class="entry-actions">
-                    <button class="mini-btn action" onclick="dlEntryZip(${id})" title="Paket Download (ZIP)"><svg viewBox="0 0 24 24"><path d="M21 8v13H3V8"></path><polyline points="1 3 23 3 23 8 1 8 1 3"></polyline><line x1="10" y1="12" x2="14" y2="12"></line></svg></button>
-                    <button class="mini-btn" onclick="doCopy(${id}, true)" title="Text kopieren"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg></button>
-                    <button class="mini-btn" onclick="dlTxt(${id})" title="Text als .txt"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></button>
-                    ${blobs.length > 0 ? `<button class="mini-btn" onclick="dlAudio(${id})" title="Audios laden"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg></button>` : ''}
-                    <button class="mini-btn safe" onclick="retrySession(${id})" title="Retry Audio"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg></button>
-                    <button class="mini-btn danger" onclick="delEntry(${id}, this)" title="Löschen"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                    <button class="mini-btn action" onclick="dlEntryZip(${id})" title="Paket Download (ZIP)"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 8v13H3V8"></path><polyline points="1 3 23 3 23 8 1 8 1 3"></polyline><line x1="10" y1="12" x2="14" y2="12"></line></svg></button>
+                    <button class="mini-btn" onclick="doCopy(${id}, true)" title="Text kopieren"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg></button>
+                    <button class="mini-btn" onclick="dlTxt(${id})" title="Text als .txt"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></button>
+                    ${blobs.length > 0 ? `<button class="mini-btn" onclick="dlAudio(${id})" title="Audios laden"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg></button>` : ''}
+                    <button class="mini-btn safe" onclick="retrySession(${id})" title="Retry Audio"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg></button>
+                    <button class="mini-btn danger" onclick="delEntry(${id}, this)" title="Löschen"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
                 </div>
             </div>
             <textarea id="txt-${id}" class="seamless-text" oninput="autoResizeText(this)" style="max-height: none; overflow-y: hidden;">${text}</textarea>
@@ -921,7 +934,7 @@
     window.delEntry = (id, btn) => { 
         if(!btn.classList.contains('confirm')) {
             btn.classList.add('confirm'); btn.innerHTML = '<span style="font-size:0.9rem; font-weight:bold;">?</span>'; btn.style.background = 'var(--danger)'; btn.style.color = 'white';
-            setTimeout(() => { if(document.getElementById(`e-${id}`)) { btn.classList.remove('confirm'); btn.style.background = 'var(--btn-glass)'; btn.style.color = 'var(--text)'; btn.innerHTML = `<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`; } }, 3000); return;
+            setTimeout(() => { if(document.getElementById(`e-${id}`)) { btn.classList.remove('confirm'); btn.style.background = 'var(--btn-glass)'; btn.style.color = 'var(--text)'; btn.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`; } }, 3000); return;
         }
         document.getElementById(`e-${id}`).remove(); let h = JSON.parse(localStorage.getItem("hist_master")||"[]"); localStorage.setItem("hist_master", JSON.stringify(h.filter(x => x.id != id))); 
     };
