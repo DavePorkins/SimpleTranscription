@@ -18,13 +18,14 @@
         html { scroll-behavior: smooth; transition: background 0.5s ease; }
 
         :root {
+            /* Fallback Colors */
             --c1: #a18cd1; --c2: #fbc2eb;
             --plasma1: #8ec5fc; --plasma2: #e0c3fc; --plasma3: #99ddff;
             
-            /* 1. Light Clear */
-            --glass-bg: rgba(255, 255, 255, 0.25);
-            --glass-border: rgba(255, 255, 255, 0.5);
-            --text: #111; --text-muted: #555;
+            /* 1. Light Clear (Maximales Glas) */
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.35);
+            --text: #111111; --text-muted: #555555;
             --input-bg: rgba(255, 255, 255, 0.4);
             --btn-glass: rgba(255, 255, 255, 0.6);
             --btn-hover: rgba(255, 255, 255, 0.9);
@@ -32,41 +33,46 @@
             --rec-btn-bg: linear-gradient(135deg, var(--c2), var(--c1));
             --accent: #c471ed; --danger: #ff4757; --warn: #ffa502; --safe: #2ed573;
             --badge-bg: rgba(255, 255, 255, 0.5);
+            --title-bg: rgba(255, 255, 255, 0.5);
         }
 
         /* 2. Light Glass */
         html[data-theme="light-glass"] {
-            --glass-bg: rgba(255, 255, 255, 0.65);
-            --input-bg: rgba(255, 255, 255, 0.7);
+            --glass-bg: rgba(255, 255, 255, 0.55);
+            --input-bg: rgba(255, 255, 255, 0.65);
             --btn-glass: rgba(255, 255, 255, 0.8);
             --btn-hover: rgba(230, 230, 240, 1);
+            --title-bg: rgba(255, 255, 255, 0.7);
         }
 
         /* 3. Dark Glass */
         html[data-theme="dark-glass"] {
             color-scheme: dark; background: #000000;
-            --glass-bg: rgba(30, 30, 35, 0.75);
-            --glass-border: rgba(255, 255, 255, 0.12);
+            --glass-bg: rgba(45, 45, 50, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.15);
             --text: #fdfdfd; --text-muted: #cccccc;
             --input-bg: rgba(0, 0, 0, 0.4);
             --btn-glass: rgba(255, 255, 255, 0.15);
             --btn-hover: rgba(255, 255, 255, 0.25);
             --btn-text: #fff;
             --badge-bg: rgba(0, 0, 0, 0.5);
-            --rec-btn-bg: #444; 
+            --rec-btn-bg: #555; 
+            --title-bg: rgba(0, 0, 0, 0.5);
         }
 
-        /* 4. Dark Clear */
+        /* 4. Dark Clear (Tiefschwarz) */
         html[data-theme="dark-clear"] {
             color-scheme: dark; background: #000000;
             --glass-bg: rgba(10, 10, 15, 0.35);
-            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.1);
             --text: #ffffff; --text-muted: #dddddd;
             --input-bg: rgba(0, 0, 0, 0.4);
             --btn-glass: rgba(255, 255, 255, 0.1);
             --btn-hover: rgba(255, 255, 255, 0.2);
             --btn-text: #fff;
             --badge-bg: rgba(255, 255, 255, 0.15);
+            --rec-btn-bg: #333; 
+            --title-bg: rgba(0, 0, 0, 0.6);
         }
 
         body {
@@ -80,43 +86,43 @@
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
             pointer-events: none; opacity: 1; transition: filter 0.5s ease;
         }
-        html[data-theme^="dark"] #cloudCanvas { filter: brightness(0.65) saturate(1.2); }
+        /* Dunklerer Canvas-Filter für starken Kontrast im Dark Mode */
+        html[data-theme^="dark"] #cloudCanvas { filter: brightness(0.4) saturate(1.2); }
 
         .app-container { 
             width: 100%; max-width: 800px; 
-            display: flex; flex-direction: column; gap: 15px; 
+            display: flex; flex-direction: column; 
             padding: 10px; box-sizing: border-box; position: relative;
         }
 
-        /* --- STICKY ZONE (Der Cutoff für das Scrollen) --- */
+        /* --- STICKY ZONE --- */
         .sticky-zone {
             position: sticky; top: 10px; z-index: 100;
             display: flex; flex-direction: column; gap: 12px; width: 100%;
-            align-self: flex-start;
         }
 
         .glass-panel {
             border-radius: 28px; border: 1px solid var(--glass-border);
             background: var(--glass-bg); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
             padding: 15px; box-sizing: border-box; width: 100%;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
         }
 
-        /* HEADER & TITEL PILLE */
+        /* TITEL PILLE (Immer lesbar) */
         .top-row { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; gap: 12px; margin-bottom: 5px;}
         .title-pill {
-            background: var(--badge-bg); border: 1px solid var(--glass-border);
-            padding: 6px 20px; border-radius: 50px; display: inline-flex; align-items: baseline; gap: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            background: var(--title-bg); border: 1px solid var(--glass-border);
+            padding: 8px 24px; border-radius: 50px; display: inline-flex; align-items: baseline; gap: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
         }
         h1 { 
             margin: 0; font-size: 1.4rem; font-weight: 900; letter-spacing: -0.5px;
             background: linear-gradient(90deg, var(--c2), var(--c1)); 
             -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
         }
-        html[data-theme^="dark"] h1 { background: linear-gradient(90deg, #fff, #f0e6ff, #fff); -webkit-background-clip: text; }
-        .version-tag { font-size: 0.5em; opacity: 0.9; font-weight: 800; color: var(--text-muted); -webkit-text-fill-color: initial;}
+        html[data-theme^="dark"] h1 { background: linear-gradient(90deg, #fff, var(--c2), #fff); -webkit-background-clip: text; }
+        .version-tag { font-size: 0.5em; opacity: 0.9; font-weight: 800; color: var(--text); -webkit-text-fill-color: initial;}
 
         .header-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; width: 100%;}
         .icon-btn { 
@@ -135,7 +141,7 @@
             white-space: nowrap; transition: 0.2s; height: 36px; box-sizing: border-box;
         }
         .btn-sleek:hover { background: var(--btn-hover); color: var(--btn-text); }
-        .btn-sleek.inactive { opacity: 0.4; filter: grayscale(1); background: transparent; }
+        .btn-sleek.inactive { opacity: 0.5; filter: grayscale(1); background: var(--input-bg); border-color: transparent;}
         .btn-sleek.inactive:hover { opacity: 1; filter: none; background: var(--btn-glass);}
         .btn-sleek svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2;}
 
@@ -160,13 +166,19 @@
         .side-btn.visible { opacity: 1; pointer-events: all; transform: scale(1); width: 45px; margin: 0 5px; }
         .side-btn.visible#btnCancel { color: var(--danger); font-size: 1.1rem; font-weight: bold;}
         .side-btn.visible#btnPause { color: var(--warn); }
-        #btnPause.state-paused { background: var(--warn); color: white; }
+        #btnPause.state-paused { background: var(--warn); color: white; border-color: transparent;}
 
-        /* SCROLL ZONE (Memos & Active Text) */
-        .scroll-zone { display: flex; flex-direction: column; gap: 15px; width: 100%; position: relative; z-index: 1; padding-top: 5px; }
+        /* --- THE MAGIC SCROLL CUTOFF --- */
+        .scroll-wrapper {
+            width: 100%; display: flex; flex-direction: column; gap: 15px;
+            /* Fade-Out Maske: Oben 60px unsichtbar, dann weicher Übergang */
+            mask-image: linear-gradient(to bottom, transparent 0%, black 60px);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 60px);
+            padding-top: 60px; margin-top: -45px; z-index: 1;
+        }
 
-        /* ACTIVE TEXT ENTRY (Dynamisch, entkoppelt, ohne Scrollbar) */
-        #activeEntry { display: none; flex-direction: column; gap: 12px; margin-top: -5px;}
+        /* ACTIVE TEXT ENTRY */
+        #activeEntry { display: none; flex-direction: column; gap: 12px;}
         .active-top-bar { display: flex; justify-content: center; align-items: center; width: 100%; flex-direction: column; gap: 8px; }
         
         .status-container { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;}
@@ -177,24 +189,25 @@
         .stats-badges { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
         .stat-pill { background: var(--badge-bg); padding: 4px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); display:flex; align-items:center; gap:4px; border: 1px solid var(--glass-border);}
         
+        /* Endlos-Textfeld (Keine Scrollbar, wächst mit) */
         .seamless-text { 
             width: 100%; background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text); 
-            font-family: inherit; resize: none; min-height: 80px; overflow-y: hidden;
+            font-family: inherit; resize: none; min-height: 80px; overflow-y: hidden; height: auto;
             box-sizing: border-box; line-height: 1.6; font-size: 15px; outline: none; padding: 18px; border-radius: 24px;
             box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);
         }
 
         /* HISTORY FEED */
+        #feed { display: flex; flex-direction: column; gap: 15px; width: 100%; }
         .entry { background: var(--glass-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-radius: 28px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); border: 1px solid var(--glass-border); box-sizing: border-box; width: 100%; animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; gap: 12px;}
         @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: 0; } }
 
         .entry-header { display: flex; flex-direction: column; align-items: center; width: 100%; gap: 10px;}
         .entry-meta-info { display: flex; flex-direction: column; align-items: center; gap: 6px; }
         .date-badge { font-size: 0.85rem; color: var(--text); font-weight: 800; display:flex; align-items:center; gap:6px;}
-        .date-badge svg { width: 14px; height: 14px; stroke: var(--text-muted); fill:none; stroke-width:2;}
         
         .entry-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;}
-        .mini-btn { background: var(--btn-glass); border: 1px solid var(--glass-border); color: var(--text); border-radius: 12px; width: 34px; height: 34px; cursor: pointer; display:flex; align-items:center; justify-content:center; transition: 0.2s;}
+        .mini-btn { background: var(--badge-bg); border: 1px solid var(--glass-border); color: var(--text); border-radius: 12px; width: 34px; height: 34px; cursor: pointer; display:flex; align-items:center; justify-content:center; transition: 0.2s;}
         .mini-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2;}
         .mini-btn:hover { background: var(--btn-hover); color: var(--btn-text); transform: translateY(-2px);}
         .mini-btn.danger { color: var(--danger); }
@@ -209,25 +222,27 @@
         .audio-part span { font-size: 0.75rem; font-weight: bold; color: var(--text-muted); flex-shrink: 0;}
         audio { width: 100%; height: 30px; border-radius: 6px; outline: none; }
 
-        /* MODALS - ECHT TRANSPARENT */
-        .modal { display: none; position: fixed; bottom: 0; left: 0; right: 0; top: 0; background: rgba(0,0,0,0.1); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);}
+        /* MODALS - ECHTES PREVIEW */
+        .modal { display: none; position: fixed; bottom: 0; left: 0; right: 0; top: 0; background: rgba(0,0,0,0.05); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);}
         .modal.visible { display: flex; animation: fadeIn 0.2s; }
-        .modal-box { background: var(--glass-bg); padding: 25px; border-radius: 35px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); width: 90%; max-width: 440px; border: 1px solid var(--glass-border); max-height: 85vh; overflow-y: auto; color: var(--text); box-sizing: border-box; backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);}
+        .modal-box { background: var(--glass-bg); padding: 25px; border-radius: 35px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); width: 90%; max-width: 440px; border: 1px solid var(--glass-border); max-height: 85vh; overflow-y: auto; color: var(--text); box-sizing: border-box;}
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-weight: 800; font-size: 1.2rem; color: var(--text);}
         
-        /* THE HONEYCOMB ISLAND (CSS Grid) */
-        .honeycomb-island { display: flex; flex-direction: column; align-items: center; padding: 10px 0 25px 0; }
-        .hex-row { display: flex; justify-content: center; margin-bottom: -10px; z-index: 2; position: relative;}
+        /* HONEYCOMB ISLAND (Exakt & Sauber) */
+        .honeycomb-island { display: flex; flex-direction: column; align-items: center; padding: 15px 0 30px 0; }
+        .hex-row { display: flex; justify-content: center; margin-bottom: -12px; z-index: 2; position: relative;}
         .hex { 
-            width: 42px; height: 48px; cursor: pointer; transition: 0.2s; margin: 0 2px;
+            width: 48px; height: 54px; cursor: pointer; transition: 0.2s; margin: 0 2px;
             clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-            background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.4); display: flex; align-items: center; justify-content: center;
         }
-        .hex:hover { transform: scale(1.25); z-index: 10; box-shadow: 0 0 20px rgba(255,255,255,0.8);}
-        .hex-inner { width: 100%; height: 100%; }
+        html[data-theme^="dark"] .hex { background: rgba(0,0,0,0.5); }
+        .hex:hover { transform: scale(1.2); z-index: 10; box-shadow: 0 0 20px rgba(255,255,255,0.8);}
+        /* 92% width for the border effect */
+        .hex-inner { width: 90%; height: 90%; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); }
         
         /* Pastel Rainbow */
-        .rainbow-hex { background: linear-gradient(124deg, #ffb3ba, #ffdfba, #ffffba, #baffc9, #bae1ff, #d0baff); background-size: 600% 600%; animation: rainbow 4s ease infinite;}
+        .rainbow-hex { background: linear-gradient(124deg, #ffb3ba, #ffdfba, #ffffba, #baffc9, #bae1ff, #d0baff); background-size: 400% 400%; animation: rainbow 3s ease infinite;}
         @keyframes rainbow { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
 
         .studio-tabs { display: flex; background: var(--input-bg); border-radius: 14px; padding: 4px; margin-bottom: 20px;}
@@ -242,7 +257,7 @@
         .info-text { font-size: 0.9rem; color: var(--text); line-height: 1.5; margin-bottom: 15px; font-weight: 600; text-align: center;}
         .info-text a { color: var(--accent); text-decoration: none; font-weight: 800;}
 
-        /* Edles Toast */
+        /* Edles Toast SVG */
         #toast { position: fixed; top: 20px; left: 50%; transform: translate(-50%, -150%); background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); color: var(--text); padding: 12px 30px; border-radius: 50px; font-weight: 800; transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.2s; opacity: 0; z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,0.2); text-align: center; pointer-events: none; display: flex; align-items: center; gap: 8px;}
         #toast.visible { transform: translate(-50%, 0); opacity: 1; }
     </style>
@@ -251,12 +266,12 @@
 
 <canvas id="cloudCanvas"></canvas>
 <script> const HARDCODED_KEY = ""; </script>
-<div id="toast"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg> <span id="toastMsg">Kopiert</span></div>
+<div id="toast"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> <span id="toastMsg">Kopiert</span></div>
 
 <div id="devPanel" class="modal">
     <div class="modal-box" style="padding: 25px 15px;">
         <div class="modal-header">
-            <span style="display:flex; align-items:center; gap:8px;"><svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" fill="none" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg> Color Studio</span>
+            <span style="display:flex; align-items:center; gap:8px;"><svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" fill="none" stroke-width="2"><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10c0 1.25-.895 2.25-2 2.25h-1.63c-.45 0-.82.37-.82.82 0 .22.09.43.24.58.3.31.48.73.48 1.18 0 1.17-.95 2.13-2.12 2.13H12zm-3-12a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm-9 5a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm12 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg> Color Studio</span>
             <div style="display:flex; gap:8px;">
                 <button class="icon-btn" onclick="resetDev()" style="width:auto; height:32px; border-radius:12px; font-size:0.8rem; font-weight:bold; padding: 0 10px;">Reset</button>
                 <button class="icon-btn" onclick="toggleModal('devPanel')" style="width:32px;height:32px;"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
@@ -264,53 +279,20 @@
         </div>
         
         <div class="studio-tabs">
-            <div class="tab-btn active" id="tabColors" onclick="switchStudioTab('colors')">Waben</div>
+            <div class="tab-btn active" id="tabColors" onclick="switchStudioTab('colors')">Farben</div>
             <div class="tab-btn" id="tabAnims" onclick="switchStudioTab('anims')">Animation</div>
         </div>
 
         <div id="viewColors" class="honeycomb-island">
-            <div class="hex-row" style="z-index: 7;">
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #0a0a0a, #2a2a2a)" onclick="applyPreset('#0a0a0a','#2a2a2a', '#111', '#333', '#1a1a1a')" title="Deep OLED"></div></div>
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #111, #444)" onclick="applyPreset('#111111','#444444', '#222222', '#555555', '#333333')" title="Graphite"></div></div>
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #fdfbfb, #ebedee)" onclick="applyPreset('#fdfbfb','#ebedee', '#e0e0e0', '#f5f5f5', '#ffffff')" title="Pure White"></div></div>
-            </div>
-            <div class="hex-row" style="z-index: 6;">
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #2c3e50, #000000)" onclick="applyPreset('#2c3e50','#000000', '#34495e', '#111111', '#4b6584')"></div></div>
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #bdc3c7, #2c3e50)" onclick="applyPreset('#bdc3c7','#2c3e50', '#a0aab2', '#34495e', '#7f8c8d')"></div></div>
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #cfd9df, #e2ebf0)" onclick="applyPreset('#cfd9df','#e2ebf0', '#b8c6d1', '#d1dce5', '#ffffff')"></div></div>
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #e6dada, #274046)" onclick="applyPreset('#e6dada','#274046', '#dcd2d2', '#3a5a60', '#f2ecec')"></div></div>
-            </div>
-            <div class="hex-row" style="z-index: 5;">
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #f5f7fa, #c3cfe2)" onclick="applyPreset('#f5f7fa','#c3cfe2', '#d9e2ec', '#b2c0d6', '#ffffff')"></div></div>
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #ffecd2, #fcb69f)" onclick="applyPreset('#ffecd2','#fcb69f', '#ffdfb3', '#fca083', '#ffffff')"></div></div>
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #fccb90, #d57eeb)" onclick="applyPreset('#fccb90','#d57eeb', '#fca083', '#c1c8e4', '#ffffff')"></div></div>
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #d4fc79, #96e6a1)" onclick="applyPreset('#d4fc79','#96e6a1', '#bbf569', '#7ad186', '#e7fd9c')"></div></div>
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #a8edea, #fed6e3)" onclick="applyPreset('#a8edea','#fed6e3', '#89f7fe', '#66a6ff', '#a8edea')"></div></div>
-            </div>
-            <div class="hex-row" style="z-index: 4;">
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb)" onclick="applyPreset('#a18cd1','#fbc2eb', '#8ec5fc', '#e0c3fc', '#99ddff')"></div></div>
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #84fab0, #8fd3f4)" onclick="applyPreset('#84fab0','#8fd3f4', '#a1c4fd', '#c2e9fb', '#96e6a1')"></div></div>
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #ff9a9e, #fecfef)" onclick="applyPreset('#ff9a9e','#fecfef', '#f6416c', '#ffb199', '#ff0844')"></div></div>
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #fbc2eb, #a6c1ee)" onclick="applyPreset('#fbc2eb','#a6c1ee', '#fbc2eb', '#c1c8e4', '#84fab0')"></div></div>
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #4facfe, #00f2fe)" onclick="applyPreset('#4facfe','#00f2fe', '#43e97b', '#38f9d7', '#4facfe')"></div></div>
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #fa709a, #fee140)" onclick="applyPreset('#fa709a','#fee140', '#fecfef', '#ff9a9e', '#fa709a')"></div></div>
-            </div>
-            <div class="hex-row" style="z-index: 3;">
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #30cfd0, #330867)" onclick="applyPreset('#30cfd0','#330867', '#30cfd0', '#764ba2', '#667eea')"></div></div>
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #5ee7df, #b490ca)" onclick="applyPreset('#5ee7df','#b490ca', '#d299c2', '#fef9d7', '#5ee7df')"></div></div>
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #13547a, #80d0c7)" onclick="applyPreset('#13547a','#80d0c7', '#11998e', '#38ef7d', '#13547a')"></div></div>
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #eb3349, #f45c43)" onclick="applyPreset('#eb3349','#f45c43', '#ff9966', '#ff5e62', '#eb3349')"></div></div>
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #4cb8c4, #3cd3ad)" onclick="applyPreset('#4cb8c4','#3cd3ad', '#24c6dc', '#514a9d', '#4cb8c4')"></div></div>
-            </div>
-            <div class="hex-row" style="z-index: 2;">
-                <div class="hex"><div class="hex-inner rainbow-hex" onclick="applyPreset('#ffb3ba','#bae1ff', '#ffdfba', '#ffffba', '#baffc9')" title="Pastel Rainbow"></div></div>
-            </div>
+            <div id="hexContainer" style="display: flex; flex-direction: column; align-items: center;"></div>
         </div>
 
         <div id="viewAnims" style="display:none; padding: 10px 0;">
             <div class="anim-option active" id="anim-nebula" onclick="setAnim('nebula')">Nebula (Wolken) <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg></div>
             <div class="anim-option" id="anim-lava" onclick="setAnim('lava')">Lava (Tropfen) <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"></circle></svg></div>
             <div class="anim-option" id="anim-aurora" onclick="setAnim('aurora')">Aurora (Wellen) <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h4l3-9 5 18 3-9h5"></path></svg></div>
+            
+            <div style="margin-top: 20px; text-align: center; color: var(--text-muted); font-size: 0.8rem; font-weight:bold;">Tipp: Die Animation reagiert auf deine Stimme!</div>
         </div>
     </div>
 </div>
@@ -344,12 +326,11 @@
 <div class="app-container">
     
     <div class="sticky-zone">
-        
-        <div class="glass-panel">
+        <div class="glass-panel" style="padding-bottom: 10px;">
             <div class="top-row">
                 <div class="title-pill">
                     <h1>Simple Transcription</h1>
-                    <span class="version-tag">V66</span>
+                    <span class="version-tag">V67</span>
                 </div>
                 
                 <div class="header-actions">
@@ -358,16 +339,13 @@
                     </button>
                     <button class="icon-btn" onclick="cycleTheme()" title="Theme Rotator" id="themeIcon"></button>
                     <button class="icon-btn" onclick="toggleModal('devPanel')" title="Color Studio">
-                        <svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+                        <svg viewBox="0 0 24 24"><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10c0 1.25-.895 2.25-2 2.25h-1.63c-.45 0-.82.37-.82.82 0 .22.09.43.24.58.3.31.48.73.48 1.18 0 1.17-.95 2.13-2.12 2.13H12zm-3-12a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm-9 5a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm12 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>
                     </button>
                     <button class="icon-btn" onclick="dlAllZip()" title="Master ZIP Download">
                         <svg viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
                     </button>
                     <button class="icon-btn" onclick="showQR()" title="App Teilen">
                         <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                    </button>
-                    <button class="icon-btn" onclick="document.getElementById('fileUpload').click()" title="Audio Upload">
-                        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
                     </button>
                     <button class="icon-btn" title="Mikrofon Auswahl" style="position:relative;">
                         <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
@@ -403,7 +381,7 @@
                 </div>
             </div>
         </div>
-    </div> <div class="scroll-zone">
+    </div> <div class="scroll-wrapper">
         
         <div id="activeEntry" class="glass-panel" style="display:none; padding-top: 20px;">
             <div class="active-top-bar" style="margin-bottom: 15px;">
@@ -422,9 +400,7 @@
             <textarea id="activeText" class="seamless-text" readonly placeholder="Sprich in das Mikrofon..."></textarea>
         </div>
 
-        <div id="feed">
-            <div id="historyFeed" style="display:flex; flex-direction:column; gap:15px;"></div>
-        </div>
+        <div id="feed"></div>
         
     </div> </div>
 
@@ -438,11 +414,11 @@
         btnMain: document.getElementById('btnMain'), btnPause: document.getElementById('btnPause'), btnCancel: document.getElementById('btnCancel'),
         iconMain: document.getElementById('iconMain'), iconPause: document.getElementById('iconPause'), themeIcon: document.getElementById('themeIcon'),
         timer: document.getElementById('timer'), liveBadges: document.getElementById('liveBadges'), liveWords: document.getElementById('liveWords'), liveCost: document.getElementById('liveCost'), liveTokens: document.getElementById('liveTokens'), livePages: document.getElementById('livePages'),
-        glassBlock: document.getElementById('glassBlock'), canvas: document.getElementById('cloudCanvas'), feed: document.getElementById('historyFeed'), activeEntry: document.getElementById('activeEntry'), activeText: document.getElementById('activeText'),
+        glassBlock: document.getElementById('glassBlock'), canvas: document.getElementById('cloudCanvas'), feed: document.getElementById('feed'), activeEntry: document.getElementById('activeEntry'), activeText: document.getElementById('activeText'),
         badgeListen: document.getElementById('badgeListen'), badgeTranscribe: document.getElementById('badgeTranscribe'), badgeCut: document.getElementById('badgeCut'),
         apiKey: document.getElementById('apiKey'), fileUpload: document.getElementById('fileUpload'),
         toast: document.getElementById('toast'), toastMsg: document.getElementById('toastMsg'), btnAutoSave: document.getElementById('btnAutoSave'), btnAutoCut: document.getElementById('btnAutoCut'), cutDisplay: document.getElementById('cutDisplay'),
-        devPanel: document.getElementById('devPanel'), apiModal: document.getElementById('apiModal'), micSelect: document.getElementById('micSelect')
+        devPanel: document.getElementById('devPanel'), hexContainer: document.getElementById('hexContainer'), apiModal: document.getElementById('apiModal'), micSelect: document.getElementById('micSelect')
     };
 
     // Theme Rotator
@@ -464,36 +440,34 @@
     function toggleModal(id) { document.getElementById(id).classList.toggle('visible'); }
     function toggleApiVisibility() { els.apiKey.type = els.apiKey.type === 'password' ? 'text' : 'password'; }
     function saveApiAndClose() { localStorage.setItem("key_v38", els.apiKey.value); toggleModal('apiModal'); showToast("Key gespeichert"); }
-    function showQR() { document.getElementById('qrcode').innerHTML = ""; new QRCode(document.getElementById("qrcode"), { text: window.location.href.split('#')[0].split('?')[0], width: 150, height: 150, colorDark: "#000000", colorLight: "#ffffff" }); toggleModal('qrModal'); }
 
-    // Theme Engine
-    let currentThemeIdx = parseInt(localStorage.getItem('theme_idx_v66') || 0);
+    // Theme Engine Memory
+    let currentThemeIdx = parseInt(localStorage.getItem('theme_idx_v67') || 0);
     function cycleTheme() { currentThemeIdx = (currentThemeIdx + 1) % themes.length; applyTheme(currentThemeIdx); }
     function applyTheme(idx) {
         document.documentElement.setAttribute('data-theme', themes[idx]);
         els.themeIcon.innerHTML = `<svg viewBox="0 0 24 24">${svgThemes[idx]}</svg>`;
-        localStorage.setItem('theme_idx_v66', idx);
+        localStorage.setItem('theme_idx_v67', idx);
         updateDev(true); 
     }
     applyTheme(currentThemeIdx);
 
-    // Auto-Save
-    let isAutoSave = localStorage.getItem("autodl_v66") === 'true';
+    // Auto-Save Toggle
+    let isAutoSave = localStorage.getItem("autodl_v67") === 'true';
     function updateSaveBtn() { els.btnAutoSave.className = isAutoSave ? 'btn-sleek' : 'btn-sleek inactive'; }
-    window.toggleSave = () => { isAutoSave = !isAutoSave; localStorage.setItem("autodl_v66", isAutoSave); updateSaveBtn(); showToast(isAutoSave ? "Auto-Save An" : "Auto-Save Aus"); };
+    window.toggleSave = () => { isAutoSave = !isAutoSave; localStorage.setItem("autodl_v67", isAutoSave); updateSaveBtn(); showToast(isAutoSave ? "Auto-Save An" : "Auto-Save Aus"); };
     updateSaveBtn();
 
-    // Auto-Cut
+    // Auto-Cut (0-5, Default: 2)
     const cutOptions = [0, 1, 2, 3, 4, 5];
-    let currentCutIdx = localStorage.getItem("autocut_idx_v66");
-    if(currentCutIdx === null) currentCutIdx = 2; else currentCutIdx = parseInt(currentCutIdx); // Default 2 Min
-    
+    let currentCutIdx = localStorage.getItem("autocut_idx_v67");
+    if(currentCutIdx === null) currentCutIdx = 2; else currentCutIdx = parseInt(currentCutIdx);
     function updateCutBtn() { 
         let val = cutOptions[currentCutIdx];
         els.btnAutoCut.className = val > 0 ? 'btn-sleek' : 'btn-sleek inactive';
         els.cutDisplay.innerText = val > 0 ? `${val} Min` : 'Off';
     }
-    window.cycleAutoCut = () => { currentCutIdx = (currentCutIdx + 1) % cutOptions.length; localStorage.setItem("autocut_idx_v66", currentCutIdx); updateCutBtn(); };
+    window.cycleAutoCut = () => { currentCutIdx = (currentCutIdx + 1) % cutOptions.length; localStorage.setItem("autocut_idx_v67", currentCutIdx); updateCutBtn(); };
     updateCutBtn();
 
     // Studio Tabs
@@ -504,21 +478,44 @@
         document.getElementById('viewAnims').style.display = tab === 'anims' ? 'block' : 'none';
     };
 
-    // Anim Setup
-    let currentAnim = localStorage.getItem('anim_type_v66') || 'nebula';
-    function setAnim(type) {
-        currentAnim = type; localStorage.setItem('anim_type_v66', type);
-        document.querySelectorAll('.anim-option').forEach(el => el.classList.remove('active'));
-        document.getElementById(`anim-${type}`).classList.add('active');
-    }
-    setAnim(currentAnim);
-
+    // Color Setup (Exakte Hexagon-Generierung)
     function applyPreset(c1, c2, b1, b2, b3) { 
         document.documentElement.style.setProperty('--c1', c1); document.documentElement.style.setProperty('--c2', c2);
         localStorage.setItem('d_c1', c1); localStorage.setItem('d_c2', c2); 
         localStorage.setItem('d_b1', b1); localStorage.setItem('d_b2', b2); localStorage.setItem('d_b3', b3); 
         updateDev(); 
     }
+
+    const hexPresets = [
+        // Reihe 1: Mono (3)
+        [ {t:['#fff','#ccc'], b:['#0a0a0a','#1a1a1a']}, {t:['#fff','#eee'], b:['#444','#555']}, {t:['#111','#444'], b:['#fff','#eee']} ],
+        // Reihe 2: Silver & Ice (4)
+        [ {t:['#fff','#ccc'], b:['#2c3e50','#000000']}, {t:['#111','#444'], b:['#bdc3c7','#7f8c8d']}, {t:['#111','#333'], b:['#cfd9df','#e2ebf0']}, {t:['#fff','#eee'], b:['#274046','#e6dada']} ],
+        // Reihe 3: Creme & Natur (5)
+        [ {t:['#111','#333'], b:['#f5f7fa','#c3cfe2']}, {t:['#222','#555'], b:['#ffecd2','#fcb69f']}, {t:['#111','#333'], b:['#fccb90','#d57eeb']}, {t:['#111','#222'], b:['#d4fc79','#96e6a1']}, {t:['#111','#333'], b:['#a8edea','#fed6e3']} ],
+        // Reihe 4: Pastell (6)
+        [ {t:['#111','#333'], b:['#a18cd1','#fbc2eb']}, {t:['#111','#333'], b:['#84fab0','#8fd3f4']}, {t:['#111','#333'], b:['#ff9a9e','#fecfef']}, {t:['#111','#333'], b:['#fbc2eb','#a6c1ee']}, {t:['#111','#333'], b:['#4facfe','#00f2fe']}, {t:['#111','#333'], b:['#fa709a','#fee140']} ],
+        // Reihe 5: Deep Vibes (5)
+        [ {t:['#fff','#ccc'], b:['#30cfd0','#330867']}, {t:['#fff','#eee'], b:['#5ee7df','#b490ca']}, {t:['#fff','#eee'], b:['#13547a','#80d0c7']}, {t:['#fff','#ffccaa'], b:['#eb3349','#f45c43']}, {t:['#fff','#eee'], b:['#4cb8c4','#3cd3ad']} ]
+    ];
+
+    hexPresets.forEach((row, rIdx) => {
+        let rDiv = document.createElement('div');
+        rDiv.className = 'hex-row';
+        rDiv.style.zIndex = 10 - rIdx;
+        row.forEach(p => {
+            let h = document.createElement('div'); h.className = 'hex';
+            h.innerHTML = `<div class="hex-inner" style="background: linear-gradient(135deg, ${p.b[0]}, ${p.b[1]});"></div>`;
+            h.onclick = () => applyPreset(p.t[0], p.t[1], p.b[0], p.b[1], p.b[0]); // b3 is just b1 again for simplicity
+            rDiv.appendChild(h);
+        });
+        els.hexContainer.appendChild(rDiv);
+    });
+    // Rainbow Row (1)
+    let rainbowRow = document.createElement('div'); rainbowRow.className = 'hex-row'; rainbowRow.style.zIndex = 1;
+    rainbowRow.innerHTML = `<div class="hex"><div class="hex-inner rainbow-hex" onclick="applyPreset('#111','#333', '#ffb3ba', '#bae1ff', '#ffffba')"></div></div>`;
+    els.hexContainer.appendChild(rainbowRow);
+
     window.resetDev = () => { applyPreset('#a18cd1', '#fbc2eb', '#8ec5fc', '#e0c3fc', '#99ddff'); showToast("Reset"); };
 
     function loadDev() {
@@ -532,6 +529,15 @@
         const metaTheme = document.getElementById('theme-color-meta');
         if(metaTheme) metaTheme.setAttribute('content', document.documentElement.getAttribute('data-theme').includes('dark') ? '#000000' : localStorage.getItem('d_c1')||'#a18cd1');
     }
+
+    // Animation Setup
+    let currentAnim = localStorage.getItem('anim_type_v67') || 'nebula';
+    function setAnim(type) {
+        currentAnim = type; localStorage.setItem('anim_type_v67', type);
+        document.querySelectorAll('.anim-option').forEach(el => el.classList.remove('active'));
+        document.getElementById(`anim-${type}`).classList.add('active');
+    }
+    setAnim(currentAnim);
     
     let globalStream, mediaRecorder, chunks = [], audioCtx, analyser, dataArray;
     let isRecording = false, isPaused = false, isCancelled = false;
@@ -541,82 +547,83 @@
     let currentSessionId = null; let currentPart = 1; let isAutoCutting = false;
     let pendingTranscriptions = 0; let sessionBlobs = []; let activeCost = 0; 
 
-    if(HARDCODED_KEY.length > 5) { els.apiKey.value = HARDCODED_KEY; } 
-    else { els.apiKey.value = localStorage.getItem("key_v38") || ""; }
+    if(HARDCODED_KEY.length > 5) { els.apiKey.value = HARDCODED_KEY; } else { els.apiKey.value = localStorage.getItem("key_v38") || ""; }
 
-    function migrateHistory() { let h = localStorage.getItem("hist_master"); if (!h) { h = localStorage.getItem("hist_v56") || "[]"; localStorage.setItem("hist_master", h); } } 
+    function migrateHistory() { let h = localStorage.getItem("hist_master"); if (!h) { h = "[]"; localStorage.setItem("hist_master", h); } } 
     migrateHistory(); loadDev();
     
-    // Sort logic fix: Always newest first (descending by ID)
+    // Hard-Sortierung (Neueste immer oben)
     function saveToHistory(id, text, ts, blobs, cost, durationStr) { 
         let h = JSON.parse(localStorage.getItem("hist_master")||"[]"); 
         h.push({ id, text, ts, cost, durationStr }); 
-        h.sort((a, b) => b.id - a.id); // ALWAYS NEWEST FIRST
+        h.sort((a, b) => b.id - a.id); // Descending (Höchste ID zuerst)
         if(h.length > 30) h.pop(); 
         localStorage.setItem("hist_master", JSON.stringify(h)); 
     }
     function loadHistory() { 
         let h = JSON.parse(localStorage.getItem("hist_master")||"[]");
-        h.sort((a, b) => a.id - b.id); // Reverse for prepending to DOM (so newest ends up top)
-        h.forEach(e => createHistoryEntry(e.id, e.ts, e.text, [], e.cost || 0, e.durationStr || "00:00")); 
+        h.sort((a, b) => b.id - a.id); // Neueste an Index 0
+        els.feed.innerHTML = "";
+        h.forEach(e => createHistoryEntry(e.id, e.ts, e.text, [], e.cost || 0, e.durationStr || "00:00", true)); 
     }
     loadHistory();
 
     function resizeCanvas() { els.canvas.width = window.innerWidth; els.canvas.height = window.innerHeight; }
     window.addEventListener('resize', resizeCanvas);
-    function autoResizeText(textarea) { textarea.style.height = '80px'; textarea.style.height = (textarea.scrollHeight) + 'px'; }
+    function autoResizeText(textarea) { textarea.style.height = 'auto'; textarea.style.height = (textarea.scrollHeight) + 'px'; }
 
-    // Advanced Animations 
+    // Advanced Animations
     let smoothedVol = 0; let timeAccum = 0;
     function initVisualizer() {
         const ctx = els.canvas.getContext('2d'); resizeCanvas();
         function draw() {
             requestAnimationFrame(draw);
             const w = els.canvas.width; const h = els.canvas.height;
-            ctx.clearRect(0, 0, w, h); 
+            const isDark = document.documentElement.getAttribute('data-theme').includes('dark');
+            ctx.fillStyle = isDark ? '#000000' : '#ffffff';
+            ctx.fillRect(0, 0, w, h); 
 
             let rawVol = 0;
             if(analyser && isRecording && !isPaused) {
                 if(dataArray) { analyser.getByteFrequencyData(dataArray); let sum = 0; for(let i=0; i<dataArray.length; i++) sum += dataArray[i]; rawVol = (sum / dataArray.length); }
-                timeAccum += 0.005 + (rawVol * 0.0002); 
-            } else { timeAccum += 0.003; } 
+                timeAccum += 0.006 + (rawVol * 0.0003); // Starke Reaktion auf Stimme
+            } else { timeAccum += 0.004; } 
 
-            smoothedVol = smoothedVol * 0.9 + (Math.min(rawVol / 100, 1.0)) * 0.1; 
-            const intensity = 1.0 + (smoothedVol * 1.5); 
+            smoothedVol = smoothedVol * 0.85 + (Math.min(rawVol / 100, 1.0)) * 0.15; 
+            const intensity = 1.0 + (smoothedVol * 2.0); // Viel extremer bei Ton
             const maxDim = Math.max(w, h);
 
-            const b1 = localStorage.getItem('d_b1') || '#8ec5fc';
-            const b2 = localStorage.getItem('d_b2') || '#e0c3fc';
-            const b3 = localStorage.getItem('d_b3') || '#99ddff';
-            const c1 = localStorage.getItem('d_c1') || '#a18cd1';
-            const colors = [b1, b2, b3, c1];
+            const colors = [localStorage.getItem('d_b1')||'#8ec5fc', localStorage.getItem('d_b2')||'#e0c3fc', localStorage.getItem('d_b3')||'#99ddff', localStorage.getItem('d_c1')||'#a18cd1'];
 
             if(currentAnim === 'nebula') {
-                const baseRadius = maxDim * 0.8; 
-                for(let i=0; i<4; i++) {
-                    let r = baseRadius * intensity;
-                    let x = w/2 + Math.cos(timeAccum * (0.3 + i*0.15) + i) * w * 0.5;
-                    let y = h/2 + Math.sin(timeAccum * (0.4 + i*0.1) - i) * h * 0.5;
+                const baseRadius = maxDim * 0.6; 
+                for(let i=0; i<6; i++) { // Mehr Partikel
+                    let cIdx = i % colors.length;
+                    let r = baseRadius * intensity * (0.8 + (i*0.1));
+                    let x = w/2 + Math.cos(timeAccum * (0.4 + i*0.1) + i) * w * 0.5;
+                    let y = h/2 + Math.sin(timeAccum * (0.5 + i*0.1) - i) * h * 0.5;
                     const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
-                    grad.addColorStop(0, colors[i] + 'ff'); grad.addColorStop(1, colors[i] + '00');
+                    grad.addColorStop(0, colors[cIdx] + 'ff'); grad.addColorStop(1, colors[cIdx] + '00');
                     ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
                 }
             } else if (currentAnim === 'aurora') {
-                for(let i=0; i<4; i++) {
-                    let bandW = w * 0.8 * intensity;
-                    let x = (w/4) * i + Math.sin(timeAccum + i)*150;
-                    let yOffset = Math.sin(timeAccum * 0.5 + i) * h * 0.4;
+                for(let i=0; i<5; i++) {
+                    let cIdx = i % colors.length;
+                    let bandW = w * 1.0 * intensity;
+                    let x = (w/5) * i + Math.sin(timeAccum + i)*200;
+                    let yOffset = Math.sin(timeAccum * 0.5 + i) * h * 0.5;
                     const grad = ctx.createLinearGradient(x - bandW/2, 0, x + bandW/2, h);
-                    grad.addColorStop(0, colors[i] + '00'); grad.addColorStop(0.5, colors[i] + 'bb'); grad.addColorStop(1, colors[i] + '00');
+                    grad.addColorStop(0, colors[cIdx] + '00'); grad.addColorStop(0.5, colors[cIdx] + 'cc'); grad.addColorStop(1, colors[cIdx] + '00');
                     ctx.fillStyle = grad; ctx.fillRect(0, yOffset - h*0.5, w, h*2);
                 }
             } else if (currentAnim === 'lava') {
-                const baseRadius = maxDim * 0.35;
-                for(let i=0; i<5; i++) {
+                const baseRadius = maxDim * 0.4;
+                for(let i=0; i<8; i++) {
                     let cIdx = i % colors.length;
-                    let r = baseRadius * (0.6 + intensity * 0.3);
-                    let x = w/2 + Math.cos(timeAccum * 0.5 + i*10) * w * 0.4;
-                    let y = (h * 1.5) - ((timeAccum * 100 + i*200) % (h * 2)); // Rising logic
+                    let r = baseRadius * (0.5 + intensity * 0.4);
+                    let x = w/2 + Math.cos(timeAccum * 0.6 + i*15) * w * 0.4;
+                    // Steigen von unten nach oben
+                    let y = h + r - ((timeAccum * 150 + i*300) % (h + r*2)); 
                     const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
                     grad.addColorStop(0, colors[cIdx] + 'ee'); grad.addColorStop(1, colors[cIdx] + '00');
                     ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
@@ -664,7 +671,7 @@
             els.btnMain.className = 'btn-circle'; els.btnMain.disabled = false;
             els.btnPause.classList.remove('visible'); els.btnCancel.classList.remove('visible'); 
         } else if (state === 'recording') {
-            els.iconMain.innerHTML = '<rect x="6" y="6" width="12" height="12" rx="2" ry="2" fill="currentColor"></rect>'; 
+            els.iconMain.innerHTML = '<rect x="6" y="6" width="12" height="12" rx="2" ry="2" fill="currentColor" stroke="none"></rect>'; 
             els.btnMain.className = 'btn-circle state-recording'; els.btnMain.disabled = false;
             els.iconPause.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>'; 
             els.btnPause.className = 'btn-circle side-btn visible'; els.btnCancel.className = 'btn-circle side-btn visible'; 
@@ -696,7 +703,7 @@
                 sessionStartTime = Date.now(); totalPauseDelta = 0; 
                 els.activeText.value = ''; updateLiveStats();
                 els.activeEntry.style.display = 'flex';
-                els.activeText.style.height = '80px'; 
+                autoResizeText(els.activeText);
             }
             partStartTime = Date.now(); partPauseDelta = 0;
             isRecording = true; updateStatusBadges();
@@ -736,7 +743,7 @@
             isAutoCutting = true; 
             els.badgeCut.style.display = 'flex'; els.badgeListen.style.display = 'none';
             mediaRecorder.stop(); 
-            setTimeout(() => { els.badgeCut.style.display = 'none'; updateStatusBadges(); }, 1000);
+            setTimeout(() => { els.badgeCut.style.display = 'none'; updateStatusBadges(); }, 1200);
         } 
     }
     
@@ -771,10 +778,9 @@
         setMainButtonState('idle'); els.timer.innerText="00:00"; 
         releaseWakeLock(); if(globalStream) globalStream.getTracks().forEach(t=>t.stop()); 
         updateStatusBadges();
+        els.btnMain.disabled = false; // Important fix for double click
     }
 
-    function silentCopy(text) { navigator.clipboard.writeText(text); }
-    
     function showToast(msg) {
         els.toastMsg.innerText = msg; els.toast.className = 'visible'; setTimeout(() => { els.toast.className = ''; }, 2500);
     }
@@ -791,7 +797,7 @@
                 const newText = part > 1 ? `\n---\n${data.text}` : data.text;
                 els.activeText.value = (els.activeText.value + newText).trim();
                 updateLiveStats(); autoResizeText(els.activeText);
-                silentCopy(els.activeText.value); 
+                navigator.clipboard.writeText(els.activeText.value); 
             } else { els.activeText.value += `\n[Error: ${data.error?.message}]`; autoResizeText(els.activeText); }
         } catch(e) { els.activeText.value += `\n[Netzwerk-Fehler]`; autoResizeText(els.activeText); }
         pendingTranscriptions--; updateStatusBadges();
@@ -809,17 +815,16 @@
             saveToHistory(sId, finalTxt, tsFull, bList, cost, durationStr);
             createHistoryEntry(sId, tsFull, finalTxt, bList, cost, durationStr);
             
-            silentCopy(finalTxt); 
-            if(document.hasFocus()) { showToast("✅ Abgeschlossen & Kopiert!"); }
+            navigator.clipboard.writeText(finalTxt); 
+            if(document.hasFocus()) { showToast("Kopiert & Gespeichert!"); }
             if(isAutoSave) dlEntryZip(sId);
         }
         els.activeEntry.style.display = 'none'; 
-        els.btnMain.disabled = false; 
     }
 
     window.fixDuration = function(audio) { if(audio.duration === Infinity || isNaN(audio.duration)) { audio.currentTime = 1e101; audio.ontimeupdate = function() { this.ontimeupdate = null; this.currentTime = 0; } } }
 
-    function createHistoryEntry(id, ts, text, blobs=[], cost=0, durationStr="00:00") {
+    function createHistoryEntry(id, ts, text, blobs=[], cost=0, durationStr="00:00", isLoad=false) {
         const d = document.createElement('div'); d.className = 'entry'; d.id = `e-${id}`;
         d.audioBlobs = blobs;
         const words = text ? text.split(/\s+/).length : 0;
@@ -854,7 +859,8 @@
             <textarea id="txt-${id}" class="seamless-text" oninput="autoResizeText(this)" style="max-height: none; overflow-y: hidden;">${text}</textarea>
             ${audioHtml}
         `;
-        els.feed.prepend(d); 
+        
+        if (isLoad) { els.feed.appendChild(d); } else { els.feed.prepend(d); }
         setTimeout(() => { autoResizeText(d.querySelector('textarea')); }, 50);
     }
 
