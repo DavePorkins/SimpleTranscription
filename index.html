@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Simple Transcription V63</title>
+    <title>Simple Transcription V64</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -17,49 +17,54 @@
 
         :root {
             --c1: #a18cd1; --c2: #fbc2eb;
-            --glass-bg: rgba(255, 255, 255, 0.25);
-            --glass-border: rgba(255, 255, 255, 0.6);
-            --text: #111; --text-muted: #555;
-            --input-bg: rgba(255, 255, 255, 0.4);
+            --plasma1: #8ec5fc; --plasma2: #e0c3fc; --plasma3: #99ddff;
+            
+            /* 1. Light Clear: Absolutes Frosted Glass (fast unsichtbar, nur Blur) */
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --text: #111; --text-muted: #444;
+            --input-bg: rgba(255, 255, 255, 0.3);
             --btn-bg: rgba(255, 255, 255, 0.95);
             --btn-text: #222;
             --rec-btn-bg: linear-gradient(135deg, var(--c2), var(--c1));
             --accent: #c471ed; --danger: #ff4757; --warn: #ffa502; --safe: #2ed573;
-            --badge-bg: rgba(255, 255, 255, 0.5);
-            --title-glow: rgba(255,255,255,0.8);
+            --badge-bg: rgba(255, 255, 255, 0.4);
+            --title-glow: rgba(255,255,255,0.9);
         }
 
+        /* 2. Light Glass: Etwas deckender */
         html[data-theme="light-glass"] {
-            --glass-bg: rgba(255, 255, 255, 0.65);
-            --input-bg: rgba(255, 255, 255, 0.7);
+            --glass-bg: rgba(255, 255, 255, 0.55);
+            --input-bg: rgba(255, 255, 255, 0.6);
             --btn-bg: rgba(20, 20, 25, 0.9);
             --btn-text: #fff;
-            --text-muted: #444;
         }
 
+        /* 3. Dark Glass: Milchig dunkel */
         html[data-theme="dark-glass"] {
             color-scheme: dark; background: #000000;
-            --glass-bg: rgba(40, 40, 45, 0.75);
+            --glass-bg: rgba(30, 30, 35, 0.65);
             --glass-border: rgba(255, 255, 255, 0.15);
-            --text: #f0f0f0; --text-muted: #cccccc;
-            --input-bg: rgba(0, 0, 0, 0.5);
+            --text: #f0f0f0; --text-muted: #ccc;
+            --input-bg: rgba(0, 0, 0, 0.4);
             --btn-bg: rgba(240, 240, 245, 0.95);
             --btn-text: #111;
             --badge-bg: rgba(0, 0, 0, 0.4);
-            --rec-btn-bg: #444; /* Kohärenter Record Button */
+            --rec-btn-bg: #444; 
             --title-glow: rgba(0,0,0,0.8);
         }
 
+        /* 4. Dark Clear: Maximaler Dark Mode */
         html[data-theme="dark-clear"] {
             color-scheme: dark; background: #000000;
-            --glass-bg: rgba(10, 10, 12, 0.35);
+            --glass-bg: rgba(5, 5, 8, 0.25);
             --glass-border: rgba(255, 255, 255, 0.08);
-            --text: #f5f5f5; --text-muted: #dddddd;
-            --input-bg: rgba(0, 0, 0, 0.3);
-            --btn-bg: rgba(30, 30, 35, 0.8);
+            --text: #ffffff; --text-muted: #bbbbbb;
+            --input-bg: rgba(0, 0, 0, 0.4);
+            --btn-bg: rgba(30, 30, 35, 0.9);
             --btn-text: #fff;
             --badge-bg: rgba(255, 255, 255, 0.15);
-            --title-glow: rgba(0,0,0,0.9);
+            --title-glow: rgba(0,0,0,0.95);
         }
 
         body {
@@ -69,12 +74,12 @@
             -webkit-tap-highlight-color: transparent; padding-bottom: 50px;
         }
 
-        /* Fluid Mesh Canvas */
+        /* Hintergrund Canvas */
         #cloudCanvas {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
             pointer-events: none; opacity: 1; transition: filter 0.5s ease;
         }
-        html[data-theme^="dark"] #cloudCanvas { filter: brightness(0.55) saturate(1.2); }
+        html[data-theme^="dark"] #cloudCanvas { filter: brightness(0.6) saturate(1.2); }
 
         .app-container { 
             width: 100%; max-width: 800px; 
@@ -82,9 +87,9 @@
             padding: 10px; box-sizing: border-box; position: relative;
         }
 
-        /* DOUBLE STICKY ZONE - Absolut stabil */
+        /* DOUBLE STICKY ZONE - Repariertes Scroll-Verhalten */
         .sticky-zone {
-            position: sticky; top: 10px; z-index: 100;
+            position: sticky; top: 10px; z-index: 999;
             display: flex; flex-direction: column; gap: 12px; width: 100%;
             align-self: flex-start;
         }
@@ -96,16 +101,20 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.15);
         }
 
-        /* HEADER & ZENTRIERUNG */
+        /* HEADER */
         .top-row { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; gap: 12px;}
         h1 { 
-            margin: 0; font-size: 1.4rem; font-weight: 900; text-align: center;
+            margin: 0; font-size: 1.5rem; font-weight: 900; text-align: center;
             background: linear-gradient(90deg, var(--c2), var(--c1)); 
             -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; 
             color: transparent; filter: drop-shadow(0 2px 8px var(--title-glow));
         }
-        html[data-theme^="dark"] h1 { background: linear-gradient(90deg, var(--c2), var(--c1), #fff); -webkit-background-clip: text; }
-        .version-tag { font-size: 0.55em; opacity: 0.8; font-weight: 800; color: var(--text-muted); -webkit-text-fill-color: initial;}
+        /* Dunkelmodus Titel Fix */
+        html[data-theme^="dark"] h1 { 
+            background: linear-gradient(90deg, #fff, #e0c3fc, #fff); 
+            -webkit-background-clip: text; filter: drop-shadow(0 2px 10px rgba(255,255,255,0.2));
+        }
+        .version-tag { font-size: 0.5em; opacity: 0.8; font-weight: 800; color: var(--text-muted); -webkit-text-fill-color: initial; filter:none;}
 
         .header-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; width: 100%;}
         .icon-btn { 
@@ -123,7 +132,7 @@
             border: 1px solid var(--glass-border); font-size: 0.85rem; font-weight: 700; 
             white-space: nowrap; transition: 0.2s; height: 36px; box-sizing: border-box;
         }
-        .btn-sleek.inactive { opacity: 0.6; filter: grayscale(1); background: transparent; }
+        .btn-sleek.inactive { opacity: 0.5; filter: grayscale(1); background: transparent; }
         .btn-sleek.inactive:hover { opacity: 1; filter: none; background: var(--input-bg);}
         .btn-sleek.active { background: var(--btn-bg); color: var(--btn-text); box-shadow: 0 4px 10px rgba(0,0,0,0.1);}
         .btn-sleek svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2;}
@@ -137,10 +146,11 @@
         .btn-circle:active { transform: scale(0.9); }
         .btn-circle svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2;}
 
+        /* Unzerstörbarer Aufnahme-Button */
         #btnMain { width: 65px; height: 65px; background: var(--rec-btn-bg); color: white;}
         #btnMain.state-recording { background: var(--btn-bg); color: var(--danger); border-radius: 20px;}
-        #btnMain svg { stroke: currentColor; fill: currentColor; width: 28px; height: 28px; stroke-width:0;}
-        #btnMain.state-recording svg { fill: currentColor; }
+        #btnMain svg { stroke: currentColor; fill: none; width: 28px; height: 28px; stroke-width:2;}
+        #btnMain.state-recording svg { fill: currentColor; stroke: none;}
 
         .side-btn { opacity: 0; pointer-events: none; transform: scale(0.5); width: 0; margin: 0; }
         .side-btn.visible { opacity: 1; pointer-events: all; transform: scale(1); width: 45px; margin: 0 5px; }
@@ -148,7 +158,7 @@
         .side-btn.visible#btnPause { background: rgba(255, 165, 2, 0.15); color: var(--warn); }
         #btnPause.state-paused { background: var(--warn); color: white; }
 
-        /* ACTIVE TEXT ENTRY */
+        /* ACTIVE TEXT ENTRY (Wächst dynamisch) */
         #activeEntry { width: 100%; display: none; flex-direction: column; gap: 12px; border-top: 1px solid var(--glass-border); padding-top: 15px; margin-top: 5px;}
         .active-top-bar { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; flex-wrap: wrap; gap: 10px; }
         
@@ -160,14 +170,15 @@
         .stats-badges { display: flex; flex-wrap: wrap; gap: 6px; }
         .stat-pill { background: var(--badge-bg); padding: 4px 8px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); display:flex; align-items:center; gap:4px; border: 1px solid var(--glass-border); cursor: help;}
         
+        /* Repariertes Textfeld (Keine Scrollbar) */
         .seamless-text { 
             width: 100%; background: rgba(0,0,0,0.03); border: none; color: var(--text); 
-            font-family: inherit; resize: none; min-height: 40px; max-height: 40vh;
+            font-family: inherit; resize: none; min-height: 40px; overflow-y: hidden;
             box-sizing: border-box; line-height: 1.6; font-size: 15px; outline: none; padding: 15px; border-radius: 16px;
         }
         html[data-theme^="dark"] .seamless-text { background: rgba(255,255,255,0.04); }
 
-        /* HISTORY FEED */
+        /* HISTORY FEED (Scrolls under safely) */
         #feed { display: flex; flex-direction: column; gap: 15px; width: 100%; position: relative; z-index: 1; padding-top: 5px;}
         .entry { background: var(--glass-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-radius: 24px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); border: 1px solid var(--glass-border); box-sizing: border-box; width: 100%; animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);}
         @keyframes slideDown { from { opacity: 0; transform: translateY(-30px) scale(0.98); } to { opacity: 1; transform: 0 scale(1); } }
@@ -179,7 +190,7 @@
         
         .entry-actions { display: flex; gap: 6px; flex-wrap: wrap;}
         .mini-btn { background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text); border-radius: 10px; width: 32px; height: 32px; cursor: pointer; display:flex; align-items:center; justify-content:center; transition: 0.2s;}
-        .mini-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2;}
+        .mini-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2;} /* Fix für Riesiges SVG */
         .mini-btn:hover { background: var(--btn-bg); color: var(--btn-text); transform: translateY(-2px);}
         .mini-btn.danger { color: var(--danger); }
         .mini-btn.safe { color: var(--safe); }
@@ -187,37 +198,38 @@
 
         details.custom-accordion { background: var(--badge-bg); border: 1px solid var(--glass-border); border-radius: 12px; padding: 8px 12px; margin-top: 15px; }
         details.custom-accordion summary { font-size: 0.8rem; font-weight: bold; color: var(--text); cursor: pointer; outline: none; user-select: none; display: flex; align-items: center; gap:6px;}
+        details.custom-accordion summary svg { width: 16px; height: 16px; } /* SVG FIX */
         .audio-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
         .audio-part { display: flex; align-items: center; gap: 10px; background: var(--input-bg); padding: 4px 10px; border-radius: 8px;}
         .audio-part span { font-size: 0.75rem; font-weight: bold; color: var(--text-muted); flex-shrink: 0;}
         audio { width: 100%; height: 30px; border-radius: 6px; outline: none; }
 
         /* MODALS */
-        .modal { display: none; position: fixed; bottom: 0; left: 0; right: 0; top: 0; background: rgba(0,0,0,0.3); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+        .modal { display: none; position: fixed; bottom: 0; left: 0; right: 0; top: 0; background: rgba(0,0,0,0.4); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
         .modal.visible { display: flex; animation: fadeIn 0.2s; }
-        .modal-box { background: var(--glass-bg); padding: 25px; border-radius: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.4); width: 90%; max-width: 420px; border: 1px solid var(--glass-border); max-height: 85vh; overflow-y: auto; color: var(--text); box-sizing: border-box; backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);}
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-weight: 800; font-size: 1.2rem; }
+        .modal-box { background: var(--glass-bg); padding: 25px; border-radius: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); width: 90%; max-width: 440px; border: 1px solid var(--glass-border); max-height: 85vh; overflow-y: auto; color: var(--text); box-sizing: border-box; backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);}
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-weight: 800; font-size: 1.2rem; color: var(--text);}
         
-        /* HEXAGON WABEN DESIGN */
-        .hex-row { display: flex; justify-content: center; gap: 6px; margin-bottom: -14px; z-index: 2; position: relative;}
-        .hex { 
-            width: 50px; height: 58px; cursor: pointer; transition: 0.2s;
+        /* COLOR STUDIO: 32 Hex-Waben Grid */
+        .hex-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin-bottom: 20px; padding: 10px 0;}
+        .hex-btn { 
+            width: 32px; height: 36px; cursor: pointer; transition: 0.2s;
             clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-            background: #fff; display: flex; align-items: center; justify-content: center;
+            background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-        .hex:hover { transform: scale(1.15); z-index: 10; box-shadow: 0 0 20px rgba(255,255,255,0.5);}
-        .hex-inner { width: 100%; height: 100%; }
-        /* Rainbow Animation */
-        .rainbow-hex { background: linear-gradient(124deg, #ff2400, #e81d1d, #e8b71d, #e3e81d, #1de840, #1ddde8, #2b1de8, #dd00f3, #dd00f3); background-size: 1800% 1800%; animation: rainbow 4s ease infinite; }
-        @keyframes rainbow { 0%{background-position:0% 82%} 50%{background-position:100% 19%} 100%{background-position:0% 82%} }
+        .hex-btn:hover { transform: scale(1.3); z-index: 10; }
+        
+        /* Rainbow Animation Fix */
+        .rainbow-hex { background: linear-gradient(124deg, #ff2400, #e81d1d, #e8b71d, #e3e81d, #1de840, #1ddde8, #2b1de8, #dd00f3, #dd00f3); background-size: 400% 400%; animation: rainbow 3s ease infinite; width: 50px; height: 56px; margin: 10px auto; display: block;}
+        @keyframes rainbow { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
 
         .dev-row { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; font-size: 0.9rem; font-weight: 600; color:var(--text);}
-        .dev-row input[type="color"] { border: 2px solid var(--glass-border); width: 50px; height: 30px; border-radius: 8px; padding: 0; background:transparent;}
-        .dev-row input[type="range"] { accent-color: var(--accent); }
+        .dev-row input[type="color"] { border: 2px solid var(--glass-border); width: 50px; height: 30px; border-radius: 8px; padding: 0; background:transparent; cursor:pointer;}
+        .dev-row input[type="range"] { accent-color: var(--accent); flex-grow: 1; margin-left: 15px;}
 
-        /* API Modal Form */
+        /* Modal Texte - Kontrast repariert */
         .api-input-box { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--glass-border); background: var(--input-bg); color: var(--text); font-size: 1rem; outline: none; box-sizing: border-box; margin-bottom: 10px;}
-        .info-text { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 15px; font-weight: 500;}
+        .info-text { font-size: 0.9rem; color: var(--text); line-height: 1.5; margin-bottom: 15px; font-weight: 500;}
         .info-text a { color: var(--accent); text-decoration: none; font-weight: bold;}
 
         #toast { position: fixed; top: 20px; left: 50%; transform: translate(-50%, -150%); background: var(--btn-bg); color: var(--btn-text); padding: 12px 30px; border-radius: 50px; font-weight: 800; transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.2s; opacity: 0; z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 1px solid var(--accent); text-align: center; pointer-events: none;}
@@ -231,52 +243,28 @@
 <div id="toast">Nachricht</div>
 
 <div id="devPanel" class="modal">
-    <div class="modal-box" style="padding: 20px 10px;">
-        <div class="modal-header" style="padding: 0 15px;">
-            <span style="display:flex; align-items:center; gap:8px;"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg> Ästhetik</span>
+    <div class="modal-box" style="padding: 20px 15px;">
+        <div class="modal-header">
+            <span style="display:flex; align-items:center; gap:8px;"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg> Color Studio</span>
             <div style="display:flex; gap:8px;">
                 <button class="icon-btn" onclick="resetDev()" style="width:auto; height:30px; border-radius:10px; font-size:0.8rem; font-weight:bold;">Reset</button>
                 <button class="icon-btn" onclick="toggleModal('devPanel')" style="width:30px;height:30px;"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
             </div>
         </div>
         
-        <div style="margin-bottom: 30px; padding-top: 10px;">
-            <div class="hex-row" style="z-index: 6;">
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #111, #444)" onclick="applyPreset('#111111','#444444', '#222222', '#555555', '#333333')" title="OLED Mono"></div></div>
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #fdfbfb, #ebedee)" onclick="applyPreset('#fdfbfb','#ebedee', '#e0e0e0', '#f5f5f5', '#ffffff')" title="Pure White"></div></div>
-            </div>
-            <div class="hex-row" style="z-index: 5;">
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #2c3e50, #000000)" onclick="applyPreset('#2c3e50','#000000', '#34495e', '#111111', '#4b6584')" title="Midnight"></div></div>
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #bdc3c7, #2c3e50)" onclick="applyPreset('#bdc3c7','#2c3e50', '#a0aab2', '#34495e', '#7f8c8d')" title="Silver"></div></div>
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #e6dada, #274046)" onclick="applyPreset('#e6dada','#274046', '#dcd2d2', '#3a5a60', '#f2ecec')" title="Dark Teal Creme"></div></div>
-            </div>
-            <div class="hex-row" style="z-index: 4;">
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #f5f7fa, #c3cfe2)" onclick="applyPreset('#f5f7fa','#c3cfe2', '#d9e2ec', '#b2c0d6', '#ffffff')" title="Ice Cream"></div></div>
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #ffecd2, #fcb69f)" onclick="applyPreset('#ffecd2','#fcb69f', '#ffdfb3', '#fca083', '#ffffff')" title="Peach Creme"></div></div>
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #d4fc79, #96e6a1)" onclick="applyPreset('#d4fc79','#96e6a1', '#bbf569', '#7ad186', '#e7fd9c')" title="Matcha Cream"></div></div>
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #cfd9df, #e2ebf0)" onclick="applyPreset('#cfd9df','#e2ebf0', '#b8c6d1', '#d1dce5', '#ffffff')" title="Winter Sky"></div></div>
-            </div>
-            <div class="hex-row" style="z-index: 3;">
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb)" onclick="applyPreset('#a18cd1','#fbc2eb', '#8ec5fc', '#e0c3fc', '#99ddff')" title="Classic Purple"></div></div>
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #84fab0, #8fd3f4)" onclick="applyPreset('#84fab0','#8fd3f4', '#a1c4fd', '#c2e9fb', '#96e6a1')" title="Aqua Fresh"></div></div>
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #ff9a9e, #fecfef)" onclick="applyPreset('#ff9a9e','#fecfef', '#f6416c', '#ffb199', '#ff0844')" title="Sunset Vibrant"></div></div>
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #fbc2eb, #a6c1ee)" onclick="applyPreset('#fbc2eb','#a6c1ee', '#fbc2eb', '#c1c8e4', '#84fab0')" title="Cotton Candy"></div></div>
-                <div class="hex"><div class="hex-inner" style="background: linear-gradient(135deg, #4facfe, #00f2fe)" onclick="applyPreset('#4facfe','#00f2fe', '#43e97b', '#38f9d7', '#4facfe')" title="Neon Cyber"></div></div>
-            </div>
-            <div class="hex-row" style="z-index: 2;">
-                <div class="hex"><div class="hex-inner rainbow-hex" onclick="applyPreset('#ff0000','#0000ff', '#00ff00', '#ffff00', '#ff00ff')" title="Crazy Rainbow"></div></div>
-            </div>
-        </div>
+        <div id="hexContainer" class="hex-grid"></div>
+        <div class="hex-btn rainbow-hex" onclick="applyPreset('#ff0000','#0000ff', '#00ff00', '#ffff00', '#ff00ff')" title="Crazy Rainbow"></div>
         
-        <details class="custom-accordion" style="margin: 0 15px;">
+        <details class="custom-accordion">
             <summary><svg viewBox="0 0 24 24"><path d="M12 20V10M18 20V4M6 20v-4"></path><circle cx="12" cy="10" r="2"></circle><circle cx="18" cy="4" r="2"></circle><circle cx="6" cy="16" r="2"></circle></svg> Feintuning aufklappen</summary>
-            <div class="dev-row"><span>Color 1</span> <input type="color" id="col1"></div>
-            <div class="dev-row"><span>Color 2</span> <input type="color" id="col2"></div>
-            <div class="dev-row"><span>Mesh 1</span> <input type="color" id="blob1"></div>
-            <div class="dev-row"><span>Mesh 2</span> <input type="color" id="blob2"></div>
-            <div class="dev-row"><span>Mesh 3</span> <input type="color" id="blob3"></div>
-            <div class="dev-row"><span>Größe</span> <input type="range" id="pSize" min="50" max="250"></div>
-            <div class="dev-row"><span>Dynamik</span> <input type="range" id="pGain" min="0" max="200"></div>
+            <div class="dev-row"><span>Basis 1</span> <input type="color" id="col1"></div>
+            <div class="dev-row"><span>Basis 2</span> <input type="color" id="col2"></div>
+            <div class="dev-row"><span>Plasma 1</span> <input type="color" id="blob1"></div>
+            <div class="dev-row"><span>Plasma 2</span> <input type="color" id="blob2"></div>
+            <div class="dev-row"><span>Plasma 3</span> <input type="color" id="blob3"></div>
+            <div class="dev-row"><span>Größe</span> <input type="range" id="pSize" min="50" max="300"></div>
+            <div class="dev-row"><span>Speed</span> <input type="range" id="pGain" min="0" max="200"></div>
+            <div class="dev-row"><span>Blur</span> <input type="range" id="pBlur" min="0" max="100"></div>
         </details>
     </div>
 </div>
@@ -287,14 +275,13 @@
         <input type="password" id="apiKey" class="api-input-box" placeholder="sk-...">
         <div style="display:flex; justify-content:space-between; margin-bottom: 20px;">
             <button class="btn-sleek active" onclick="saveApiAndClose()" style="width:48%;">Speichern</button>
-            <button class="btn-sleek" onclick="toggleApiVisibility()" style="width:48%;">Zeigen / Verbergen</button>
+            <button class="btn-sleek" onclick="toggleApiVisibility()" style="width:48%;">Sichtbar</button>
         </div>
         <div class="info-text">
             <b>Was ist das?</b><br>
-            Simple Transcription nutzt die <a href="https://platform.openai.com/" target="_blank">Whisper API von OpenAI</a>. Dafür brauchst du einen eigenen Key. Die Audios werden nicht gespeichert, sondern direkt verarbeitet.
-            <br><br>
+            Simple Transcription nutzt die <a href="https://platform.openai.com/" target="_blank">Whisper API von OpenAI</a>. Dafür brauchst du einen eigenen Key. Die Audios werden nicht gespeichert, sondern direkt von OpenAI verarbeitet.<br><br>
             <b>Kosten:</b><br>
-            Die Transkription kostet ca. <b>0,6 Cent pro Minute</b> ($0.006/min). Eine Stunde Diktat kostet dich also gerade einmal ~36 Cent.
+            Whisper kostet ca. <b>0,6 Cent pro Minute</b> ($0.006/min). Eine Stunde Diktat kostet dich also gerade einmal ~36 Cent.
         </div>
     </div>
 </div>
@@ -303,8 +290,8 @@
     <div class="modal-box" style="text-align:center;">
         <div class="modal-header"><span>App teilen</span><button class="icon-btn" onclick="toggleModal('qrModal')" style="width:30px;height:30px;"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div>
         <div id="qrcode" style="display:flex; justify-content:center; padding: 20px; background: white; border-radius: 15px; margin-bottom: 15px;"></div>
-        <p style="font-size:1rem; font-weight:700; color:var(--text); margin-bottom: 5px;">Simple Transcription</p>
-        <p style="font-size:0.9rem; color:var(--text-muted); line-height: 1.4;">
+        <p style="font-size:1.2rem; font-weight:900; color:var(--text); margin-bottom: 8px;">Simple Transcription</p>
+        <p style="font-size:0.95rem; color:var(--text); line-height: 1.5; font-weight:500;">
             ist eine Web-App, die von mir ge-vibe-coded wurde. Ist ein kleines Experiment und soll dazu motivieren, dass andere damit experimentieren und ausprobieren.
         </p>
     </div>
@@ -316,7 +303,7 @@
         
         <div class="glass-panel">
             <div class="top-row">
-                <h1>Simple Transcription <span class="version-tag">V63</span></h1>
+                <h1>Simple Transcription <span class="version-tag">V64</span></h1>
                 
                 <div class="header-actions">
                     <button class="icon-btn" onclick="toggleModal('apiModal')" title="API Key & Info">
@@ -324,7 +311,7 @@
                     </button>
                     <button class="icon-btn" onclick="cycleTheme()" title="Theme Rotator" id="themeIcon"></button>
                     <button class="icon-btn" onclick="toggleModal('devPanel')" title="Color Studio">
-                        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+                        <svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
                     </button>
                     <button class="icon-btn" onclick="dlAllZip()" title="Master ZIP Download">
                         <svg viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
@@ -336,8 +323,8 @@
                         <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
                     </button>
                     <button class="icon-btn" title="Mikrofon Auswahl" style="position:relative;">
-                        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path></svg>
-                        <select id="micSelect" style="position:absolute; width:100%; height:100%; opacity:0; cursor:pointer;"><option value="default">Default</option></select>
+                        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                        <select id="micSelect" style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer;"><option value="default">Default</option></select>
                     </button>
                 </div>
 
@@ -345,9 +332,9 @@
                     <div class="btn-sleek inactive" id="btnAutoSave" onclick="toggleSave()" title="Auto-Save Backup">
                         <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Auto 💾
                     </div>
-                    <div class="btn-sleek inactive" id="btnAutoCut" onclick="cycleAutoCut()" title="Auto-Cut Intervall">
+                    <div class="btn-sleek active" id="btnAutoCut" onclick="cycleAutoCut()" title="Auto-Cut Intervall">
                         <svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg> 
-                        <span id="cutDisplay">Off</span>
+                        <span id="cutDisplay">2 Min</span>
                     </div>
                 </div>
             </div>
@@ -361,9 +348,7 @@
                         <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </button>
                     <button id="btnMain" class="btn-circle" title="Aufnahme / Stop">
-                        <svg id="iconMain" viewBox="0 0 24 24" style="width:24px;height:24px;fill:currentColor;stroke:none;">
-                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                        </svg>
+                        <svg id="iconMain" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
                     </button>
                     <button id="btnPause" class="btn-circle side-btn" title="Pause / Weiter">
                         <svg id="iconPause" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
@@ -378,16 +363,14 @@
                     </div>
                     <div class="stats-badges" id="liveBadges">
                         <span class="stat-pill" id="liveWords" title="Gezählte Wörter">0 W</span>
-                        <span class="stat-pill" id="liveTokens" title="Geschätzte Token (~0.75 pro Wort)">0 T</span>
-                        <span class="stat-pill" id="livePages" title="Normseiten (~250 W pro Seite)">0 S</span>
-                        <span class="stat-pill" id="liveCost" title="Geschätzte API Kosten (0.6ct / min)">0.0 ct</span>
+                        <span class="stat-pill" id="liveTokens" title="Geschätzte Token">0 T</span>
+                        <span class="stat-pill" id="livePages" title="Normseiten">0 S</span>
+                        <span class="stat-pill" id="liveCost" title="Geschätzte Kosten">0.0 ct</span>
                     </div>
                 </div>
-                
                 <textarea id="activeText" class="seamless-text" readonly placeholder="Sprich in das Mikrofon..."></textarea>
             </div>
         </div>
-
     </div> <div id="feed">
         <div id="historyFeed" style="display:flex; flex-direction:column; gap:15px;"></div>
     </div>
@@ -403,13 +386,13 @@
         glassBlock: document.getElementById('glassBlock'), canvas: document.getElementById('cloudCanvas'), feed: document.getElementById('historyFeed'), activeEntry: document.getElementById('activeEntry'), activeText: document.getElementById('activeText'), statusBadge: document.getElementById('statusBadge'),
         apiKey: document.getElementById('apiKey'), fileUpload: document.getElementById('fileUpload'),
         toast: document.getElementById('toast'), btnAutoSave: document.getElementById('btnAutoSave'), btnAutoCut: document.getElementById('btnAutoCut'), cutDisplay: document.getElementById('cutDisplay'),
-        devPanel: document.getElementById('devPanel'), qrModal: document.getElementById('qrModal'), apiModal: document.getElementById('apiModal'), micSelect: document.getElementById('micSelect'),
+        devPanel: document.getElementById('devPanel'), hexContainer: document.getElementById('hexContainer'), qrModal: document.getElementById('qrModal'), apiModal: document.getElementById('apiModal'), micSelect: document.getElementById('micSelect'),
         col1: document.getElementById('col1'), col2: document.getElementById('col2'),
         blob1: document.getElementById('blob1'), blob2: document.getElementById('blob2'), blob3: document.getElementById('blob3'),
-        pSize: document.getElementById('pSize'), pGain: document.getElementById('pGain')
+        pSize: document.getElementById('pSize'), pGain: document.getElementById('pGain'), pBlur: document.getElementById('pBlur')
     };
 
-    // Theme Rotator: Sun (Clear) -> SunCloud (Glass) -> Moon (Glass) -> FullMoon (Clear)
+    // Theme Rotator
     const svgThemes = [
         `<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>`, 
         `<path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"></path>`, 
@@ -436,54 +419,90 @@
     }
 
     // Theme Engine
-    let currentThemeIdx = parseInt(localStorage.getItem('theme_idx_v63') || 0);
+    let currentThemeIdx = parseInt(localStorage.getItem('theme_idx_v64') || 0);
     function cycleTheme() { currentThemeIdx = (currentThemeIdx + 1) % themes.length; applyTheme(currentThemeIdx); }
     function applyTheme(idx) {
         document.documentElement.setAttribute('data-theme', themes[idx]);
         els.themeIcon.innerHTML = `<svg viewBox="0 0 24 24">${svgThemes[idx]}</svg>`;
-        localStorage.setItem('theme_idx_v63', idx);
-        if(els.col1) updateDev(); 
+        localStorage.setItem('theme_idx_v64', idx);
+        updateDev(true); 
     }
     applyTheme(currentThemeIdx);
 
-    // Auto-Save Toggle
-    let isAutoSave = localStorage.getItem("autodl_v63") === 'true';
+    // Auto-Save
+    let isAutoSave = localStorage.getItem("autodl_v64") === 'true';
     function updateSaveBtn() { els.btnAutoSave.className = isAutoSave ? 'btn-sleek active' : 'btn-sleek inactive'; }
-    window.toggleSave = () => { isAutoSave = !isAutoSave; localStorage.setItem("autodl_v63", isAutoSave); updateSaveBtn(); showToast(isAutoSave ? "Auto-Save an" : "Auto-Save aus"); };
+    window.toggleSave = () => { isAutoSave = !isAutoSave; localStorage.setItem("autodl_v64", isAutoSave); updateSaveBtn(); showToast(isAutoSave ? "Auto-Save an" : "Auto-Save aus"); };
     updateSaveBtn();
 
-    // Auto-Cut Logik
+    // Auto-Cut (Default ON: Index 2 = 2m)
     const cutOptions = [0, 1, 2, 3, 4, 5];
-    let currentCutIdx = parseInt(localStorage.getItem("autocut_idx_v63") || 0);
+    let currentCutIdx = localStorage.getItem("autocut_idx_v64");
+    if(currentCutIdx === null) currentCutIdx = 2; else currentCutIdx = parseInt(currentCutIdx);
+    
     function updateCutBtn() { 
         let val = cutOptions[currentCutIdx];
         els.btnAutoCut.className = val > 0 ? 'btn-sleek active' : 'btn-sleek inactive';
-        els.cutDisplay.innerText = val > 0 ? `${val} m` : 'Off';
+        els.cutDisplay.innerText = val > 0 ? `${val} Min` : 'Off';
     }
-    window.cycleAutoCut = () => { currentCutIdx = (currentCutIdx + 1) % cutOptions.length; localStorage.setItem("autocut_idx_v63", currentCutIdx); updateCutBtn(); };
+    window.cycleAutoCut = () => { currentCutIdx = (currentCutIdx + 1) % cutOptions.length; localStorage.setItem("autocut_idx_v64", currentCutIdx); updateCutBtn(); };
     updateCutBtn();
 
-    // Color Studio
-    const defaults = { c1: '#a18cd1', c2: '#fbc2eb', b1: '#8ec5fc', b2: '#e0c3fc', b3: '#99ddff', sz: 120, gn: 100 };
+    // COLOR STUDIO: 30 Hexes Generator
+    const colorPresets = [
+        ['#111111','#444444', '#222222', '#555555', '#333333'], ['#2c3e50','#000000', '#34495e', '#111111', '#4b6584'],
+        ['#bdc3c7','#2c3e50', '#a0aab2', '#34495e', '#7f8c8d'], ['#fdfbfb','#ebedee', '#e0e0e0', '#f5f5f5', '#ffffff'],
+        ['#f5f7fa','#c3cfe2', '#d9e2ec', '#b2c0d6', '#ffffff'], ['#e6dada','#274046', '#dcd2d2', '#3a5a60', '#f2ecec'],
+        ['#ffecd2','#fcb69f', '#ffdfb3', '#fca083', '#ffffff'], ['#d4fc79','#96e6a1', '#bbf569', '#7ad186', '#e7fd9c'],
+        ['#cfd9df','#e2ebf0', '#b8c6d1', '#d1dce5', '#ffffff'], ['#a18cd1','#fbc2eb', '#8ec5fc', '#e0c3fc', '#99ddff'],
+        ['#84fab0','#8fd3f4', '#a1c4fd', '#c2e9fb', '#96e6a1'], ['#ff9a9e','#fecfef', '#f6416c', '#ffb199', '#ff0844'],
+        ['#fbc2eb','#a6c1ee', '#fbc2eb', '#c1c8e4', '#84fab0'], ['#4facfe','#00f2fe', '#43e97b', '#38f9d7', '#4facfe'],
+        ['#fa709a','#fee140', '#fecfef', '#ff9a9e', '#fa709a'], ['#30cfd0','#330867', '#30cfd0', '#764ba2', '#667eea'],
+        ['#a8edea','#fed6e3', '#89f7fe', '#66a6ff', '#a8edea'], ['#5ee7df','#b490ca', '#d299c2', '#fef9d7', '#5ee7df'],
+        ['#fccb90','#d57eeb', '#e0c3fc', '#8ec5fc', '#fccb90'], ['#e0c3fc','#8ec5fc', '#a18cd1', '#fbc2eb', '#e0c3fc'],
+        ['#13547a','#80d0c7', '#11998e', '#38ef7d', '#13547a'], ['#ff0844','#ffb199', '#f6416c', '#fff6b7', '#ff0844'],
+        ['#00c6ff','#0072ff', '#4facfe', '#00f2fe', '#00c6ff'], ['#1d976c','#93f9b9', '#11998e', '#38ef7d', '#1d976c'],
+        ['#eb3349','#f45c43', '#ff9966', '#ff5e62', '#eb3349'], ['#4cb8c4','#3cd3ad', '#24c6dc', '#514a9d', '#4cb8c4'],
+        ['#ff5f6d','#ffc371', '#ff9a44', '#fc6076', '#ff5f6d'], ['#36d1dc','#5b86e5', '#89f7fe', '#66a6ff', '#36d1dc'],
+        ['#c21500','#ffc500', '#f12711', '#f5af19', '#c21500'], ['#fc00ff','#00dbde', '#ff0844', '#ffb199', '#fc00ff']
+    ];
+    
+    colorPresets.forEach(p => {
+        let hex = document.createElement('div');
+        hex.className = 'hex-btn';
+        hex.style.background = `linear-gradient(135deg, ${p[0]}, ${p[1]})`;
+        hex.onclick = () => applyPreset(p[0], p[1], p[2], p[3], p[4]);
+        els.hexContainer.appendChild(hex);
+    });
+
+    const defaults = { c1: '#a18cd1', c2: '#fbc2eb', b1: '#8ec5fc', b2: '#e0c3fc', b3: '#99ddff', sz: 120, gn: 100, bl: 40 };
     function applyPreset(c1, c2, b1=c1, b2=c2, b3='#ffffff') { els.col1.value = c1; els.col2.value = c2; els.blob1.value = b1; els.blob2.value = b2; els.blob3.value = b3; updateDev(); }
-    window.resetDev = () => { applyPreset(defaults.c1, defaults.c2, defaults.b1, defaults.b2, defaults.b3); els.pSize.value = defaults.sz; els.pGain.value = defaults.gn; updateDev(); showToast("Reset"); };
+    window.resetDev = () => { applyPreset(defaults.c1, defaults.c2, defaults.b1, defaults.b2, defaults.b3); els.pSize.value = defaults.sz; els.pGain.value = defaults.gn; els.pBlur.value = defaults.bl; updateDev(); showToast("Reset"); };
 
     function loadDev() {
         els.col1.value = localStorage.getItem('d_c1') || defaults.c1; els.col2.value = localStorage.getItem('d_c2') || defaults.c2;
         els.blob1.value = localStorage.getItem('d_b1') || defaults.b1; els.blob2.value = localStorage.getItem('d_b2') || defaults.b2;
         els.blob3.value = localStorage.getItem('d_b3') || defaults.b3;
         els.pSize.value = localStorage.getItem('d_sz') || defaults.sz; els.pGain.value = localStorage.getItem('d_gn') || defaults.gn;
-        updateDev();
+        els.pBlur.value = localStorage.getItem('d_bl') || defaults.bl;
+        updateDev(true);
     }
     
-    function updateDev() {
+    function updateDev(fromLoad=false) {
         const c1 = els.col1.value; const c2 = els.col2.value;
         document.documentElement.style.setProperty('--c1', c1); document.documentElement.style.setProperty('--c2', c2);
+        
+        // Blur
+        els.canvas.style.filter = `blur(${els.pBlur.value}px) ${document.documentElement.getAttribute('data-theme').includes('dark') ? 'brightness(0.6) saturate(1.2)' : ''}`;
+        
         const metaTheme = document.getElementById('theme-color-meta');
         if(metaTheme) metaTheme.setAttribute('content', document.documentElement.getAttribute('data-theme').includes('dark') ? '#000000' : c1);
-        localStorage.setItem('d_c1', c1); localStorage.setItem('d_c2', c2); localStorage.setItem('d_b1', els.blob1.value); localStorage.setItem('d_b2', els.blob2.value); localStorage.setItem('d_b3', els.blob3.value); localStorage.setItem('d_sz', els.pSize.value); localStorage.setItem('d_gn', els.pGain.value);
+        
+        if(!fromLoad) {
+            localStorage.setItem('d_c1', c1); localStorage.setItem('d_c2', c2); localStorage.setItem('d_b1', els.blob1.value); localStorage.setItem('d_b2', els.blob2.value); localStorage.setItem('d_b3', els.blob3.value); localStorage.setItem('d_sz', els.pSize.value); localStorage.setItem('d_gn', els.pGain.value); localStorage.setItem('d_bl', els.pBlur.value);
+        }
     }
-    [els.col1, els.col2, els.blob1, els.blob2, els.blob3, els.pSize, els.pGain].forEach(el => el.addEventListener('input', updateDev));
+    [els.col1, els.col2, els.blob1, els.blob2, els.blob3, els.pSize, els.pGain, els.pBlur].forEach(el => el.addEventListener('input', () => updateDev(false)));
     
     let globalStream, mediaRecorder, chunks = [], audioCtx, analyser, dataArray;
     let isRecording = false, isPaused = false, isCancelled = false;
@@ -503,7 +522,6 @@
             const ts = new Date().toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' });
             saveToHistory(Date.now(), tempTxt, ts, [], 0, "Unbekannt"); 
             localStorage.removeItem("temp_active_text");
-            showToast("Crash Recovery!");
         }
     }
     function migrateHistory() { let h = localStorage.getItem("hist_master"); if (!h) { h = localStorage.getItem("hist_v56") || "[]"; localStorage.setItem("hist_master", h); } } 
@@ -517,7 +535,7 @@
     window.addEventListener('resize', resizeCanvas);
     function autoResizeText(textarea) { textarea.style.height = '40px'; textarea.style.height = (textarea.scrollHeight) + 'px'; }
 
-    // Fluid Mesh Canvas Logik (Viel flüssiger, keine leeren Stellen)
+    // Fluid Mesh Animation (Ständige Bewegung, füllt Bildschirm)
     let smoothedVol = 0; let timeAccum = 0;
     function initVisualizer() {
         const ctx = els.canvas.getContext('2d'); resizeCanvas();
@@ -529,26 +547,23 @@
             let rawVol = 0;
             if(analyser && isRecording && !isPaused) {
                 if(dataArray) { analyser.getByteFrequencyData(dataArray); let sum = 0; for(let i=0; i<dataArray.length; i++) sum += dataArray[i]; rawVol = (sum / dataArray.length); }
-                timeAccum += 0.003 + (rawVol * 0.0001); 
-            } else { timeAccum += 0.001; }
+                timeAccum += 0.005 + (rawVol * 0.00015); // Schneller bei Audio
+            } else { timeAccum += 0.003; } // Solide Grundgeschwindigkeit
 
             smoothedVol = smoothedVol * 0.9 + (Math.min(rawVol / 100, 1.0)) * 0.1; 
             const gain = parseInt(els.pGain.value) / 100;
             const intensity = 1.0 + (smoothedVol * gain); 
 
             const maxDim = Math.max(w, h);
-            // Sehr große Blobs, die sich überlappen -> keine leeren Flächen
-            const baseRadius = (parseInt(els.pSize.value) / 100) * maxDim * 0.6; 
+            const baseRadius = (parseInt(els.pSize.value) / 100) * maxDim * 0.7; // Riesig!
             
             const colors = [els.blob1.value, els.blob2.value, els.blob3.value, els.col1.value];
             
-            // 4 riesige Farb-Blobs, die sanft rotieren
             for(let i=0; i<4; i++) {
                 let r = baseRadius * intensity;
-                let angle = timeAccum * (0.2 + i*0.1) + i * (Math.PI/2);
-                let dist = maxDim * 0.3 * Math.sin(timeAccum * 0.1 + i);
-                let x = w/2 + Math.cos(angle) * dist;
-                let y = h/2 + Math.sin(angle) * dist;
+                // Komplexe, weitläufige Umlaufbahnen
+                let x = w/2 + Math.cos(timeAccum * (0.3 + i*0.15) + i) * w * 0.6;
+                let y = h/2 + Math.sin(timeAccum * (0.4 + i*0.1) - i) * h * 0.6;
                 
                 const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
                 grad.addColorStop(0, colors[i] + 'ff');
@@ -597,11 +612,11 @@
 
     function setMainButtonState(state) {
         if(state === 'idle') {
-            els.iconMain.innerHTML = '<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>'; 
+            els.iconMain.innerHTML = '<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>'; 
             els.btnMain.className = 'btn-circle'; els.btnMain.disabled = false;
             els.btnPause.classList.remove('visible'); els.btnCancel.classList.remove('visible'); 
         } else if (state === 'recording') {
-            els.iconMain.innerHTML = '<rect x="6" y="6" width="12" height="12" rx="2" ry="2"></rect>'; 
+            els.iconMain.innerHTML = '<rect x="6" y="6" width="12" height="12" rx="2" ry="2" fill="currentColor"></rect>'; 
             els.btnMain.className = 'btn-circle state-recording'; els.btnMain.disabled = false;
             els.iconPause.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>'; 
             els.btnPause.className = 'btn-circle side-btn visible'; els.btnCancel.className = 'btn-circle side-btn visible'; 
@@ -766,7 +781,8 @@
         let audioHtml = "";
         if(blobs.length > 0) {
             let players = blobs.map((b, i) => `<div class="audio-part"><span>T ${i+1}</span><audio controls playsinline src="${URL.createObjectURL(b)}" onloadedmetadata="window.fixDuration(this)"></audio></div>`).join("");
-            audioHtml = `<details class="custom-accordion"><summary><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg> Audios (${blobs.length})</summary><div class="audio-list">${players}</div></details>`;
+            // Fixed the massive SVG issue by defining width/height explicitly on the summary SVG
+            audioHtml = `<details class="custom-accordion"><summary><svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg> Audios (${blobs.length})</summary><div class="audio-list">${players}</div></details>`;
         }
 
         d.innerHTML = `
