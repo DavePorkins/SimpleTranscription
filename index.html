@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Simple Transcription V52</title>
+    <title>Simple Transcription V53</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -26,21 +26,24 @@
             --accent: #c471ed;
             --danger: #ff5252;
             --warn: #ffb142;
+            --safe: #2ecc71;
             --badge-bg: rgba(0, 0, 0, 0.05);
         }
 
+        /* V53: OLED LIQUID GLASS DARK MODE */
         body[data-theme="dark"] {
-            --glass-bg: rgba(20, 20, 25, 0.75);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --text: #f0f0f0;
-            --text-muted: #aaa;
-            --input-bg: rgba(0, 0, 0, 0.3);
-            --btn-bg: rgba(45, 45, 53, 0.9);
-            --badge-bg: rgba(255, 255, 255, 0.1);
+            --glass-bg: rgba(15, 15, 15, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text: #f8f8f8;
+            --text-muted: #a0a0a0;
+            --input-bg: rgba(30, 30, 30, 0.6);
+            --btn-bg: #1a1a1a;
+            --badge-bg: rgba(255, 255, 255, 0.08);
         }
 
-        /* V48 FIX: Pull-to-refresh erlaubt, Hintergrundfarbe verhindert weiße Blitzer */
         html { background: var(--c1); transition: background 0.5s ease; }
+        body[data-theme="dark"] html { background: #000000; } /* Pure OLED Black */
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             color: var(--text); margin: 0;
@@ -54,31 +57,25 @@
             background-image: linear-gradient(135deg, var(--c1), var(--c2));
             transition: filter 0.5s ease, background-image 0.5s ease;
         }
-        body[data-theme="dark"] .bg-layer { filter: brightness(0.35) saturate(1.2); }
+        body[data-theme="dark"] .bg-layer { filter: brightness(0.2) saturate(1.5); }
 
         .app-container { width: 100%; max-width: 800px; position: relative; z-index: 2; padding-bottom: 80px; display: flex; flex-direction: column; gap: 20px;}
 
-        /* MAIN PANEL */
         .main-panel {
             position: relative; border-radius: 35px; border: 1px solid var(--glass-border);
             box-shadow: 0 15px 40px rgba(0,0,0,0.1); overflow: hidden;
-            background: var(--glass-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            background: var(--glass-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
             transition: all 0.3s ease;
         }
 
-        /* ANIMATION CANVAS (Mehr Leuchtkraft) */
-    #cloudCanvas {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
-    pointer-events: none; opacity: 1; transition: filter 0.5s ease;
-    }
-    body[data-theme="dark"] #cloudCanvas { filter: brightness(0.65) saturate(1.3); opacity: 0.9; }
-
-        .panel-content {
-            position: relative; z-index: 1; padding: 30px 25px;
-            display: flex; flex-direction: column; gap: 25px;
+        #cloudCanvas {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
+            pointer-events: none; opacity: 1; transition: filter 0.5s ease;
         }
+        body[data-theme="dark"] #cloudCanvas { filter: brightness(0.65) saturate(1.3); opacity: 0.9; }
 
-        /* ZENTRIERTER HEADER */
+        .panel-content { position: relative; z-index: 1; padding: 30px 25px; display: flex; flex-direction: column; gap: 25px; }
+
         .top-row { display: flex; flex-direction: column; align-items: center; gap: 15px; width: 100%; }
         h1 { margin: 0; font-size: 1.6rem; font-weight: 900; background: linear-gradient(90deg, var(--c2), var(--c1)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; display: flex; align-items: baseline; gap: 8px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1)); text-align: center;}
         body[data-theme="dark"] h1 { background: none; -webkit-text-fill-color: var(--text); color: var(--text); }
@@ -89,30 +86,32 @@
         .icon-btn svg { width: 100%; height: 100%; }
         .icon-btn:hover { transform: scale(1.1); background: var(--btn-bg); color: var(--accent); box-shadow: 0 5px 15px rgba(0,0,0,0.1);}
 
-        /* COMPACT SETTINGS ROW */
+        /* SETTINGS GRID */
         .settings-group { display: flex; flex-direction: column; gap: 10px; width: 100%; }
-        .settings-row { display: flex; gap: 10px; width: 100%; justify-content: center; align-items: stretch; flex-wrap: nowrap; }
+        .settings-row { display: flex; gap: 10px; width: 100%; justify-content: center; align-items: stretch; flex-wrap: wrap; }
         
-        .api-wrapper { display: flex; align-items: center; gap: 8px; background: var(--input-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 5px 15px; border-radius: 16px; border: 1px solid var(--glass-border); flex: 1; min-width: 0;}
+        .api-wrapper { display: flex; align-items: center; gap: 8px; background: var(--input-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 5px 15px; border-radius: 16px; border: 1px solid var(--glass-border); flex: 1 1 180px; min-width: 0;}
         .api-wrapper input { border: none; background: transparent; color: var(--text); width: 100%; font-size: 0.85rem; min-width: 0;}
         .api-wrapper input:focus { outline: none; }
         .eye-btn { background: none; border: none; cursor: pointer; padding: 0; color: var(--text-muted); display:flex; align-items:center; flex-shrink: 0;}
         
-        .toggle-btn { display:flex; gap:6px; color:var(--text); align-items:center; justify-content: center; cursor: pointer; background: var(--input-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 8px 15px; border-radius: 16px; border: 1px solid var(--glass-border); font-size: 0.8rem; font-weight: 600; text-align: center; transition: 0.2s; flex-shrink: 0;}
+        .toggle-btn { display:flex; gap:6px; color:var(--text); align-items:center; justify-content: center; cursor: pointer; background: var(--input-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 8px 15px; border-radius: 16px; border: 1px solid var(--glass-border); font-size: 0.8rem; font-weight: 600; text-align: center; transition: 0.2s; flex: 1 1 auto; white-space: nowrap;}
         .toggle-btn:hover { background: var(--btn-bg); }
         
-        .mic-select-wrapper { flex: 1; min-width: 0; display:flex; }
+        /* V53: Auto-Cut Input Styling */
+        .cut-input { width: 35px; background: rgba(0,0,0,0.05); border: 1px solid var(--glass-border); color: var(--text); font-weight: bold; text-align: center; border-radius: 8px; outline: none; padding: 2px; font-family: inherit;}
+        body[data-theme="dark"] .cut-input { background: rgba(255,255,255,0.1); }
+
+        .mic-select-wrapper { flex: 1 1 150px; min-width: 0; display:flex; }
         .mic-select { background: transparent; border: none; color: inherit; font-family: inherit; font-size: 0.8rem; font-weight: 600; outline: none; width: 100%; cursor: pointer; -webkit-appearance: none; text-align: center; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;}
 
-        /* CONTROLS AREA */
+        /* CONTROLS */
         .controls-area { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-top: 10px; }
-
         .stats-col { display: flex; flex-direction: column; align-items: center; gap: 0px; color: var(--text); }
         .timer { font-size: 4rem; font-weight: 300; letter-spacing: 2px; line-height: 1; transition: color 0.5s; font-variant-numeric: tabular-nums; text-shadow: 0 2px 10px rgba(0,0,0,0.05);}
         .size-info { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-top: 8px;}
 
         .rec-controls { display: flex; justify-content: center; align-items: center; gap: 20px; width: 100%; height: 90px; }
-        
         .btn-circle { border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 8px 20px rgba(0,0,0,0.1); background: var(--btn-bg); color: var(--text); padding: 0; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);}
         .btn-circle:active { transform: scale(0.9); }
         .btn-circle:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -124,7 +123,6 @@
 
         .side-btn { width: 55px; height: 55px; border-radius: 50%; flex-shrink: 0; opacity: 0; pointer-events: none; transform: scale(0.5); width: 0; margin: 0; }
         .side-btn.visible { opacity: 1; pointer-events: all; transform: scale(1); width: 55px; margin: 0 5px; }
-        
         .side-btn.visible#btnCancel { background: rgba(255, 82, 82, 0.15); }
         .side-btn.visible#btnCancel svg { stroke: var(--danger); }
         .side-btn.visible#btnPause { background: rgba(255, 177, 66, 0.15); }
@@ -132,7 +130,7 @@
         #btnPause.state-paused { background: var(--warn); }
         #btnPause.state-paused svg { fill: white; stroke: white; }
 
-        /* FEED & TEXT PILLS */
+        /* V53: SESSION FEED & AUDIO LIST */
         #feed { display: flex; flex-direction: column; gap: 20px; width: 100%; }
         .entry { background: var(--glass-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-radius: 30px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); animation: slideIn 0.4s ease-out; border: 1px solid var(--glass-border); }
         @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: 0; } }
@@ -142,18 +140,24 @@
         .stats-badges { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; width: 100%; }
         .stat-pill { background: var(--badge-bg); padding: 6px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; color: var(--text); border: 1px solid var(--glass-border); display:flex; align-items:center; gap:4px; white-space: nowrap;}
         
-        textarea { width: 100%; background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text); padding: 18px; border-radius: 20px; font-family: inherit; resize: none; min-height: 100px; box-sizing: border-box; display: block; line-height: 1.6; font-size: 15px; transition: 0.2s; box-shadow: inset 0 2px 10px rgba(0,0,0,0.02); text-align: left;}
+        textarea { width: 100%; background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text); padding: 18px; border-radius: 20px; font-family: inherit; resize: none; min-height: 120px; box-sizing: border-box; display: block; line-height: 1.6; font-size: 15px; transition: 0.2s; box-shadow: inset 0 2px 10px rgba(0,0,0,0.02); text-align: left;}
         textarea:focus { outline: none; border-color: var(--accent); background: var(--btn-bg); }
 
-        audio { width: 100%; height: 40px; border-radius: 10px; margin-top: 15px; }
+        .audio-list { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; width: 100%; }
+        .audio-part { display: flex; align-items: center; gap: 10px; background: var(--badge-bg); padding: 8px 15px; border-radius: 15px; border: 1px solid var(--glass-border);}
+        .audio-part span { font-size: 0.75rem; font-weight: bold; color: var(--text-muted); flex-shrink: 0; width: 45px;}
+        audio { width: 100%; height: 35px; border-radius: 8px; outline: none;}
 
-        /* V48 FIX: ZENTRIERTE BUTTONS UNTEN */
         .actions { margin-top: 15px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
         .btn-action { padding: 10px 18px; border: none; border-radius: 16px; background: var(--btn-bg); color: var(--text); font-size: 0.85rem; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.03); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--glass-border); transition: 0.2s; flex: 0 1 auto; min-width: 80px;}
         .btn-action:hover { background: var(--input-bg); transform: translateY(-2px); }
         .btn-action svg { width: 16px; height: 16px; }
         .btn-del { color: var(--danger); }
         .btn-del svg { stroke: var(--danger); }
+        
+        /* V53: Grüner Retry Button */
+        .btn-retry { color: var(--safe); }
+        .btn-retry svg { stroke: var(--safe); }
 
         /* MODALS */
         .modal { display: none; position: fixed; bottom: 0; left: 0; right: 0; top: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
@@ -167,14 +171,13 @@
         .dev-row input[type="color"] { border: 2px solid var(--glass-border); width: 50px; height: 35px; border-radius: 8px; padding: 0; }
         .dev-row input[type="range"] { accent-color: var(--accent); }
 
-        #toast { position: fixed; top: 20px; left: 50%; transform: translate(-50%, -150%); background: var(--btn-bg); color: var(--text); padding: 12px 30px; border-radius: 50px; font-weight: 700; transition: 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border: 2px solid var(--accent); }
+        #toast { position: fixed; top: 20px; left: 50%; transform: translate(-50%, -150%); background: var(--btn-bg); color: var(--text); padding: 12px 30px; border-radius: 50px; font-weight: 700; transition: 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border: 2px solid var(--accent); text-align: center; line-height: 1.4;}
         #toast.visible { transform: translate(-50%, 0); }
     </style>
 </head>
 <body>
 
 <div class="bg-layer"></div>
-
 <script> const HARDCODED_KEY = ""; </script>
 <div id="toast">Nachricht</div>
 
@@ -195,7 +198,6 @@
                 <div class="preset-btn" style="background: linear-gradient(135deg, #e0c3fc, #8ec5fc)" onclick="applyPreset('#e0c3fc','#8ec5fc')"></div>
                 <div class="preset-btn" style="background: linear-gradient(135deg, #ff9a9e, #fecfef)" onclick="applyPreset('#ff9a9e','#fecfef')"></div>
                 <div class="preset-btn" style="background: linear-gradient(135deg, #30cfd0, #330867)" onclick="applyPreset('#30cfd0','#330867')"></div>
-                
                 <div class="preset-btn" style="background: linear-gradient(135deg, #4facfe, #00f2fe)" onclick="applyPreset('#4facfe','#00f2fe')"></div>
                 <div class="preset-btn" style="background: linear-gradient(135deg, #43e97b, #38f9d7)" onclick="applyPreset('#43e97b','#38f9d7')"></div>
                 <div class="preset-btn" style="background: linear-gradient(135deg, #fa709a, #fee140)" onclick="applyPreset('#fa709a','#fee140')"></div>
@@ -211,6 +213,7 @@
             <div class="dev-row"><span>Größe</span> <input type="range" id="pSize" min="20" max="150"></div>
             <div class="dev-row"><span>Reaktion</span> <input type="range" id="pGain" min="0" max="200"></div>
             <div class="dev-row"><span>Weichzeichner</span> <input type="range" id="pBlur" min="0" max="60"></div>
+            <p style="font-size:0.7rem; color:var(--text-muted); text-align:center; margin-top:15px;">Tipp: Der Farbauswähler ist vom Handy-Betriebssystem vorgegeben.</p>
         </div>
     </div>
 </div>
@@ -218,10 +221,9 @@
 <div class="app-container">
     <div class="main-panel">
         <canvas id="cloudCanvas"></canvas>
-        
         <div class="panel-content">
             <div class="top-row">
-                <h1>Simple Transcription <span class="version-tag">V52</span></h1>
+                <h1>Simple Transcription <span class="version-tag">V53</span></h1>
                 <div class="header-actions">
                     <button class="icon-btn" onclick="toggleTheme()" title="Dark Mode"><svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></button>
                     <button class="icon-btn" onclick="dlZip()" title="ZIP Download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></button>
@@ -235,18 +237,22 @@
                     <div class="api-wrapper">
                         <svg style="width:16px;height:16px;color:var(--text-muted); flex-shrink:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0110 0v4"></path></svg>
                         <input type="password" id="apiKey" placeholder="OpenAI Key">
-                        <button class="eye-btn" onclick="toggleApiKey()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
                     </div>
-                    <label class="toggle-btn" style="cursor: pointer;">
-                        <input type="checkbox" id="autoDl" style="accent-color:var(--accent); width:16px; height:16px; margin:0;"> Auto-Save
+                    
+                    <label class="toggle-btn" style="cursor: pointer; justify-content: space-between;">
+                        <span style="display:flex; align-items:center; gap:6px;"><input type="checkbox" id="autoDl" style="accent-color:var(--accent); width:16px; height:16px; margin:0;"> Auto-Save</span>
                     </label>
+                    
+                    <div class="toggle-btn" style="cursor: default; padding: 5px 12px;">
+                        <span>Auto-Cut:</span>
+                        <input type="number" id="autoCutMin" value="5" min="0.1" step="0.5" class="cut-input">
+                        <span>min</span>
+                    </div>
                 </div>
                 
                 <div class="settings-row">
                     <div class="toggle-btn mic-select-wrapper" style="padding: 0;">
-                        <select id="micSelect" class="mic-select" style="padding: 8px 15px; height: 100%;">
-                            <option value="default">🎙️ Mikrofon wählen</option>
-                        </select>
+                        <select id="micSelect" class="mic-select" style="padding: 8px 15px; height: 100%;"><option value="default">🎙️ Mikrofon wählen</option></select>
                     </div>
                     <button class="toggle-btn" onclick="document.getElementById('fileUpload').click()">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"></path></svg> Upload
@@ -264,11 +270,9 @@
                     <button id="btnCancel" class="btn-circle side-btn" title="Verwerfen" onclick="cancelRec()">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"></path></svg>
                     </button>
-                    
                     <button id="btnMain" class="btn-circle" title="Aufnahme / Stop">
                         <svg id="iconMain" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="6"></circle></svg>
                     </button>
-                    
                     <button id="btnPause" class="btn-circle side-btn" title="Pause / Weiter">
                         <svg id="iconPause" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
                     </button>
@@ -289,7 +293,7 @@
         timer: document.getElementById('timer'), size: document.getElementById('sizeDisplay'),
         canvas: document.getElementById('cloudCanvas'), feed: document.getElementById('feed'),
         apiKey: document.getElementById('apiKey'), fileUpload: document.getElementById('fileUpload'),
-        toast: document.getElementById('toast'), autoDl: document.getElementById('autoDl'),
+        toast: document.getElementById('toast'), autoDl: document.getElementById('autoDl'), autoCutMin: document.getElementById('autoCutMin'),
         devPanel: document.getElementById('devPanel'), micSelect: document.getElementById('micSelect'),
         col1: document.getElementById('col1'), col2: document.getElementById('col2'),
         blob1: document.getElementById('blob1'), blob2: document.getElementById('blob2'), blob3: document.getElementById('blob3'),
@@ -297,7 +301,6 @@
     };
 
     function toggleDev() { els.devPanel.classList.toggle('visible'); }
-    function toggleApiKey() { els.apiKey.type = els.apiKey.type === 'password' ? 'text' : 'password'; }
 
     let wakeLock = null;
     async function requestWakeLock() { try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {} }
@@ -306,37 +309,40 @@
     function toggleTheme(forceInitDark) {
         const isDark = forceInitDark !== undefined ? !forceInitDark : document.body.getAttribute('data-theme') === 'dark';
         if(isDark) { 
-            document.body.removeAttribute('data-theme'); localStorage.setItem('theme_v47', 'light'); 
+            document.body.removeAttribute('data-theme'); localStorage.setItem('theme_v53', 'light'); 
             els.themeIcon.innerHTML = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>';
         } else { 
-            document.body.setAttribute('data-theme', 'dark'); localStorage.setItem('theme_v47', 'dark'); 
+            document.body.setAttribute('data-theme', 'dark'); localStorage.setItem('theme_v53', 'dark'); 
             els.themeIcon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
         }
-        if(els.col1) updateDev(); // Aktualisiert die Chrome-Leiste
+        if(els.col1) updateDev(); 
     }
-    if(localStorage.getItem('theme_v47') === 'dark') { toggleTheme(true); }
+    if(localStorage.getItem('theme_v53') === 'dark') { toggleTheme(true); } 
 
     window.fixDuration = function(audio, id) {
         const updateCost = (sec) => {
             const el = document.getElementById(`cost-${id}`);
-            if(el && sec > 0) { el.innerHTML = `💵 ~${((sec / 60) * 0.6).toFixed(1)} ct`; }
+            if(el && sec > 0) {
+                // V53: Addiert Kosten auf, falls es mehrere Parts gibt
+                let currentCost = parseFloat(el.getAttribute('data-cost') || "0");
+                currentCost += (sec / 60) * 0.6;
+                el.setAttribute('data-cost', currentCost);
+                el.innerHTML = `💵 ~${currentCost.toFixed(1)} ct`; 
+            }
         };
         if(audio.duration === Infinity || isNaN(audio.duration)) {
             audio.currentTime = 1e101; audio.ontimeupdate = function() { this.ontimeupdate = null; this.currentTime = 0; updateCost(this.duration); }
         } else { updateCost(audio.duration); }
     }
 
-    // V48: Standard-Werte für Aurora-Animation
     const defaults = { c1: '#a18cd1', c2: '#fbc2eb', b1: '#8ec5fc', b2: '#e0c3fc', b3: '#99ddff', sz: 70, gn: 100, bl: 50 };
-    
     function applyPreset(c1, c2) { els.col1.value = c1; els.col2.value = c2; els.blob1.value = c1; els.blob2.value = c2; els.blob3.value = '#ffffff'; updateDev(); }
 
     window.resetDev = () => {
         applyPreset(defaults.c1, defaults.c2);
         els.blob1.value = defaults.b1; els.blob2.value = defaults.b2; els.blob3.value = defaults.b3;
         els.pSize.value = defaults.sz; els.pGain.value = defaults.gn; els.pBlur.value = defaults.bl;
-        updateDev();
-        showToast("Einstellungen zurückgesetzt");
+        updateDev(); showToast("Einstellungen zurückgesetzt");
     };
 
     function loadDev() {
@@ -350,25 +356,28 @@
     function updateDev() {
         const c1 = els.col1.value; const c2 = els.col2.value;
         document.documentElement.style.setProperty('--c1', c1); document.documentElement.style.setProperty('--c2', c2);
+        document.querySelector('.bg-layer').style.backgroundImage = `linear-gradient(135deg, ${c1}, ${c2})`;
         els.canvas.style.filter = `blur(${els.pBlur.value}px)`;
-        
-        // NEU: Chrome URL-Leiste einfärben
         const metaTheme = document.getElementById('theme-color-meta');
-        if(metaTheme) {
-            const isDark = document.body.getAttribute('data-theme') === 'dark';
-            metaTheme.setAttribute('content', isDark ? '#19191e' : c1);
-        }
-        localStorage.setItem('d_c1', c1); localStorage.setItem('d_c2', c2);
-        localStorage.setItem('d_b1', els.blob1.value); localStorage.setItem('d_b2', els.blob2.value); localStorage.setItem('d_b3', els.blob3.value);
-        localStorage.setItem('d_sz', els.pSize.value); localStorage.setItem('d_gn', els.pGain.value); localStorage.setItem('d_bl', els.pBlur.value);
+        if(metaTheme) metaTheme.setAttribute('content', document.body.getAttribute('data-theme') === 'dark' ? '#0f0f0f' : c1);
+        localStorage.setItem('d_c1', c1); localStorage.setItem('d_c2', c2); localStorage.setItem('d_b1', els.blob1.value); localStorage.setItem('d_b2', els.blob2.value); localStorage.setItem('d_b3', els.blob3.value); localStorage.setItem('d_sz', els.pSize.value); localStorage.setItem('d_gn', els.pGain.value); localStorage.setItem('d_bl', els.pBlur.value);
     }
     [els.col1, els.col2, els.blob1, els.blob2, els.blob3, els.pSize, els.pGain, els.pBlur].forEach(el => el.addEventListener('input', updateDev));
     
+    // V53: AUTO-CUT & SESSION STATE
     let globalStream, mediaRecorder, chunks = [], audioCtx, analyser, dataArray;
     let isRecording = false, isPaused = false, isCancelled = false;
     let startTime = 0, pauseDelta = 0, pauseStart = 0, timerInt;
     let micsLoaded = false;
     
+    let currentSessionId = null;
+    let currentPart = 1;
+    let isAutoCutting = false;
+
+    // V53: SMART CLIPBOARD STATE
+    let pendingClipboardText = null;
+    let isPendingCopy = false;
+
     if(HARDCODED_KEY.length > 5) { els.apiKey.value = HARDCODED_KEY; document.querySelector('.api-wrapper').style.display='none'; } 
     else { els.apiKey.value = localStorage.getItem("key_v38") || ""; els.apiKey.addEventListener('change', () => localStorage.setItem("key_v38", els.apiKey.value)); }
     if(localStorage.getItem("autodl_v38") === 'true') els.autoDl.checked = true;
@@ -378,66 +387,37 @@
     function resizeCanvas() { els.canvas.width = els.canvas.offsetWidth; els.canvas.height = els.canvas.offsetHeight; }
     window.addEventListener('resize', resizeCanvas);
 
-    let smoothedVol = 0;
-    let timeAccum = 0;
-    
-    // KINETIC STACK ANIMATION (Physik: Klein = Schnell, Groß = Träge)
+    let smoothedVol = 0; let timeAccum = 0;
     function initVisualizer() {
         const ctx = els.canvas.getContext('2d'); resizeCanvas();
         function draw() {
             requestAnimationFrame(draw);
-            const w = els.canvas.width; const h = els.canvas.height; const cx = w/2; const cy = h/2;
+            const w = els.canvas.width; const h = els.canvas.height;
             ctx.clearRect(0, 0, w, h); 
 
             let rawVol = 0;
             if(analyser && isRecording && !isPaused) {
                 const len = analyser.frequencyBinCount; if(!dataArray) dataArray = new Uint8Array(len);
                 analyser.getByteFrequencyData(dataArray); let sum = 0; for(let i=0; i<len; i++) sum += dataArray[i]; 
-                rawVol = (sum / len); 
-                // DEUTLICH SCHNELLER: Mehr Grundspeed + starker Boost beim Sprechen
-                timeAccum += 0.006 + (rawVol * 0.0004); 
-            } else {
-                timeAccum += 0.0025; // Etwas agileres Idle-Wabern
-            }
+                rawVol = (sum / len); timeAccum += 0.003 + (rawVol * 0.0001);
+            } else { timeAccum += 0.001; }
 
             let volNorm = Math.min(rawVol / 100, 1.0); 
             smoothedVol = smoothedVol * 0.85 + volNorm * 0.15; 
-            
             const gain = parseInt(els.pGain.value) / 100;
             const intensity = Math.min(smoothedVol * gain, 1.5); 
 
             const maxDim = Math.max(w, h);
-            const baseRadius = (parseInt(els.pSize.value) / 100) * maxDim * 0.20; 
-            const pulse = intensity * maxDim * 0.10; 
+            const baseRadius = (parseInt(els.pSize.value) / 100) * maxDim * 0.8;
             
-            const drawGlow = (x, y, r, color) => {
-                ctx.beginPath(); ctx.arc(x, y, Math.max(0, r), 0, Math.PI * 2); 
-                ctx.fillStyle = color; ctx.fill();
-            };
+            const drawGlow = (x, y, r, color) => { ctx.beginPath(); ctx.arc(x, y, Math.max(0, r), 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill(); };
 
-            // Orbit dehnt sich beim Sprechen weiter aus ("herumflitzen")
-            const orbit = maxDim * 0.1 + (intensity * maxDim * 0.06);
-
-            // --- KINETIC STACK: Unterschiedliche Geschwindigkeiten (Masse-Simulation) ---
-
-            // 1. UNTEN & GROSS (Träge und langsam) -> Multiplikator 0.6 / 0.8
-            const x3 = cx + Math.sin(timeAccum * 0.6) * (orbit * 0.4);
-            const y3 = cy + orbit * 0.6 + Math.cos(timeAccum * 0.8) * (orbit * 0.2); 
-            drawGlow(x3, y3, (baseRadius * 1.5) + pulse, els.blob3.value);
-
-            // 2. MITTE & MITTEL (Normale Geschwindigkeit) -> Multiplikator 1.2 / 1.5
-            const x2 = cx + Math.cos(timeAccum * 1.2) * (orbit * 0.8);
-            const y2 = cy + Math.sin(timeAccum * 1.5) * (orbit * 0.4); 
-            drawGlow(x2, y2, baseRadius + (pulse * 1.1), els.blob2.value);
-
-            // 3. OBEN & KLEIN (Flitzt sehr schnell herum) -> Multiplikator 2.5 / 3.0
-            const x1 = cx + Math.sin(timeAccum * 2.5) * orbit;
-            const y1 = cy - orbit * 0.5 + Math.cos(timeAccum * 3.0) * (orbit * 0.8); 
-            drawGlow(x1, y1, (baseRadius * 0.6) + (pulse * 0.8), els.blob1.value);
-        }
-        draw();
-    }
-    initVisualizer();
+            drawGlow(w * 0.5 + Math.sin(timeAccum * 0.7) * w * 0.3, h * 0.5 + Math.cos(timeAccum * 0.5) * h * 0.3, baseRadius + intensity * maxDim * 0.02, els.blob1.value);
+            drawGlow(w * 0.5 + Math.cos(timeAccum * 0.8) * w * 0.35, h * 0.5 + Math.sin(timeAccum * 0.6) * h * 0.35, baseRadius + intensity * maxDim * 0.025, els.blob2.value);
+            drawGlow(w * 0.5 + Math.sin(timeAccum * 0.9 + Math.PI) * w * 0.25, h * 0.5 + Math.cos(timeAccum * 1.1 + Math.PI) * h * 0.25, baseRadius * 0.8 + intensity * maxDim * 0.03, els.blob3.value);
+            drawGlow(w * 0.5 + Math.cos(timeAccum * 0.6 + Math.PI/2) * w * 0.4, h * 0.5 + Math.sin(timeAccum * 0.7 + Math.PI/2) * h * 0.4, baseRadius * 1.1 + intensity * maxDim * 0.02, els.col2.value); 
+        } draw();
+    } initVisualizer();
 
     async function loadMicrophones() {
         if(micsLoaded) return;
@@ -483,123 +463,228 @@
             chunks = []; isCancelled = false; let options = { bitsPerSecond: 32000 };
             if(MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) options.mimeType='audio/webm;codecs=opus';
             
+            // V53: Session ID für Auto-Cut Blöcke
+            if(!isAutoCutting) { currentSessionId = Date.now(); currentPart = 1; }
+
             mediaRecorder = new MediaRecorder(stream, options);
             mediaRecorder.ondataavailable = e => { if(e.data.size > 0) chunks.push(e.data); };
+            
             mediaRecorder.onstop = () => {
                 if(isCancelled) { resetUI(); showToast("Verworfen."); return; }
-                processAudio(new Blob(chunks, { type: chunks[0].type }), "Memo"); resetUI();
+                const blob = new Blob(chunks, { type: chunks[0].type });
+                
+                // V53: Verarbeite diesen Schnipsel der Session
+                processSessionAudio(blob, "Memo", currentSessionId, currentPart);
+
+                if(isAutoCutting) {
+                    isAutoCutting = false; chunks = []; currentPart++;
+                    mediaRecorder.start(); // Sofortiger Start des nächsten Cuts
+                    startTime = Date.now(); pauseDelta = 0; // Timer reset für den Cut
+                    showToast(`✂️ Auto-Cut: Teil ${currentPart-1} gesendet. Nehme weiter auf...`);
+                } else {
+                    resetUI();
+                }
             };
+            
             mediaRecorder.start(); isRecording = true; isPaused = false; startTime = Date.now(); pauseDelta=0;
-            timerInt = setInterval(updateTimer, 1000); setMainButtonState('recording');
+            if(!timerInt) timerInt = setInterval(updateTimer, 1000); setMainButtonState('recording');
         } catch(e) { showToast("Mikrofon Fehler!", true); resetUI(); } finally { els.btnMain.disabled = false; }
+    }
+
+    // V53: Löse den Auto-Cut aus
+    function performAutoCut() {
+        if(mediaRecorder && mediaRecorder.state === 'recording') {
+            isAutoCutting = true;
+            mediaRecorder.stop(); // Löst onstop aus, was den nächsten Part startet
+        }
     }
 
     function pauseRec() { if(mediaRecorder && mediaRecorder.state === "recording") { mediaRecorder.pause(); isPaused=true; pauseStart=Date.now(); setMainButtonState('paused'); } }
     function resumeRec() { if(mediaRecorder && mediaRecorder.state === "paused") { mediaRecorder.resume(); isPaused=false; pauseDelta+=Date.now()-pauseStart; setMainButtonState('recording'); } }
-    function stopRec() { if(mediaRecorder) { mediaRecorder.stop(); els.btnMain.disabled=true; els.btnPause.classList.remove('visible'); els.btnCancel.classList.remove('visible'); } }
+    function stopRec() { if(mediaRecorder) { isAutoCutting = false; mediaRecorder.stop(); els.btnMain.disabled=true; els.btnPause.classList.remove('visible'); els.btnCancel.classList.remove('visible'); } }
 
     function updateTimer() {
         if(isPaused) return; const totalSec = Math.floor((Date.now() - startTime - pauseDelta)/1000);
+        
+        // V53: Prüfe, ob Auto-Cut Zeit erreicht ist
+        let cutMins = parseFloat(els.autoCutMin.value);
+        if(!isNaN(cutMins) && cutMins >= 0.1 && totalSec >= cutMins * 60) {
+            performAutoCut(); return;
+        }
+
         els.timer.innerText = `${Math.floor(totalSec/60).toString().padStart(2,'0')}:${(totalSec%60).toString().padStart(2,'0')}`;
-        els.size.innerText = `(~${((totalSec * 4000) / (1024 * 1024)).toFixed(2)} MB)`;
+        els.size.innerText = `(~${((totalSec * 4000) / (1024 * 1024)).toFixed(2)} MB) ${currentPart > 1 ? `| Teil ${currentPart}` : ''}`;
         els.timer.style.color = totalSec < 300 ? "var(--text)" : totalSec < 600 ? "var(--warn)" : "var(--danger)";
     }
 
-    function resetUI() { isRecording=false; isPaused=false; clearInterval(timerInt); setMainButtonState('idle'); els.timer.innerText="00:00"; els.size.innerText="(~0.0 MB)"; els.btnMain.disabled=false; releaseWakeLock(); if(globalStream) globalStream.getTracks().forEach(t=>t.stop()); }
+    function resetUI() { isRecording=false; isPaused=false; isAutoCutting=false; clearInterval(timerInt); timerInt=null; setMainButtonState('idle'); els.timer.innerText="00:00"; els.size.innerText="(~0.0 MB)"; els.btnMain.disabled=false; releaseWakeLock(); if(globalStream) globalStream.getTracks().forEach(t=>t.stop()); }
 
     els.fileUpload.addEventListener('change', (e) => {
         const file = e.target.files[0]; if(!file) return;
         if(!['flac','m4a','mp3','mp4','mpeg','mpga','oga','ogg','wav','webm','opus','amr'].includes(file.name.split('.').pop().toLowerCase())) { if(!confirm(`Format evtl. nicht unterstützt. Versuchen?`)) { els.fileUpload.value=''; return; } }
-        processAudio(file, file.name); els.fileUpload.value='';
+        processSessionAudio(file, file.name, Date.now(), 1); els.fileUpload.value='';
     });
 
-    async function processAudio(blob, name, retryId) {
-        const id = retryId || Date.now(); const ts = new Date().toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' });
-        if(els.autoDl.checked && !retryId) { download(blob, `rec_${id}.${blob.type.includes('mp4') ? 'mp4' : 'webm'}`); }
-        if(!retryId) createEntry(id, ts, "", blob);
-        const textArea = document.getElementById(`txt-${id}`);
+    // V53: SMART CLIPBOARD LOGIC
+    function smartCopy(text) {
+        if(document.hasFocus()) { 
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("📋 Automatisch kopiert!");
+            }); 
+        } else { 
+            pendingClipboardText = text; isPendingCopy = true;
+            els.toast.innerHTML = "⏳ <b>Transkript aktualisiert!</b><br>Klicke irgendwo ins Fenster zum Kopieren.";
+            els.toast.style.background = "var(--warn)"; els.toast.style.color = "#000";
+            els.toast.className = 'visible'; 
+        } 
+    }
+
+    const executePendingCopy = () => {
+        if(isPendingCopy && pendingClipboardText) {
+            navigator.clipboard.writeText(pendingClipboardText);
+            isPendingCopy = false; pendingClipboardText = null;
+            els.toast.innerHTML = "📋 Erfolgreich kopiert!";
+            els.toast.style.background = "var(--safe)"; els.toast.style.color = "#fff";
+            setTimeout(() => { els.toast.className = ''; els.toast.style.background = ''; els.toast.style.color = ''; }, 2500);
+        }
+    };
+    window.addEventListener('focus', executePendingCopy); window.addEventListener('click', executePendingCopy);
+
+    // V53: SESSION PROCESSING (Bündelt mehrere Parts in einer Box)
+    async function processSessionAudio(blob, name, sessionId, part) {
+        const ts = new Date().toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' });
         
-        if(!els.apiKey.value) { textArea.value = "(Wartet auf API Key...)"; document.getElementById(`retry-${id}`).style.display = 'flex'; showToast("Gespeichert. Key eingeben.", true); saveToHistory(id, "", ts); return; }
-        textArea.value = "Transkribiere..."; document.getElementById(`retry-${id}`).style.display = 'none';
+        if(els.autoDl.checked) { download(blob, `rec_${sessionId}_part${part}.${blob.type.includes('mp4') ? 'mp4' : 'webm'}`); }
+        
+        // Erstelle Basis-UI, falls es Teil 1 ist (oder manueller Upload)
+        if(!document.getElementById(`e-${sessionId}`)) { createEntry(sessionId, ts); }
+        
+        const textArea = document.getElementById(`txt-${sessionId}`);
+        const audioList = document.getElementById(`audio-list-${sessionId}`);
+        const retryBtn = document.getElementById(`retry-${sessionId}`);
+
+        // Audio Player hinzufügen
+        const audioUrl = URL.createObjectURL(blob);
+        const playerHtml = `<div class="audio-part"><span>Teil ${part}</span><audio controls playsinline preload="metadata" src="${audioUrl}" onloadedmetadata="window.fixDuration(this, ${sessionId})"></audio></div>`;
+        audioList.insertAdjacentHTML('beforeend', playerHtml);
+        
+        if(!els.apiKey.value) { 
+            textArea.value += `\n\n[Teil ${part}: Wartet auf API Key...]`; 
+            retryBtn.style.display = 'flex'; showToast("Gespeichert. Key eingeben.", true); return; 
+        }
+
+        const placeholder = `\n\n--- Transkribiere Teil ${part}... ---`;
+        textArea.value = textArea.value === "Lädt..." ? placeholder.trim() : textArea.value + placeholder;
+        retryBtn.style.display = 'none';
         
         const fd = new FormData();
         let ext = blob.type.includes('mp4') ? 'mp4' : blob.type.includes('wav') ? 'wav' : blob.type.includes('ogg') || blob.type.includes('opus') ? 'ogg' : 'webm';
-        if(name && name.includes('.') && name !== "Retry") ext = name.split('.').pop();
+        if(name && name.includes('.') && name !== "Memo") ext = name.split('.').pop();
         fd.append("file", blob, `audio.${ext}`); fd.append("model", "whisper-1");
+        
+        // V53: Der grüne Retry-Button sendet temperature: 0.8 mit!
+        if(name === "Retry") fd.append("temperature", "0.8");
 
         try {
             const res = await fetch("https://api.openai.com/v1/audio/transcriptions", { method: "POST", headers: { "Authorization": `Bearer ${els.apiKey.value}` }, body: fd });
             const data = await res.json();
+            
+            // Entferne Placeholder
+            textArea.value = textArea.value.replace(placeholder, "").replace(placeholder.trim(), "");
+
             if(res.ok) {
-                textArea.value = data.text; saveToHistory(id, data.text, ts); updateTextStats(id);
-                if(document.hasFocus()) navigator.clipboard.writeText(data.text).then(()=>showToast("📋 Kopiert!")); else showToast("✅ Fertig!");
-                if(els.autoDl.checked && !retryId) setTimeout(() => dlTxt(id), 500);
-            } else { textArea.value = "Error: " + (data.error?.message || "Unknown"); document.getElementById(`retry-${id}`).style.display = 'flex'; }
-        } catch(e) { textArea.value = "Fehler: " + e.message; document.getElementById(`retry-${id}`).style.display = 'flex'; }
+                const newText = part > 1 ? `\n\n--- Teil ${part} ---\n${data.text}` : data.text;
+                textArea.value = (textArea.value + newText).trim();
+                
+                updateTextStats(sessionId);
+                smartCopy(textArea.value); // Kopiert IMMER den gesamten Block!
+                saveToHistory(sessionId, textArea.value, ts);
+                
+                if(els.autoDl.checked) setTimeout(() => dlTxt(sessionId), 500);
+            } else { 
+                textArea.value += `\n\n[Teil ${part} Error: ${data.error?.message || "Unknown"}]`; 
+                retryBtn.style.display = 'flex'; 
+            }
+        } catch(e) { 
+            textArea.value = textArea.value.replace(placeholder, "").replace(placeholder.trim(), "");
+            textArea.value += `\n\n[Teil ${part} Netzwerk-Fehler: ${e.message}]`; 
+            retryBtn.style.display = 'flex'; 
+        }
     }
 
     function updateTextStats(id) {
         const el = document.getElementById(`txt-${id}`); const statsEl = document.getElementById(`stats-${id}`); if(!el || !statsEl) return;
         const words = el.value.trim() ? el.value.trim().split(/\s+/).length : 0;
-        const costHtml = document.getElementById(`cost-${id}`) ? document.getElementById(`cost-${id}`).outerHTML : `<span class="stat-pill" id="cost-${id}">💵 ~0.0 ct</span>`;
+        const costHtml = document.getElementById(`cost-${id}`) ? document.getElementById(`cost-${id}`).outerHTML : `<span class="stat-pill" id="cost-${id}" data-cost="0">💵 ~0.0 ct</span>`;
         statsEl.innerHTML = `<span class="stat-pill">📝 ${words} W</span> <span class="stat-pill">🪙 ~${Math.ceil(words * 1.33)} T</span> <span class="stat-pill">📄 ~${(words / 250).toFixed(1)} S</span> ${costHtml}`;
     }
 
-    function saveToHistory(id, text, ts) { let h = JSON.parse(localStorage.getItem("hist_v38")||"[]"); const idx = h.findIndex(e => e.id == id); if(idx > -1) h[idx].text = text; else h.unshift({ id, text, ts }); if(h.length > 30) h.pop(); localStorage.setItem("hist_v38", JSON.stringify(h)); }
-    function loadHistory() { JSON.parse(localStorage.getItem("hist_v38")||"[]").forEach(e => createEntry(e.id, e.ts, e.text)); }
-    function clearAll() { if(confirm("Wirklich ALLES löschen?")) { localStorage.removeItem("hist_v38"); els.feed.innerHTML = ""; showToast("Verlauf gelöscht."); } }
+    function saveToHistory(id, text, ts) { let h = JSON.parse(localStorage.getItem("hist_v53")||"[]"); const idx = h.findIndex(e => e.id == id); if(idx > -1) h[idx].text = text; else h.unshift({ id, text, ts }); if(h.length > 30) h.pop(); localStorage.setItem("hist_v53", JSON.stringify(h)); }
+    function loadHistory() { JSON.parse(localStorage.getItem("hist_v53")||"[]").forEach(e => createEntry(e.id, e.ts, e.text, true)); }
+    function clearAll() { if(confirm("Wirklich ALLES löschen?")) { localStorage.removeItem("hist_v53"); els.feed.innerHTML = ""; showToast("Verlauf gelöscht."); } }
 
-    function createEntry(id, ts, text, blob) {
+    // V53: Erstellt nur das Gerüst der Session
+    function createEntry(id, ts, initialText = "Lädt...", isHistory = false) {
         const d = document.createElement('div'); d.className = 'entry'; d.id = `e-${id}`;
-        let player = blob ? `<audio controls playsinline preload="metadata" src="${URL.createObjectURL(blob)}" onloadedmetadata="window.fixDuration(this, ${id})"></audio>` : "";
         d.innerHTML = `
             <div class="entry-meta">
                 <div class="date-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> ${ts}</div>
-                <div id="stats-${id}" class="stats-badges"><span class="stat-pill">📝 0 W</span><span class="stat-pill" id="cost-${id}">💵 ~0.0 ct</span></div>
+                <div id="stats-${id}" class="stats-badges"><span class="stat-pill">📝 0 W</span><span class="stat-pill" id="cost-${id}" data-cost="0">💵 ~0.0 ct</span></div>
             </div>
-            <textarea id="txt-${id}" oninput="updateTextStats(${id})">${text}</textarea> ${player}
+            <textarea id="txt-${id}" oninput="updateTextStats(${id})">${initialText}</textarea>
+            <div id="audio-list-${id}" class="audio-list">${isHistory ? '<span style="font-size:0.75rem; color:var(--text-muted);"><i>Audio aus Verlauf nicht geladen</i></span>' : ''}</div>
             <div class="actions">
                 <button class="btn-action" onclick="doCopy(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg> Copy</button>
                 <button class="btn-action" onclick="dlTxt(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Text</button>
-                ${blob ? `<button class="btn-action" onclick="dlAudio(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg> Audio</button>` : ''}
+                <button class="btn-action btn-retry" id="retry-${id}" style="display:none;" onclick="retrySession(${id})"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg> Retry</button>
                 <button class="btn-action btn-del" onclick="delEntry(${id}, this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
-                <button class="btn-action" id="retry-${id}" style="display:none; color:var(--warn);" onclick="retry(${id})">🔄 Retry</button>
             </div>`;
-        els.feed.prepend(d); if(blob) d.audioBlob = blob; updateTextStats(id);
+        els.feed.prepend(d); if(isHistory) updateTextStats(id);
     }
 
     window.doCopy = (id) => { navigator.clipboard.writeText(document.getElementById(`txt-${id}`).value); showToast("Kopiert"); };
     
-    // V48: Doppel-Klick Löschen
     window.delEntry = (id, btn) => { 
         if(!btn.classList.contains('confirm')) {
-            btn.classList.add('confirm');
-            btn.innerHTML = '🗑️ Sicher?';
-            btn.style.background = 'var(--danger)'; btn.style.color = 'white';
+            btn.classList.add('confirm'); btn.innerHTML = '🗑️ Sicher?'; btn.style.background = 'var(--danger)'; btn.style.color = 'white';
             setTimeout(() => { 
                 if(document.getElementById(`e-${id}`)) {
                     btn.classList.remove('confirm'); btn.style.background = ''; btn.style.color = 'var(--danger)';
                     btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
                 }
-            }, 3000);
-            return;
+            }, 3000); return;
         }
-        document.getElementById(`e-${id}`).remove(); 
-        let h = JSON.parse(localStorage.getItem("hist_v38")||"[]"); 
-        localStorage.setItem("hist_v38", JSON.stringify(h.filter(x => x.id != id))); 
+        document.getElementById(`e-${id}`).remove(); let h = JSON.parse(localStorage.getItem("hist_v53")||"[]"); localStorage.setItem("hist_v53", JSON.stringify(h.filter(x => x.id != id))); 
     };
 
     window.dlTxt = (id) => { download(new Blob([document.getElementById(`txt-${id}`).value]), `transkript_${id}.txt`); };
-    window.dlAudio = (id) => { const el = document.getElementById(`e-${id}`); if(el.audioBlob) download(el.audioBlob, `rec_${id}.${el.audioBlob.type.includes('mp4') ? 'mp4' : 'webm'}`); };
-    window.retry = (id) => { const el = document.getElementById(`e-${id}`); if(el.audioBlob) processAudio(el.audioBlob, "Retry", id); else showToast("Kein Audio", true); };
+    
+    // V53: Retry Logik mit Blob-Extraktion aus dem Player
+    window.retrySession = async (id) => { 
+        const audioNodes = document.getElementById(`audio-list-${id}`).querySelectorAll('audio');
+        if(audioNodes.length === 0) { showToast("Kein Audio für Retry gefunden", true); return; }
+        
+        // Für Retry nehmen wir einfach das letzte Audio Element (falls es beim Auto-Cut hing)
+        const lastAudio = audioNodes[audioNodes.length - 1];
+        const res = await fetch(lastAudio.src);
+        const blob = await res.blob();
+        
+        showToast("Starte Retry mit Temperatur 0.8...");
+        processSessionAudio(blob, "Retry", id, audioNodes.length); 
+    };
     
     window.dlZip = async () => {
-        if(!window.JSZip) return; const zip = new JSZip(); const fAud = zip.folder("audio"); let allTxt = "--- PROTOKOLL ---\n\n";
+        if(!window.JSZip) return; const zip = new JSZip(); let allTxt = "--- PROTOKOLL ---\n\n";
         document.querySelectorAll('.entry').forEach(e => {
             const id = e.id.replace('e-',''); const txt = e.querySelector('textarea').value; const ts = e.querySelector('.date-badge').innerText;
-            allTxt += `[${ts}]\n${txt}\n\n---\n\n`; if(e.audioBlob) fAud.file(`rec_${id}.${e.audioBlob.type.includes('mp4')?'mp4':'webm'}`, e.audioBlob);
+            allTxt += `[${ts}]\n${txt}\n\n---\n\n`; 
+            // Audios speichern (falls vorhanden)
+            const audios = e.querySelectorAll('audio');
+            audios.forEach((a, index) => {
+                fetch(a.src).then(res => res.blob()).then(blob => { zip.folder("audio").file(`rec_${id}_part${index+1}.webm`, blob); });
+            });
         });
-        zip.file("Alle_Texte.txt", allTxt); download(await zip.generateAsync({type:"blob"}), `Session_${new Date().toISOString().replace(/[:.]/g, '-').slice(0,16)}.zip`);
+        setTimeout(async () => { download(await zip.generateAsync({type:"blob"}), `Session_${new Date().toISOString().replace(/[:.]/g, '-').slice(0,16)}.zip`); }, 1000);
     };
     function download(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
     function showToast(txt, err=false) { els.toast.innerText = txt; els.toast.className = err ? 'visible error' : 'visible'; setTimeout(()=>els.toast.className='', 3000); }
