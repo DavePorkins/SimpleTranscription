@@ -15,12 +15,12 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
 
-        /* --- NEUE ARCHITEKTUR: Kein Body-Scroll, sondern Container-Scroll! --- */
+        /* Container Scroll Architektur */
         body {
             font-family: 'Inter', -apple-system, sans-serif;
             margin: 0; 
             height: 100dvh; 
-            overflow: hidden; /* Body scrollt NICHT mehr */
+            overflow: hidden; 
             display: flex; 
             justify-content: center;
             background: #000;
@@ -32,19 +32,19 @@
             --plasma1: #8ec5fc; --plasma2: #e0c3fc; --plasma3: #99ddff;
             
             /* 1. Light Clear */
-            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-bg: rgba(255, 255, 255, 0.08);
             --glass-border: rgba(255, 255, 255, 0.4);
             --text: #111111; --text-muted: #555555;
-            --input-bg: rgba(255, 255, 255, 0.3);
-            --btn-glass: rgba(255, 255, 255, 0.5);
-            --btn-hover: rgba(255, 255, 255, 0.9);
+            --input-bg: rgba(255, 255, 255, 0.4);
+            --btn-glass: rgba(255, 255, 255, 0.6);
+            --btn-hover: rgba(255, 255, 255, 0.95);
             --btn-text: #111;
             --rec-btn-bg: linear-gradient(135deg, var(--c2), var(--c1));
             --accent: #c471ed; --danger: #ff4757; --warn: #ffa502; --safe: #2ed573;
-            --badge-bg: rgba(255, 255, 255, 0.4);
-            --title-bg: rgba(255, 255, 255, 0.6);
+            --badge-bg: rgba(255, 255, 255, 0.5);
+            --title-bg: rgba(255, 255, 255, 0.65);
             --blur-amount: blur(15px);
-            --canvas-brightness: brightness(1) saturate(1);
+            --canvas-brightness: brightness(0.9) saturate(1.1);
         }
 
         /* 2. Light Glass */
@@ -53,26 +53,27 @@
             --glass-border: rgba(255, 255, 255, 0.6);
             --input-bg: rgba(255, 255, 255, 0.7);
             --btn-glass: rgba(255, 255, 255, 0.8);
-            --btn-hover: rgba(230, 230, 240, 1);
+            --btn-hover: rgba(240, 240, 245, 1);
             --title-bg: rgba(255, 255, 255, 0.8);
-            --blur-amount: blur(40px);
+            --blur-amount: blur(35px);
+            --canvas-brightness: brightness(1) saturate(1);
         }
 
-        /* 3. Dark Glass (Überarbeitet: Sleek & Clean) */
+        /* 3. Dark Glass */
         html[data-theme="dark-glass"] {
             color-scheme: dark; 
-            --glass-bg: rgba(25, 25, 30, 0.4);
+            --glass-bg: rgba(30, 30, 35, 0.45);
             --glass-border: rgba(255, 255, 255, 0.15);
             --text: #f5f5f5; --text-muted: #aaaaaa;
-            --input-bg: rgba(0, 0, 0, 0.3);
-            --btn-glass: rgba(255, 255, 255, 0.1);
-            --btn-hover: rgba(255, 255, 255, 0.25);
+            --input-bg: rgba(0, 0, 0, 0.35);
+            --btn-glass: rgba(255, 255, 255, 0.15);
+            --btn-hover: rgba(255, 255, 255, 0.3);
             --btn-text: #fff;
             --badge-bg: rgba(0, 0, 0, 0.4);
             --rec-btn-bg: #444; 
-            --title-bg: rgba(0, 0, 0, 0.4);
+            --title-bg: rgba(0, 0, 0, 0.5);
             --blur-amount: blur(30px);
-            --canvas-brightness: brightness(0.5) saturate(1.2);
+            --canvas-brightness: brightness(0.4) saturate(1.3);
         }
 
         /* 4. Dark Clear */
@@ -81,15 +82,15 @@
             --glass-bg: rgba(5, 5, 8, 0.15);
             --glass-border: rgba(255, 255, 255, 0.1);
             --text: #ffffff; --text-muted: #bbbbbb;
-            --input-bg: rgba(0, 0, 0, 0.3);
+            --input-bg: rgba(0, 0, 0, 0.4);
             --btn-glass: rgba(255, 255, 255, 0.1);
             --btn-hover: rgba(255, 255, 255, 0.25);
             --btn-text: #fff;
             --badge-bg: rgba(255, 255, 255, 0.15);
             --rec-btn-bg: #333; 
-            --title-bg: rgba(0, 0, 0, 0.4);
+            --title-bg: rgba(0, 0, 0, 0.5);
             --blur-amount: blur(10px);
-            --canvas-brightness: brightness(0.4) saturate(1.2);
+            --canvas-brightness: brightness(0.35) saturate(1.4);
         }
 
         #cloudCanvas {
@@ -98,7 +99,6 @@
             transition: filter 0.5s ease;
         }
 
-        /* --- LAYOUT WRAPPER --- */
         .app-wrapper {
             width: 100%; max-width: 800px;
             display: flex; flex-direction: column;
@@ -108,22 +108,21 @@
         }
 
         .sticky-zone {
-            flex-shrink: 0; /* Bleibt fixiert oben */
+            flex-shrink: 0; 
             display: flex; flex-direction: column; gap: 12px; 
             width: 100%; z-index: 100;
         }
 
-        /* DIE MAGISCHE SCROLL-ZONE MIT FADE-OUT KANTE */
+        /* Fade-Out Maske für das Scrollen */
         .scroll-zone {
             flex-grow: 1; 
             overflow-y: auto; 
+            overscroll-behavior-y: auto; /* Erlaubt Mobile Pull-to-Refresh Bubble! */
             display: flex; flex-direction: column; gap: 15px; 
             padding-top: 15px; padding-bottom: 40px; width: 100%;
-            /* Faded Inhalte auf den obersten 30px ins Nichts aus! */
             mask-image: linear-gradient(to bottom, transparent 0%, black 30px);
             -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 30px);
         }
-        /* Dezente Scrollbar */
         .scroll-zone::-webkit-scrollbar { width: 6px; }
         .scroll-zone::-webkit-scrollbar-thumb { background: rgba(150,150,150,0.3); border-radius: 10px; }
 
@@ -135,7 +134,6 @@
             transition: background 0.3s ease, backdrop-filter 0.3s ease;
         }
 
-        /* TITEL PILLE */
         .top-row { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; gap: 12px; margin-bottom: 5px;}
         .title-pill {
             background: var(--title-bg); border: 1px solid var(--glass-border);
@@ -159,7 +157,6 @@
         .icon-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;}
         .icon-btn:hover { transform: scale(1.1); background: var(--btn-hover); color: var(--btn-text);}
 
-        /* ACTION BAR */
         .btn-sleek { 
             display:flex; gap:6px; color:var(--text); align-items:center; justify-content: center; 
             cursor: pointer; background: var(--btn-glass); padding: 6px 16px; border-radius: 14px; 
@@ -167,11 +164,10 @@
             white-space: nowrap; transition: 0.2s; height: 36px; box-sizing: border-box;
         }
         .btn-sleek:hover { background: var(--btn-hover); color: var(--btn-text); }
-        .btn-sleek.inactive { opacity: 0.5; background: var(--input-bg); border-color: transparent;}
+        .btn-sleek.inactive { opacity: 0.6; background: var(--input-bg); border-color: transparent;}
         .btn-sleek.inactive:hover { opacity: 1; background: var(--btn-glass);}
         .btn-sleek svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2;}
 
-        /* TIMER BLOCK */
         .action-center { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%;}
         .timer { font-size: 3.5rem; font-weight: 300; letter-spacing: 2px; line-height: 1; font-variant-numeric: tabular-nums; color: var(--text); text-shadow: 0 4px 15px rgba(0,0,0,0.1);}
         
@@ -194,7 +190,6 @@
         .side-btn.visible#btnPause { color: var(--warn); }
         #btnPause.state-paused { background: var(--warn); color: white; border-color: transparent;}
 
-        /* ACTIVE TEXT ENTRY */
         #activeEntry { display: none; flex-direction: column; gap: 12px; margin-top: 5px;}
         .active-top-bar { display: flex; justify-content: center; align-items: center; width: 100%; flex-direction: column; gap: 8px; }
         
@@ -206,14 +201,12 @@
         .stats-badges { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
         .stat-pill { background: var(--badge-bg); padding: 4px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); display:flex; align-items:center; gap:4px; border: 1px solid var(--glass-border);}
         
-        /* Endlos-Textfeld */
         .seamless-text { 
             width: 100%; background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text); 
             font-family: inherit; resize: none; min-height: 80px; overflow-y: hidden; height: auto;
             box-sizing: border-box; line-height: 1.6; font-size: 15px; outline: none; padding: 18px; border-radius: 24px;
         }
 
-        /* HISTORY FEED */
         #feed { display: flex; flex-direction: column; gap: 15px; width: 100%; }
         .entry { background: var(--glass-bg); backdrop-filter: var(--blur-amount); -webkit-backdrop-filter: var(--blur-amount); border-radius: 28px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); border: 1px solid var(--glass-border); box-sizing: border-box; width: 100%; animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; gap: 12px;}
         @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: 0; } }
@@ -238,13 +231,12 @@
         .audio-part span { font-size: 0.75rem; font-weight: bold; color: var(--text-muted); flex-shrink: 0;}
         audio { width: 100%; height: 30px; border-radius: 6px; outline: none; }
 
-        /* MODALS */
-        .modal { display: none; position: fixed; bottom: 0; left: 0; right: 0; top: 0; background: rgba(0,0,0,0.1); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);}
+        .modal { display: none; position: fixed; bottom: 0; left: 0; right: 0; top: 0; background: rgba(0,0,0,0.1); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);}
         .modal.visible { display: flex; animation: fadeIn 0.2s; }
         .modal-box { background: var(--glass-bg); padding: 25px; border-radius: 35px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); width: 90%; max-width: 440px; border: 1px solid var(--glass-border); color: var(--text); box-sizing: border-box;}
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-weight: 800; font-size: 1.2rem; color: var(--text);}
         
-        /* COLOR STUDIO 2.0 */
+        /* COLOR STUDIO 2.0 (Zero Lag Slider) */
         .vibe-container { display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px; align-items: center; width: 100%; box-sizing: border-box;}
         .vibe-label { font-size: 1rem; font-weight: 800; }
         #vibeSlider {
@@ -281,7 +273,6 @@
         .api-input-box { width: 100%; padding: 14px; border-radius: 16px; border: 1px solid var(--glass-border); background: var(--input-bg); color: var(--text); font-size: 1rem; outline: none; box-sizing: border-box; margin-bottom: 10px; font-family: monospace;}
         .info-text { font-size: 0.9rem; color: var(--text); line-height: 1.5; margin-bottom: 15px; font-weight: 600; text-align: center;}
 
-        /* Edles Toast */
         #toast { position: fixed; top: 20px; left: 50%; transform: translate(-50%, -150%); background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); color: var(--text); padding: 12px 30px; border-radius: 50px; font-weight: 800; transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.2s; opacity: 0; z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 8px;}
         #toast.visible { transform: translate(-50%, 0); opacity: 1; }
     </style>
@@ -296,7 +287,12 @@
     <div class="modal-box" style="padding: 25px 15px;">
         <div class="modal-header">
             <span style="display:flex; align-items:center; gap:8px;">
-                <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 0 1-9-9 9 9 0 0 1 18 0c0 1.5-1.2 2.5-2.5 2.5a2.5 2.5 0 0 0-2.5-2.5H15a3 3 0 0 0-3-3H9"/><circle cx="8" cy="10" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="7" r="1.5" fill="currentColor" stroke="none"/><circle cx="16" cy="10" r="1.5" fill="currentColor" stroke="none"/></svg> 
+                <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 21a9 9 0 0 1 0 -18c4.97 0 9 3.58 9 8c0 1.06 -.47 2.53 -1.33 3.09c-.83 .54 -1.67 -.17 -2.34 -.81c-.56 -.53 -1.33 -1.28 -2.33 -1.28c-1 0 -1.77 .75 -2.33 1.28c-.67 .64 -1.5 1.35 -2.33 .81c-.86 -.56 -1.34 -2.03 -1.34 -3.09z"></path>
+                    <circle cx="8.5" cy="10.5" r="1" fill="currentColor"></circle>
+                    <circle cx="11.5" cy="7.5" r="1" fill="currentColor"></circle>
+                    <circle cx="15.5" cy="8.5" r="1" fill="currentColor"></circle>
+                </svg> 
                 Studio
             </span>
             <div style="display:flex; gap:8px;">
@@ -329,9 +325,9 @@
         </div>
 
         <div id="viewAnims" style="display:none; padding: 10px 0;">
-            <div class="anim-option active" id="anim-nebula" onclick="setAnim('nebula')">Nebula (Wolken) <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg></div>
-            <div class="anim-option" id="anim-lava" onclick="setAnim('lava')">Lava (Tropfen) <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"></circle></svg></div>
-            <div class="anim-option" id="anim-aurora" onclick="setAnim('aurora')">Aurora (Wellen) <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h4l3-9 5 18 3-9h5"></path></svg></div>
+            <div class="anim-option active" id="anim-blobs" onclick="setAnim('blobs')">Blobs (Klar) <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"></circle></svg></div>
+            <div class="anim-option" id="anim-lava" onclick="setAnim('lava')">Lava (Tropfen) <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg></div>
+            <div class="anim-option" id="anim-waves" onclick="setAnim('waves')">Waves (Wellen) <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h4l3-9 5 18 3-9h5"></path></svg></div>
         </div>
     </div>
 </div>
@@ -345,9 +341,20 @@
             <button class="btn-sleek" onclick="toggleApiVisibility()" style="width:48%; height: 40px; font-size:1rem;">Sichtbar</button>
         </div>
         <div class="info-text">
-            Simple Transcription nutzt die <a href="https://platform.openai.com/" target="_blank">Whisper API von OpenAI</a>. Audios werden nicht lokal gespeichert, sondern direkt verarbeitet.<br><br>
+            Simple Transcription nutzt die <a href="https://platform.openai.com/" target="_blank">Whisper API von OpenAI</a>. Audios werden direkt verarbeitet.<br><br>
             <b>Kosten:</b> Ca. <b>0,6 Cent pro Minute</b>.
         </div>
+    </div>
+</div>
+
+<div id="qrModal" class="modal">
+    <div class="modal-box" style="text-align:center;">
+        <div class="modal-header"><span>App teilen</span><button class="icon-btn" onclick="toggleModal('qrModal')" style="width:32px;height:32px;"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div>
+        <div id="qrcode" style="display:flex; justify-content:center; padding: 20px; background: white; border-radius: 20px; margin-bottom: 20px;"></div>
+        <p style="font-size:1.3rem; font-weight:900; color:var(--text); margin-bottom: 8px;">Simple Transcription</p>
+        <p style="font-size:0.95rem; color:var(--text); line-height: 1.5; font-weight:600;">
+            ist eine Web-App, die von mir ge-vibe-coded wurde.
+        </p>
     </div>
 </div>
 
@@ -357,7 +364,7 @@
             <div class="top-row">
                 <div class="title-pill">
                     <h1>Simple Transcription</h1>
-                    <span class="version-tag">V69</span>
+                    <span class="version-tag">V70</span>
                 </div>
                 
                 <div class="header-actions">
@@ -366,13 +373,16 @@
                     </button>
                     <button class="icon-btn" onclick="cycleTheme()" title="Theme Rotator" id="themeIcon"></button>
                     <button class="icon-btn" onclick="toggleModal('devPanel')" title="Color Studio">
-                        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 0 1-9-9 9 9 0 0 1 18 0c0 1.5-1.2 2.5-2.5 2.5a2.5 2.5 0 0 0-2.5-2.5H15a3 3 0 0 0-3-3H9"/><circle cx="8" cy="10" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="7" r="1.5" fill="currentColor" stroke="none"/><circle cx="16" cy="10" r="1.5" fill="currentColor" stroke="none"/></svg>
+                        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 0 1 0 -18c4.97 0 9 3.58 9 8c0 1.06 -.47 2.53 -1.33 3.09c-.83 .54 -1.67 -.17 -2.34 -.81c-.56 -.53 -1.33 -1.28 -2.33 -1.28c-1 0 -1.77 .75 -2.33 1.28c-.67 .64 -1.5 1.35 -2.33 .81c-.86 -.56 -1.34 -2.03 -1.34 -3.09z"></path><circle cx="8.5" cy="10.5" r="1" fill="currentColor" stroke="none"></circle><circle cx="11.5" cy="7.5" r="1" fill="currentColor" stroke="none"></circle><circle cx="15.5" cy="8.5" r="1" fill="currentColor" stroke="none"></circle></svg>
+                    </button>
+                    <button class="icon-btn" onclick="window.location.reload()" title="App neu laden (Refresh)">
+                        <svg viewBox="0 0 24 24"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 1 0 2.13-5.83L21 8"></path></svg>
                     </button>
                     <button class="icon-btn" onclick="dlAllZip()" title="Master ZIP Download">
                         <svg viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
                     </button>
-                    <button class="icon-btn" onclick="document.getElementById('fileUpload').click()" title="Audio Upload">
-                        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    <button class="icon-btn" onclick="showQR()" title="App Teilen">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                     </button>
                     <button class="icon-btn" title="Mikrofon" style="position:relative;">
                         <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
@@ -434,7 +444,7 @@
 <input type="file" id="fileUpload" hidden accept=".flac,.m4a,.mp3,.mp4,.mpeg,.mpga,.oga,.ogg,.wav,.webm,.opus,.amr">
 
 <script>
-    // Scroll to top on refresh
+    // Force Scroll to Top on Refresh
     window.onload = () => { document.querySelector('.scroll-zone').scrollTo(0, 0); };
 
     const els = {
@@ -471,30 +481,30 @@
     function toggleApiVisibility() { els.apiKey.type = els.apiKey.type === 'password' ? 'text' : 'password'; }
     function saveApiAndClose() { localStorage.setItem("key_v38", els.apiKey.value); toggleModal('apiModal'); showToast("Key gespeichert"); }
 
-    let currentThemeIdx = parseInt(localStorage.getItem('theme_idx_v69') || 0);
+    let currentThemeIdx = parseInt(localStorage.getItem('theme_idx_v70') || 0);
     function cycleTheme() { currentThemeIdx = (currentThemeIdx + 1) % themes.length; applyTheme(currentThemeIdx); }
     function applyTheme(idx) {
         document.documentElement.setAttribute('data-theme', themes[idx]);
         els.themeIcon.innerHTML = `<svg viewBox="0 0 24 24">${svgThemes[idx]}</svg>`;
-        localStorage.setItem('theme_idx_v69', idx);
+        localStorage.setItem('theme_idx_v70', idx);
         updateDev(true); 
     }
     applyTheme(currentThemeIdx);
 
-    let isAutoSave = localStorage.getItem("autodl_v69") === 'true';
+    let isAutoSave = localStorage.getItem("autodl_v70") === 'true';
     function updateSaveBtn() { els.btnAutoSave.className = isAutoSave ? 'btn-sleek' : 'btn-sleek inactive'; }
-    window.toggleSave = () => { isAutoSave = !isAutoSave; localStorage.setItem("autodl_v69", isAutoSave); updateSaveBtn(); showToast(isAutoSave ? "Auto-Save An" : "Auto-Save Aus"); };
+    window.toggleSave = () => { isAutoSave = !isAutoSave; localStorage.setItem("autodl_v70", isAutoSave); updateSaveBtn(); showToast(isAutoSave ? "Auto-Save An" : "Auto-Save Aus"); };
     updateSaveBtn();
 
     const cutOptions = [0, 1, 2, 3, 4, 5];
-    let currentCutIdx = localStorage.getItem("autocut_idx_v69");
+    let currentCutIdx = localStorage.getItem("autocut_idx_v70");
     if(currentCutIdx === null) currentCutIdx = 2; else currentCutIdx = parseInt(currentCutIdx);
     function updateCutBtn() { 
         let val = cutOptions[currentCutIdx];
         els.btnAutoCut.className = val > 0 ? 'btn-sleek' : 'btn-sleek inactive';
         els.cutDisplay.innerText = val > 0 ? `${val} Min` : 'Off';
     }
-    window.cycleAutoCut = () => { currentCutIdx = (currentCutIdx + 1) % cutOptions.length; localStorage.setItem("autocut_idx_v69", currentCutIdx); updateCutBtn(); };
+    window.cycleAutoCut = () => { currentCutIdx = (currentCutIdx + 1) % cutOptions.length; localStorage.setItem("autocut_idx_v70", currentCutIdx); updateCutBtn(); };
     updateCutBtn();
 
     window.switchStudioTab = (tab) => {
@@ -504,29 +514,30 @@
         document.getElementById('viewAnims').style.display = tab === 'anims' ? 'block' : 'none';
     };
 
-    // --- COLOR STUDIO 2.0 (Math Engine & Performance Fix) ---
+    // --- COLOR STUDIO 2.0 (BUGFIX & ZERO LAG) ---
     function hslToHex(h, s, l) {
         l /= 100; const a = s * Math.min(l, 1 - l) / 100;
         const f = n => { const k = (n + h / 30) % 12; const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1); return Math.round(255 * color).toString(16).padStart(2, '0'); };
         return `#${f(0)}${f(8)}${f(4)}`;
     }
 
-    // Input: Updates visual UI instantly without laggy storage saving
+    // Live-Preview OHNE Lag (kein LocalStorage hier!)
     els.vibeSlider.addEventListener('input', (e) => {
         let hue = parseInt(e.target.value);
-        let c1 = hslToHex(hue, 80, 70);
-        let c2 = hslToHex((hue + 40) % 360, 80, 70);
-        let b1 = hslToHex((hue - 20 + 360) % 360, 90, 75);
-        let b2 = hslToHex((hue + 20) % 360, 90, 75);
-        let b3 = hslToHex((currentHue + 60) % 360, 90, 75);
+        let c1 = hslToHex(hue, 80, 65);
+        let c2 = hslToHex((hue + 45) % 360, 80, 65);
+        let b1 = hslToHex((hue + 320) % 360, 90, 70);
+        let b2 = hslToHex((hue + 20) % 360, 90, 70);
+        let b3 = hslToHex((hue + 60) % 360, 90, 70);
+        
         els.col1.value = c1; els.col2.value = c2;
         els.blob1.value = b1; els.blob2.value = b2; els.blob3.value = b3;
         document.documentElement.style.setProperty('--c1', c1); 
         document.documentElement.style.setProperty('--c2', c2);
     });
-    
-    // Change: Saves state to localStorage only when user releases slider
-    els.vibeSlider.addEventListener('change', (e) => {
+
+    // Speichern erst beim Loslassen
+    els.vibeSlider.addEventListener('change', () => {
         localStorage.setItem('d_c1', els.col1.value); localStorage.setItem('d_c2', els.col2.value); 
         localStorage.setItem('d_b1', els.blob1.value); localStorage.setItem('d_b2', els.blob2.value); localStorage.setItem('d_b3', els.blob3.value); 
         updateDev(true);
@@ -539,7 +550,7 @@
         localStorage.setItem('d_c1', c1); localStorage.setItem('d_c2', c2); 
         localStorage.setItem('d_b1', b1); localStorage.setItem('d_b2', b2); localStorage.setItem('d_b3', b3); 
         updateDev(); 
-        if(!isRainbow) els.vibeSlider.value = 280; // Reset slider position visually
+        if(!isRainbow) els.vibeSlider.value = 280;
     }
 
     window.resetDev = () => { applyPreset('#a18cd1', '#fbc2eb', '#8ec5fc', '#e0c3fc', '#99ddff'); els.vibeSlider.value = 280; showToast("Reset"); };
@@ -562,9 +573,9 @@
     }
     [els.col1, els.col2, els.blob1, els.blob2, els.blob3].forEach(el => el.addEventListener('input', () => updateDev(false)));
 
-    let currentAnim = localStorage.getItem('anim_type_v69') || 'nebula';
+    let currentAnim = localStorage.getItem('anim_type_v70') || 'blobs';
     function setAnim(type) {
-        currentAnim = type; localStorage.setItem('anim_type_v69', type);
+        currentAnim = type; localStorage.setItem('anim_type_v70', type);
         document.querySelectorAll('.anim-option').forEach(el => el.classList.remove('active'));
         document.getElementById(`anim-${type}`).classList.add('active');
     }
@@ -592,7 +603,7 @@
     }
     function loadHistory() { 
         let h = JSON.parse(localStorage.getItem("hist_master")||"[]");
-        h.sort((a, b) => a.id - b.id); 
+        h.sort((a, b) => b.id - a.id); 
         els.feed.innerHTML = "";
         h.forEach(e => createHistoryEntry(e.id, e.ts, e.text, [], e.cost || 0, e.durationStr || "00:00", true)); 
     }
@@ -602,7 +613,7 @@
     window.addEventListener('resize', resizeCanvas);
     function autoResizeText(textarea) { textarea.style.height = 'auto'; textarea.style.height = (textarea.scrollHeight) + 'px'; }
 
-    // --- SMOOTH ANIMATIONS ---
+    // --- SCHARFE, DEUTLICHE ANIMATIONEN ---
     let smoothedVol = 0; let timeAccum = 0;
     function initVisualizer() {
         const ctx = els.canvas.getContext('2d'); resizeCanvas();
@@ -610,56 +621,61 @@
             requestAnimationFrame(draw);
             const w = els.canvas.width; const h = els.canvas.height;
             const isDark = document.documentElement.getAttribute('data-theme').includes('dark');
-            ctx.fillStyle = isDark ? '#000000' : '#ffffff';
+            ctx.fillStyle = isDark ? 'rgba(0,0,0,1)' : 'rgba(255,255,255,1)';
             ctx.fillRect(0, 0, w, h); 
 
             let rawVol = 0;
             if(analyser && isRecording && !isPaused) {
                 if(dataArray) { analyser.getByteFrequencyData(dataArray); let sum = 0; for(let i=0; i<dataArray.length; i++) sum += dataArray[i]; rawVol = (sum / dataArray.length); }
-                // Extrem entschärftes Audio-Reagieren
-                timeAccum += 0.003 + (rawVol * 0.00003); 
+                timeAccum += 0.003 + (rawVol * 0.00003); // Sehr sanfte Voice-Reaktion
             } else { timeAccum += 0.002; } 
 
             smoothedVol = smoothedVol * 0.95 + (Math.min(rawVol / 100, 1.0)) * 0.05; 
-            const intensity = 1.0 + (smoothedVol * 0.4); 
+            const intensity = 1.0 + (smoothedVol * 0.2); 
             const maxDim = Math.max(w, h);
             const colors = [els.blob1.value, els.blob2.value, els.blob3.value, els.col1.value];
 
-            if(currentAnim === 'nebula') {
-                const baseRadius = maxDim * 0.8; 
+            if(currentAnim === 'blobs') {
+                // Scharfe Blobs
+                const baseRadius = maxDim * 0.4; 
                 for(let i=0; i<5; i++) {
                     let cIdx = i % colors.length;
-                    let r = baseRadius * intensity;
-                    let x = w/2 + Math.cos(timeAccum * 0.5 + i*1.2) * w * 0.6;
-                    let y = h/2 + Math.sin(timeAccum * 0.4 + i*1.5) * h * 0.6;
-                    const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
-                    grad.addColorStop(0, colors[cIdx] + 'ee'); grad.addColorStop(1, colors[cIdx] + '00');
+                    let r = baseRadius * intensity * (0.6 + (i*0.1));
+                    let x = w/2 + Math.cos(timeAccum * 0.8 + i*1.2) * w * 0.5;
+                    let y = h/2 + Math.sin(timeAccum * 0.7 + i*1.5) * h * 0.5;
+                    const grad = ctx.createRadialGradient(x, y, r*0.1, x, y, r);
+                    grad.addColorStop(0, colors[cIdx] + 'ff');
+                    grad.addColorStop(0.6, colors[cIdx] + '99'); 
+                    grad.addColorStop(1, colors[cIdx] + '00');
                     ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
                 }
-            } else if (currentAnim === 'aurora') {
-                // Sanfte Polarlichter (Ohne harte Kanten)
-                for(let i=0; i<4; i++) {
+            } else if (currentAnim === 'waves') {
+                // Klare, geometrische Wellen
+                for(let i=0; i<3; i++) {
                     let cIdx = i % colors.length;
-                    let rX = w * 0.6 * intensity;
-                    let rY = h * 0.8;
-                    let x = (w/4) * i + Math.sin(timeAccum + i)*200;
-                    let y = h/2 + Math.sin(timeAccum * 0.4 + i) * h * 0.2;
+                    let yOffset = h/2 + Math.sin(timeAccum * 0.8 + i)*150;
                     ctx.beginPath();
-                    ctx.ellipse(x, y, rX, rY, 0, 0, Math.PI * 2);
-                    const grad = ctx.createRadialGradient(x, y, 0, x, y, Math.max(rX, rY));
-                    grad.addColorStop(0, colors[cIdx] + '99'); grad.addColorStop(1, colors[cIdx] + '00');
-                    ctx.fillStyle = grad; ctx.fill();
+                    ctx.moveTo(0, yOffset);
+                    for(let j=0; j<=w; j+=20) {
+                        let waveY = yOffset + Math.sin((j/w)*Math.PI*2 + timeAccum*1.5 + i) * 100 * intensity;
+                        ctx.lineTo(j, waveY);
+                    }
+                    ctx.lineTo(w, h); ctx.lineTo(0, h);
+                    ctx.fillStyle = colors[cIdx] + '66'; 
+                    ctx.fill();
                 }
             } else if (currentAnim === 'lava') {
-                // Sanfte Lava Tropfen
-                const baseRadius = maxDim * 0.35;
+                // Echte, scharfe Lava Tropfen
+                const baseRadius = maxDim * 0.25;
                 for(let i=0; i<6; i++) {
                     let cIdx = i % colors.length;
-                    let r = baseRadius * (0.6 + Math.sin(timeAccum + i)*0.2) * intensity;
-                    let x = w/2 + Math.sin(timeAccum * 0.4 + i*2) * w * 0.4;
-                    let y = h/2 + Math.cos(timeAccum * 0.3 + i*3) * h * 0.5;
+                    let r = baseRadius * (0.8 + Math.sin(timeAccum + i)*0.2) * intensity;
+                    let x = w/2 + Math.sin(timeAccum * 0.5 + i*2) * w * 0.4;
+                    let y = h + r - ((timeAccum * 60 + i*200) % (h + r*2)); 
                     const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
-                    grad.addColorStop(0, colors[cIdx] + 'ee'); grad.addColorStop(1, colors[cIdx] + '00');
+                    grad.addColorStop(0, colors[cIdx] + 'ff');
+                    grad.addColorStop(0.7, colors[cIdx] + 'dd');
+                    grad.addColorStop(1, colors[cIdx] + '00');
                     ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
                 }
             }
@@ -870,6 +886,7 @@
         let audioHtml = "";
         if(blobs.length > 0) {
             let players = blobs.map((b, i) => `<div class="audio-part"><span>T ${i+1}</span><audio controls playsinline src="${URL.createObjectURL(b)}" onloadedmetadata="window.fixDuration(this)"></audio></div>`).join("");
+            /* DER SCHWARZE KREIS BUGFIX (width/height im SVG!) */
             audioHtml = `<details class="custom-accordion"><summary><svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg> Audios (${blobs.length})</summary><div class="audio-list">${players}</div></details>`;
         }
 
@@ -884,12 +901,12 @@
                     </div>
                 </div>
                 <div class="entry-actions">
-                    <button class="mini-btn action" onclick="dlEntryZip(${id})" title="Paket Download (ZIP)"><svg viewBox="0 0 24 24">${svgZip}</svg></button>
-                    <button class="mini-btn" onclick="doCopy(${id}, true)" title="Text kopieren"><svg viewBox="0 0 24 24">${svgCopy}</svg></button>
-                    <button class="mini-btn" onclick="dlTxt(${id})" title="Text als .txt"><svg viewBox="0 0 24 24">${svgTxt}</svg></button>
-                    ${blobs.length > 0 ? `<button class="mini-btn" onclick="dlAudio(${id})" title="Audios laden"><svg viewBox="0 0 24 24">${svgAudio}</svg></button>` : ''}
-                    <button class="mini-btn safe" onclick="retrySession(${id})" title="Retry Audio"><svg viewBox="0 0 24 24">${svgRetry}</svg></button>
-                    <button class="mini-btn danger" onclick="delEntry(${id}, this)" title="Löschen"><svg viewBox="0 0 24 24">${svgTrash}</svg></button>
+                    <button class="mini-btn action" onclick="dlEntryZip(${id})" title="Paket Download (ZIP)"><svg viewBox="0 0 24 24"><path d="M21 8v13H3V8"></path><polyline points="1 3 23 3 23 8 1 8 1 3"></polyline><line x1="10" y1="12" x2="14" y2="12"></line></svg></button>
+                    <button class="mini-btn" onclick="doCopy(${id}, true)" title="Text kopieren"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg></button>
+                    <button class="mini-btn" onclick="dlTxt(${id})" title="Text als .txt"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></button>
+                    ${blobs.length > 0 ? `<button class="mini-btn" onclick="dlAudio(${id})" title="Audios laden"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg></button>` : ''}
+                    <button class="mini-btn safe" onclick="retrySession(${id})" title="Retry Audio"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg></button>
+                    <button class="mini-btn danger" onclick="delEntry(${id}, this)" title="Löschen"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
                 </div>
             </div>
             <textarea id="txt-${id}" class="seamless-text" oninput="autoResizeText(this)" style="max-height: none; overflow-y: hidden;">${text}</textarea>
@@ -904,7 +921,7 @@
     window.delEntry = (id, btn) => { 
         if(!btn.classList.contains('confirm')) {
             btn.classList.add('confirm'); btn.innerHTML = '<span style="font-size:0.9rem; font-weight:bold;">?</span>'; btn.style.background = 'var(--danger)'; btn.style.color = 'white';
-            setTimeout(() => { if(document.getElementById(`e-${id}`)) { btn.classList.remove('confirm'); btn.style.background = 'var(--btn-glass)'; btn.style.color = 'var(--text)'; btn.innerHTML = `<svg viewBox="0 0 24 24">${svgTrash}</svg>`; } }, 3000); return;
+            setTimeout(() => { if(document.getElementById(`e-${id}`)) { btn.classList.remove('confirm'); btn.style.background = 'var(--btn-glass)'; btn.style.color = 'var(--text)'; btn.innerHTML = `<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`; } }, 3000); return;
         }
         document.getElementById(`e-${id}`).remove(); let h = JSON.parse(localStorage.getItem("hist_master")||"[]"); localStorage.setItem("hist_master", JSON.stringify(h.filter(x => x.id != id))); 
     };
