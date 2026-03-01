@@ -91,16 +91,17 @@
 
         .app-wrapper {
             width: 100%;
-            min-height: 100dvh;
+            height: 100vh;
+            height: 100dvh;
             box-sizing: border-box;
             position: relative;
             z-index: 1;
+            display: flex;
+            flex-direction: column;
         }
 
         .sticky-zone {
-            position: -webkit-sticky;
-            position: sticky;
-            top: 0;
+            flex-shrink: 0;
             z-index: 100;
             display: flex;
             flex-direction: column;
@@ -108,32 +109,38 @@
             width: 100%;
             max-width: 780px;
             margin: 0 auto;
-            padding: 10px;
+            padding: 20px 10px 10px 10px;
             box-sizing: border-box;
         }
 
         .scroll-zone {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            padding-top: 10px;
-            padding-bottom: 120px;
-            padding-left: 10px;
-            padding-right: 10px;
+            flex-grow: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            min-height: 0;
             width: 100%;
-            max-width: 780px;
-            margin: 0 auto;
+            padding-top: 5px;
+            padding-bottom: 40px;
             box-sizing: border-box;
-            /* Thin ~5mm fade edge dynamically positioned via JS */
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0px, transparent calc(var(--mask-y, 0px) - 5px), black calc(var(--mask-y, 0px) + 5px), black 100%);
-            mask-image: linear-gradient(to bottom, transparent 0px, transparent calc(var(--mask-y, 0px) - 5px), black calc(var(--mask-y, 0px) + 5px), black 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 8px);
+            mask-image: linear-gradient(to bottom, transparent 0px, black 8px);
         }
 
-        #activeEntry,
+        #activeEntry {
+            display: none;
+            width: 100%;
+            max-width: 780px;
+            margin: 0 auto 20px auto;
+            padding: 0 10px;
+            box-sizing: border-box;
+        }
+
         #feed {
             width: 100%;
             max-width: 780px;
+            margin: 0 auto;
+            padding: 0 10px;
+            box-sizing: border-box;
             user-select: text;
             -webkit-user-select: text;
         }
@@ -409,25 +416,28 @@
         }
 
         #btnMain:hover::before {
-            opacity: 0.5;
+            opacity: 0.3;
         }
 
         #btnMain.state-recording {
             border-radius: 20px;
-            color: white;
-            border-color: transparent;
+            color: var(--danger);
+            background: var(--btn-glass);
+            box-shadow: 0 4px 20px rgba(255, 71, 87, 0.2);
+            border: none;
         }
 
         #btnMain.state-recording::before {
-            background: linear-gradient(135deg, var(--danger), var(--c1), var(--danger));
-            opacity: 0.45;
-            filter: blur(14px);
+            background: var(--danger);
+            opacity: 0.15;
+            filter: blur(8px);
             animation: drift 2.5s ease infinite alternate;
         }
 
         #btnMain.state-recording:hover {
             opacity: 1;
             transform: scale(1.05);
+            background: rgba(255, 71, 87, 0.15);
         }
 
         @keyframes drift {
@@ -511,15 +521,13 @@
         }
 
         .rec-controls #btnMain {
-            background: linear-gradient(270deg, var(--c1), var(--c2), var(--c1));
-            background-size: 400% 400%;
-            animation: plasma-spin 6s ease infinite;
+            background: var(--btn-glass);
+            color: var(--text);
+            border: none;
         }
 
-        .rec-controls #btnMain.recording {
-            background: linear-gradient(270deg, #ff4757, #ff6b81, #ff4757);
-            background-size: 400% 400%;
-            animation: plasma-spin 2s ease infinite;
+        .rec-controls #btnMain.state-recording {
+            /* Handled above */
         }
 
         .active-top-bar {
@@ -650,6 +658,8 @@
             -webkit-backdrop-filter: var(--blur-amount);
             transition: all 0.3s;
             transform-origin: top center;
+            /* V97 fix: forces proper clipping of backdrop-filter when parent has mask-image */
+            transform: translateZ(0);
         }
 
         @keyframes popIn {
@@ -1986,13 +1996,13 @@
                         requestAnimationFrame(draw);
                         const w = els.canvas.width; const h = els.canvas.height;
                         const isDark = document.documentElement.getAttribute('data-theme').includes('dark');
-                        const speedScale = parseInt(els.animSpeed.value) / 30;
+                        const speedScale = parseInt(els.animSpeed.value) / 60; // Halved original speed
 
                         // Audio Reactivity (only if voice reactive toggle is on)
                         let rawVol = 0;
                         if (voiceReactive && analyser && isRecording && !isPaused) {
                             if (dataArray) { analyser.getByteFrequencyData(dataArray); let sum = 0; for (let i = 0; i < dataArray.length; i++) sum += dataArray[i]; rawVol = (sum / dataArray.length); }
-                            timeAccum += (0.005 * speedScale) + (rawVol * 0.0002);
+                            timeAccum += (0.005 * speedScale) + (rawVol * 0.00008); // Reduced audio reactivity bump
                         } else { timeAccum += (0.005 * speedScale); }
 
                         smoothedVol = smoothedVol * 0.85 + (Math.min(rawVol / 100, 1.0)) * 0.15;
@@ -2237,6 +2247,7 @@
 
                             // Restore activeEntry to its original live-recording badge layout
                             els.activeEntry.id = 'activeEntry';
+                            els.activeEntry.className = 'glass-panel'; // Apply same styling/width as other entries
                             els.activeEntry.innerHTML = `
                                 <div class="active-top-bar" style="margin-bottom: 15px;">
                                     <div class="status-container" id="statusContainer">
@@ -2444,6 +2455,7 @@
 
                     } else {
                         els.activeEntry.style.display = 'none';
+                        els.activeEntry.className = '';
                     }
                 }
 
@@ -2590,18 +2602,7 @@
                     stickyEl.parentElement.appendChild(scrollEl);
                 }
 
-                // V95 fixed: Dynamic scroll mask calculation for sharp 5mm fade edge
-                function updateMaskY() {
-                    if (stickyEl && scrollEl) {
-                        const localY = stickyEl.getBoundingClientRect().bottom - scrollEl.getBoundingClientRect().top;
-                        scrollEl.style.setProperty('--mask-y', `${localY}px`);
-                    }
-                }
-                window.addEventListener('scroll', updateMaskY, { passive: true });
-                window.addEventListener('resize', updateMaskY, { passive: true });
-                const maskObserver = new MutationObserver(updateMaskY);
-                if (stickyEl) maskObserver.observe(stickyEl, { childList: true, subtree: true, attributes: true });
-                updateMaskY();
+
 
                 _dbg.textContent = 'JS: OK'; _dbg.style.background = 'green'; setTimeout(() => _dbg.remove(), 3000);
             } catch (e) { _dbg.textContent = 'ERR: ' + e.message + ' @' + e.stack?.match(/:(\d+):/)?.[1]; console.error(e); }
