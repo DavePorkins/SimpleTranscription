@@ -109,8 +109,8 @@
             width: 100%;
             max-width: 780px;
             margin: 0 auto;
-            /* Bottom padding set to 0 so the scroll-zone starts exactly at the border */
-            padding: 20px 10px 0px 10px;
+            /* 8px padding-right compensates for the scrollbar width below, centering it perfectly */
+            padding: 15px 18px 0px 10px;
             box-sizing: border-box;
         }
 
@@ -120,12 +120,24 @@
             overflow-x: hidden;
             min-height: 0;
             width: 100%;
-            /* 25px Top Padding prevents content from being faded at rest, giving room for the mask */
-            padding-top: 25px;
+            padding-top: 5px; /* Minimal gap, starts blurring almost immediately */
             padding-bottom: 40px;
             box-sizing: border-box;
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 20px);
-            mask-image: linear-gradient(to bottom, transparent 0px, black 20px);
+            /* Mask shifted up to start exactly at the edge */
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 15px);
+            mask-image: linear-gradient(to bottom, transparent 0px, black 15px);
+        }
+
+        /* Slim Custom Scrollbar to prevent layout shifting */
+        .scroll-zone::-webkit-scrollbar {
+            width: 8px;
+        }
+        .scroll-zone::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .scroll-zone::-webkit-scrollbar-thumb {
+            background: var(--glass-border);
+            border-radius: 4px;
         }
 
         .scroll-content-inner {
@@ -185,6 +197,8 @@
             background-clip: text;
             -webkit-text-fill-color: transparent;
             color: transparent;
+            /* softer pastel look */
+            filter: saturate(0.6) opacity(0.85);
         }
 
         html[data-theme^="dark"] h1 {
@@ -210,7 +224,6 @@
             flex-wrap: wrap;
             gap: 8px;
             width: 100%;
-            margin-bottom: 6px;
         }
 
         .header-actions,
@@ -229,14 +242,6 @@
             gap: 8px;
             width: 100%;
             flex-wrap: wrap;
-        }
-
-        .divider-h {
-            width: 100%;
-            height: 1px;
-            background: var(--glass-border);
-            margin: 10px 0;
-            opacity: 0.5;
         }
 
         .icon-btn {
@@ -318,8 +323,9 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 10px;
+            gap: 15px; /* slightly increased gap since divider is gone */
             width: 100%;
+            margin-top: 5px;
         }
 
         .timer {
@@ -337,7 +343,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 15px;
+            gap: 20px; /* slightly wider gap for bigger buttons */
             width: 100%;
         }
 
@@ -351,8 +357,8 @@
             background: var(--btn-glass);
             color: var(--text);
             border-radius: 50%;
-            width: 45px;
-            height: 45px;
+            width: 55px; /* Bigger */
+            height: 55px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             border: 1px solid var(--glass-border);
             backdrop-filter: blur(10px);
@@ -368,16 +374,16 @@
         }
 
         .btn-circle svg {
-            width: 20px;
-            height: 20px;
+            width: 24px; /* Bigger */
+            height: 24px;
             stroke: currentColor;
             fill: none;
             stroke-width: 2;
         }
 
         #btnMain {
-            width: 65px;
-            height: 65px;
+            width: 75px; /* Bigger */
+            height: 75px;
             background: var(--btn-glass);
             color: var(--text);
             border: none;
@@ -412,7 +418,7 @@
         }
 
         #btnMain.state-recording {
-            border-radius: 20px;
+            border-radius: 24px;
             color: var(--danger);
             background: var(--btn-glass);
             box-shadow: 0 4px 20px rgba(255, 71, 87, 0.2);
@@ -445,8 +451,8 @@
         #btnMain svg {
             stroke: currentColor;
             fill: none;
-            width: 28px;
-            height: 28px;
+            width: 34px; /* Bigger */
+            height: 34px;
             stroke-width: 2;
             transition: all 0.3s;
         }
@@ -468,7 +474,7 @@
             opacity: 1;
             pointer-events: all;
             transform: scale(1);
-            width: 45px;
+            width: 55px;
             margin: 0 5px;
         }
 
@@ -488,7 +494,6 @@
             border-color: transparent;
         }
 
-        /* Fixed styling for proper margin and matching widths inside .scroll-content-inner */
         #activeEntry {
             display: none;
             flex-direction: column;
@@ -1177,7 +1182,7 @@
                 <div class="top-row">
                     <div class="title-pill">
                         <h1>Simple Transcription</h1>
-                        <span class="version-tag">V95</span>
+                        <span class="version-tag">V98</span>
                     </div>
 
                     <div class="header-actions">
@@ -1264,8 +1269,6 @@
                             </svg>
                         </button>
                     </div>
-
-                    <div class="divider-h"></div>
 
                     <div class="action-center">
                         <div class="timer" id="timer">00:00</div>
@@ -1371,7 +1374,7 @@
                     } catch (err) { console.log('Wake Lock Release Error:', err.message); }
                 }
 
-                // PWA Manifest Injection
+                // PWA Manifest Injection with new polished Microphone Icon
                 (function injectPWA() {
                     const manifest = {
                         "name": "Simple Transcription",
@@ -1380,7 +1383,7 @@
                         "display": "standalone",
                         "background_color": "#050505",
                         "theme_color": "#050505",
-                        "icons": [{ "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTEiIGZpbGw9IiM4RTJERTIiLz48cGF0aCBkPSJNMTIgMmEzIDMgMCAwIDAtMyAzdjhhMyAzIDAgMCAwIDYgMFY1YTMgMyAwIDAgMC0zLTN6TTE5IDExdjJhNyA3IDAgMCAxLTE0IDBWMTEiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxsaW5lIHgxPSIxMiIgeTE9IjIwIiB4Mj0iMTIiIHkyPSIyMiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxsaW5lIHgxPSI4IiB5MT0iMjIiIHgyPSIxNiIgeTI9IjIyIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS41Ii8+PC9zdmc+", "sizes": "512x512", "type": "image/svg+xml" }]
+                        "icons": [{ "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjIyIiBmaWxsPSIjYTg4YmViIi8+PHBhdGggZD0iTTUwIDIwYTEwIDEwIDAgMCAwLTEwIDEwdjI1YTEwIDEwIDAgMCAwIDIwIDBWMzBhMTAgMTAgMCAwIDAtMTAtMTB6TTY4IDU1djJhMTggMTggMCAwIDEtMzYgMHYtMmgtNXYyYTIzIDIzIDAgMCAwIDIxIDIydjhoMTB2LThhMjMgMjMgMCAwIDAgMjEtMjJ2LTJoLTV6IiBmaWxsPSIjZmZmIi8+PC9zdmc+", "sizes": "512x512", "type": "image/svg+xml" }]
                     };
                     const stringManifest = JSON.stringify(manifest);
                     const blob = new Blob([stringManifest], { type: 'application/json' });
@@ -1437,7 +1440,7 @@
                 window.onclick = function (e) { if (e.target.classList.contains('modal')) e.target.classList.remove('visible'); };
 
                 function toggleApiVisibility() { els.apiKey.type = els.apiKey.type === 'password' ? 'text' : 'password'; }
-                function saveApiAndClose() { localStorage.setItem("key_v38", els.apiKey.value); toggleModal('apiModal'); showToast("Key gespeichert"); }
+                function saveApiAndClose() { localStorage.setItem("key_v38", els.apiKey.value); toggleModal('apiModal'); }
                 function showQR() { document.getElementById('qrcode').innerHTML = ""; new QRCode(document.getElementById("qrcode"), { text: window.location.href.split('#')[0].split('?')[0], width: 150, height: 150, colorDark: "#000000", colorLight: "#ffffff" }); toggleModal('qrModal'); }
 
                 let currentThemeIdx = parseInt(localStorage.getItem('theme_idx_v76') || 0);
@@ -1482,7 +1485,7 @@
 
                 let isAutoSave = localStorage.getItem("autodl_v86") === 'true';
                 function updateSaveBtn() { if (els.btnAutoSave) els.btnAutoSave.className = isAutoSave ? 'icon-btn' : 'icon-btn inactive'; }
-                window.toggleSave = () => { isAutoSave = !isAutoSave; localStorage.setItem("autodl_v86", isAutoSave); updateSaveBtn(); showToast(isAutoSave ? "Auto-Save An" : "Auto-Save Aus"); };
+                window.toggleSave = () => { isAutoSave = !isAutoSave; localStorage.setItem("autodl_v86", isAutoSave); updateSaveBtn(); };
                 updateSaveBtn();
 
                 const cutOptionsValues = [0, 0.5, 1, 2];
@@ -1498,7 +1501,6 @@
                     currentCutIdx = (currentCutIdx + 1) % cutOptionsValues.length;
                     localStorage.setItem("autocut_idx_v86", currentCutIdx);
                     updateCutBtn();
-                    showToast(`Auto-Cut: ${cutOptionsLabels[currentCutIdx]}`);
                 };
                 updateCutBtn();
 
@@ -1703,7 +1705,6 @@
                     updateAnimParams();
                     applyTransparency();
                     if (typeof updateVoiceToggleVisual === 'function') updateVoiceToggleVisual();
-                    showToast("V92 Defaults Geladen");
                 };
 
                 // Auto-apply V87 intense settings on first visit
@@ -2061,7 +2062,8 @@
                         els.btnPause.className = 'btn-circle side-btn visible'; els.btnCancel.className = 'btn-circle side-btn visible';
                         els.timer.style.color = "var(--text)";
                     } else if (state === 'paused') {
-                        els.iconPause.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"></polygon>';
+                        // Klares Play-Symbol in weiß
+                        els.iconPause.innerHTML = '<polygon points="7 4 19 12 7 20" fill="currentColor" stroke="none"></polygon>';
                         els.btnPause.className = 'btn-circle side-btn visible state-paused'; els.timer.style.color = "var(--warn)";
                     }
                 }
@@ -2113,7 +2115,7 @@
                         if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) options.mimeType = 'audio/webm;codecs=opus';
 
                         if (!isAutoCutting) {
-                            // V93: If the previous session morphed into activeEntry, flush it to the feed first
+                            // Wenn der vorherige Session morphing benutzt hat, wird er jetzt geklont ins Feed
                             if (els.activeEntry.dataset.morphedId) {
                                 const morphedId = els.activeEntry.dataset.morphedId;
                                 const clone = document.createElement('div');
@@ -2282,16 +2284,13 @@
 
                     // V93: Aggressively strip ALL variations of [Wartet...] from text before copy
                     const finalTxt = els.activeText.value.replace(/\n*\[Wartet auf finale Transkription\.{0,3}\]\n*/gi, '').trim();
-                    els.activeText.value = finalTxt;
-
+                    
                     if (finalTxt) {
                         const tsFull = `${new Date().toLocaleDateString('de-DE', { dateStyle: 'short' })} | ${new Date(sessionStartTime).toLocaleTimeString('de-DE', { timeStyle: 'short' })} - ${new Date().toLocaleTimeString('de-DE', { timeStyle: 'short' })}`;
                         const words = finalTxt.split(/\s+/).length;
 
                         saveToHistory(sId, finalTxt, tsFull, bList, cost, durationStr);
 
-                        // V93: TRUE IN-PLACE MORPHING — Transform activeEntry into a finished entry
-                        // Instead of hiding and re-creating, we morph the live badges into the result UI
                         let audioHtml = '';
                         let retryButton = '';
                         if (bList.length > 0) {
@@ -2300,12 +2299,11 @@
                             retryButton = `<button class="mini-btn safe" onclick="retrySession(${sId}, this)" title="Wiederholen (Retry)"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg></button>`;
                         }
 
-                        // Store blobs on the active entry element (keep id='activeEntry' to preserve CSS flex-direction!)
                         els.activeEntry.audioBlobs = bList;
 
-                        // Rebuild inner HTML to the finished entry format
-                        els.activeEntry.innerHTML = `
-                            <div class="entry-header">
+                        // FLUID TRANSITION: Replace only the top bar and append the audio player, do NOT destroy the textarea.
+                        let newHeaderHTML = `
+                            <div class="entry-header" style="animation: fadeIn 0.4s ease;">
                                 <div class="entry-meta-info">
                                     <span class="date-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ${tsFull}</span>
                                     <div class="stats-badges" style="margin-top:4px;">
@@ -2322,10 +2320,18 @@
                                     <button class="mini-btn danger" onclick="delEntry(${sId}, this)" title="Löschen"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
                                 </div>
                             </div>
-                            <textarea id="txt-${sId}" class="seamless-text" oninput="autoResizeText(this)" style="max-height: none; overflow-y: hidden;">${finalTxt}</textarea>
-                            ${audioHtml}
                         `;
-                        autoResizeText(els.activeEntry.querySelector('textarea'));
+
+                        let topBar = els.activeEntry.querySelector('.active-top-bar');
+                        if (topBar) topBar.outerHTML = newHeaderHTML;
+
+                        // Keep the actual textarea alive, just update text and ID
+                        els.activeText.value = finalTxt;
+                        els.activeText.id = `txt-${sId}`;
+
+                        if (audioHtml) els.activeEntry.insertAdjacentHTML('beforeend', audioHtml);
+                        
+                        autoResizeText(document.getElementById(`txt-${sId}`));
 
                         // Mark as morphed so next recording knows to flush it to the feed
                         els.activeEntry.dataset.morphedId = sId;
@@ -2400,7 +2406,7 @@
 
                 window.dlTxt = (id) => { download(new Blob([document.getElementById(`txt-${id}`).value]), `transkript_${id}.txt`); };
                 window.dlEntryZip = async (id) => {
-                    if (!window.JSZip) return; showToast("Paket wird gepackt..."); const zip = new JSZip(); const el = document.getElementById(`e-${id}`); const txt = document.getElementById(`txt-${id}`).value; const words = txt ? txt.split(/\s+/).length : 0;
+                    if (!window.JSZip) return; const zip = new JSZip(); const el = document.getElementById(`e-${id}`); const txt = document.getElementById(`txt-${id}`).value; const words = txt ? txt.split(/\s+/).length : 0;
                     zip.file(`transkript_${id}.txt`, txt); zip.file(`stats.txt`, `--- Statistik ---\n\nWörter: ${words}\nToken: ${Math.ceil(words / 0.75)}\nSeiten: ${(words / 250).toFixed(1)}\nID: ${id}`);
                     if (el.audioBlobs && el.audioBlobs.length > 0) { el.audioBlobs.forEach((blob, index) => { zip.folder("audio").file(`rec_${id}_part${index + 1}.${blob.type.includes('mp4') ? 'mp4' : 'webm'}`, blob); }); }
                     download(await zip.generateAsync({ type: "blob" }), `Memo_Backup_${id}.zip`);
