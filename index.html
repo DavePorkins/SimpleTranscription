@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -25,12 +25,8 @@
         body {
             font-family: 'Inter', -apple-system, sans-serif;
             margin: 0;
-            height: 100dvh;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
             background: transparent;
-            overflow: hidden;
+            min-height: 100dvh;
         }
 
         :root {
@@ -95,25 +91,24 @@
 
         .app-wrapper {
             width: 100%;
-            height: 100dvh;
-            display: flex;
-            flex-direction: column;
+            min-height: 100dvh;
             box-sizing: border-box;
             position: relative;
             z-index: 1;
         }
 
         .sticky-zone {
+            position: -webkit-sticky;
             position: sticky;
-            top: 10px;
+            top: 0;
             z-index: 100;
             display: flex;
             flex-direction: column;
             gap: 12px;
             width: 100%;
-            max-width: 800px;
+            max-width: 780px;
             margin: 0 auto;
-            padding: 10px 10px 0px 10px;
+            padding: 10px;
             box-sizing: border-box;
         }
 
@@ -121,28 +116,26 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 15px;
-            padding-top: 30px;
+            gap: 8px;
+            padding-top: 10px;
             padding-bottom: 120px;
             padding-left: 10px;
             padding-right: 10px;
             width: 100%;
+            max-width: 780px;
+            margin: 0 auto;
             box-sizing: border-box;
-            overflow-y: auto;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0px, rgba(0, 0, 0, 1) 30px);
-            mask-image: linear-gradient(to bottom, transparent 0px, rgba(0, 0, 0, 1) 30px);
+            /* Thin ~5mm fade edge dynamically positioned via JS */
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0px, transparent calc(var(--mask-y, 0px) - 5px), black calc(var(--mask-y, 0px) + 5px), black 100%);
+            mask-image: linear-gradient(to bottom, transparent 0px, transparent calc(var(--mask-y, 0px) - 5px), black calc(var(--mask-y, 0px) + 5px), black 100%);
         }
 
         #activeEntry,
         #feed {
             width: 100%;
             max-width: 780px;
-        }
-
-        .scroll-zone::-webkit-scrollbar {
-            display: none;
+            user-select: text;
+            -webkit-user-select: text;
         }
 
         .glass-panel {
@@ -212,12 +205,22 @@
         }
 
         .header-actions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(42px, 1fr));
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
             gap: 8px;
-            justify-items: center;
             width: 100%;
             margin-bottom: 6px;
+        }
+
+        .header-actions,
+        .action-flex,
+        .rec-controls,
+        .btn-circle,
+        .icon-btn,
+        .mini-btn {
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         .action-flex {
@@ -226,6 +229,14 @@
             gap: 8px;
             width: 100%;
             flex-wrap: wrap;
+        }
+
+        .divider-h {
+            width: 100%;
+            height: 1px;
+            background: var(--glass-border);
+            margin: 10px 0;
+            opacity: 0.5;
         }
 
         .icon-btn {
@@ -479,9 +490,36 @@
             display: none;
             flex-direction: column;
             gap: 12px;
-            margin-top: 5px;
+            margin-top: 0;
             transition: all 0.4s ease;
             transform-origin: top;
+        }
+
+        /* V93: Record button slow plasma animation */
+        @keyframes plasma-spin {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .rec-controls #btnMain {
+            background: linear-gradient(270deg, var(--c1), var(--c2), var(--c1));
+            background-size: 400% 400%;
+            animation: plasma-spin 6s ease infinite;
+        }
+
+        .rec-controls #btnMain.recording {
+            background: linear-gradient(270deg, #ff4757, #ff6b81, #ff4757);
+            background-size: 400% 400%;
+            animation: plasma-spin 2s ease infinite;
         }
 
         .active-top-bar {
@@ -599,7 +637,7 @@
         .entry {
             background: var(--glass-bg);
             border-radius: 28px;
-            padding: 20px;
+            padding: 15px;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
             border: 1px solid var(--glass-border);
             box-sizing: border-box;
@@ -1145,7 +1183,7 @@
                         </div>
                         <div>
                             <div style="font-size:0.85rem; font-weight:700; color:var(--text); margin-bottom:6px;">
-                                <span>Transparenz</span>
+                                <span>UI Transparenz</span>
                             </div>
                             <input type="range" id="uiTransparency" min="0" max="100" value="70"
                                 style="width:100%; accent-color: var(--accent);">
@@ -1159,6 +1197,18 @@
                     style="font-size:0.95rem; font-weight:800; color:var(--text); margin-bottom:12px; text-align:center;">
                     Hintergrund-Animation</div>
                 <div style="border-top: 1px solid var(--glass-border); padding-top: 12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;" class="dev-row">
+                        <span style="font-weight:bold;">Touch-Ripples</span>
+                        <label style="position:relative; width:36px; height:20px; cursor:pointer; flex-shrink:0;">
+                            <input type="checkbox" id="touchRippleToggle" checked style="display:none;">
+                            <span id="rippleToggleTrack"
+                                style="position:absolute;inset:0;background:var(--accent);border-radius:10px;transition:0.3s;"></span>
+                            <span id="rippleToggleThumb"
+                                style="position:absolute;top:2px;left:18px;width:16px;height:16px;background:white;border-radius:50%;transition:0.3s;box-shadow:0 1px 3px rgba(0,0,0,0.2);"></span>
+                        </label>
+                    </div>
+                </div>
+                <div style="border-top: 1px solid var(--glass-border); padding-top: 12px; margin-top: 12px;">
                     <div style="display:none;" class="dev-row">
                         <span>Stimmreaktiv</span>
                         <label style="position:relative; width:36px; height:20px; cursor:pointer; flex-shrink:0;">
@@ -1175,6 +1225,8 @@
                             value="60"></div>
                     <div class="dev-row"><span>Größe</span> <input type="range" id="animSize" min="10" max="100"
                             value="60"></div>
+                    <div class="dev-row"><span>Ripple-Intensität</span> <input type="range" id="rippleIntensity"
+                            min="10" max="200" value="100"></div>
                 </div>
             </div>
         </div>
@@ -1227,7 +1279,7 @@
                 <div class="top-row">
                     <div class="title-pill">
                         <h1>Simple Transcription</h1>
-                        <span class="version-tag">V84</span>
+                        <span class="version-tag">V95</span>
                     </div>
 
                     <div class="header-actions">
@@ -1275,7 +1327,7 @@
                                 <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
                             </svg>
                         </button>
-                        <button class="icon-btn" title="Mikrofon" style="position:relative;">
+                        <div class="icon-btn" title="Mikrofon" style="position:relative; cursor:pointer;">
                             <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
                                 <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
                                 <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
@@ -1286,7 +1338,7 @@
                                 style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer;">
                                 <option value="default">Default</option>
                             </select>
-                        </button>
+                        </div>
                         <!-- Neu: Clear All (Trashcan) -->
                         <button class="icon-btn" onclick="clearAllHistory()" title="Alle löschen">
                             <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"
@@ -1297,18 +1349,19 @@
                                 </path>
                             </svg>
                         </button>
-                    </div>
 
-                    <div class="action-flex" style="margin-top: 4px;">
-                        <div class="btn-sleek inactive" id="btnAutoSave" onclick="toggleSave()"
+                        <!-- Auto-Save Icon Button -->
+                        <button class="icon-btn inactive" id="btnAutoSave" onclick="toggleSave()"
                             title="Auto-Save Backup">
                             <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
                                 <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
                                 <polyline points="17 21 17 13 7 13 7 21"></polyline>
                                 <polyline points="7 3 7 8 15 8"></polyline>
-                            </svg> Auto-Save
-                        </div>
-                        <div class="btn-sleek" id="btnAutoCut" onclick="cycleAutoCut()" title="Auto-Cut Intervall">
+                            </svg>
+                        </button>
+
+                        <!-- Auto-Cut Icon Button -->
+                        <button class="icon-btn" id="btnAutoCut" onclick="cycleAutoCut()" title="Auto-Cut Intervall">
                             <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
                                 <circle cx="6" cy="6" r="3"></circle>
                                 <circle cx="6" cy="18" r="3"></circle>
@@ -1316,859 +1369,1100 @@
                                 <line x1="14.47" y1="14.48" x2="20" y2="20"></line>
                                 <line x1="8.12" y1="8.12" x2="12" y2="12"></line>
                             </svg>
-                            <span id="cutDisplay">2 Min</span>
+                        </button>
+                    </div>
+
+                    <div class="divider-h"></div>
+
+                    <div class="action-center">
+                        <div class="timer" id="timer">00:00</div>
+                        <div class="rec-controls">
+                            <button id="btnCancel" class="btn-circle side-btn" title="Verwerfen"
+                                onclick="cancelRec(this)">
+                                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                            <button id="btnMain" class="btn-circle" title="Aufnahme / Stop">
+                                <svg id="iconMain" viewBox="0 0 24 24" stroke="currentColor" fill="none"
+                                    stroke-width="2">
+                                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                    <line x1="12" y1="19" x2="12" y2="23"></line>
+                                    <line x1="8" y1="23" x2="16" y2="23"></line>
+                                </svg>
+                            </button>
+                            <button id="btnPause" class="btn-circle side-btn" title="Pause / Weiter">
+                                <svg id="iconPause" viewBox="0 0 24 24" stroke="currentColor" fill="none"
+                                    stroke-width="2">
+                                    <rect x="6" y="4" width="4" height="16"></rect>
+                                    <rect x="14" y="4" width="4" height="16"></rect>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="glass-panel" id="glassBlock">
-                <div class="action-center">
-                    <div class="timer" id="timer">00:00</div>
-                    <div class="rec-controls">
-                        <button id="btnCancel" class="btn-circle side-btn" title="Verwerfen" onclick="cancelRec(this)">
-                            <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
-                                <line x1="18" y1="6" x2="6" y2="18"></line>
-                                <line x1="6" y1="6" x2="18" y2="18"></line>
-                            </svg>
-                        </button>
-                        <button id="btnMain" class="btn-circle" title="Aufnahme / Stop">
-                            <svg id="iconMain" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
-                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                                <line x1="12" y1="19" x2="12" y2="23"></line>
-                                <line x1="8" y1="23" x2="16" y2="23"></line>
-                            </svg>
-                        </button>
-                        <button id="btnPause" class="btn-circle side-btn" title="Pause / Weiter">
-                            <svg id="iconPause" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
-                                <rect x="6" y="4" width="4" height="16"></rect>
-                                <rect x="14" y="4" width="4" height="16"></rect>
-                            </svg>
-                        </button>
+            <div class="scroll-zone">
+
+                <div id="activeEntry" class="glass-panel" style="display:none; padding-bottom: 25px;">
+                    <div class="active-top-bar" style="margin-bottom: 15px;">
+                        <div class="status-container" id="statusContainer">
+                            <span class="status-badge" id="badgeListen"><svg viewBox="0 0 24 24" width="14" height="14"
+                                    fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z">
+                                    </path>
+                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                    <line x1="12" y1="19" x2="12" y2="23"></line>
+                                    <line x1="8" y1="23" x2="16" y2="23"></line>
+                                </svg> Höre zu...</span>
+                            <!-- Transcribing state -->
+                            <span class="status-badge highlight" id="badgeTranscribe" style="display:none;"><svg
+                                    viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path
+                                        d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83">
+                                    </path>
+                                </svg> Transkribiere...</span>
+                            <span class="status-badge" id="badgeCut"
+                                style="display:none; color:var(--warn); border-color:var(--warn);"><svg
+                                    viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <circle cx="6" cy="6" r="3"></circle>
+                                    <circle cx="6" cy="18" r="3"></circle>
+                                    <line x1="20" y1="4" x2="8.12" y2="15.88"></line>
+                                </svg> Cut...</span>
+                        </div>
+                        <!-- Start time added -->
+                        <span class="timestamp-badge" id="liveStartTs">Gestartet: --:--</span>
+
+                        <div class="stats-badges" id="liveBadges">
+                            <span class="stat-pill" id="liveWords" title="Anzahl der gesprochenen Wörter">0 W</span>
+                            <span class="stat-pill" id="liveTokens" title="Geschätzte KI Token">0 T</span>
+                            <span class="stat-pill" id="livePages" title="Geschätzte Buchseiten">0 S</span>
+                            <span class="stat-pill" id="liveCost" title="Kosten der API">0.0 ct</span>
+                        </div>
                     </div>
+                    <!-- Fixed padding/margin bug in textarea -->
+                    <textarea id="activeText" class="seamless-text" readonly placeholder="Sprich in das Mikrofon..."
+                        style="margin-bottom: 5px;"></textarea>
                 </div>
+
+                <div id="feed"></div>
+
             </div>
         </div>
 
-        <div class="scroll-zone">
+        <input type="file" id="fileUpload" hidden
+            accept=".flac,.m4a,.mp3,.mp4,.mpeg,.mpga,.oga,.ogg,.wav,.webm,.opus,.amr">
+        <!-- External JS at the end -->
+        <script>
+            try {
+                // === ALL STATE VARIABLES AT TOP ===
+                var globalStream, mediaRecorder, chunks = [], audioCtx, analyser, dataArray;
+                var isRecording = false, isPaused = false, isCancelled = false;
+                var sessionStartTime = 0, partStartTime = 0, totalPauseDelta = 0, partPauseDelta = 0, pauseStart = 0, timerInt;
+                var micsLoaded = false;
 
-            <div id="activeEntry" class="glass-panel" style="display:none; padding-bottom: 25px;">
-                <div class="active-top-bar" style="margin-bottom: 15px;">
-                    <div class="status-container" id="statusContainer">
-                        <span class="status-badge" id="badgeListen"><svg viewBox="0 0 24 24" width="14" height="14"
-                                fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z">
-                                </path>
-                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                                <line x1="12" y1="19" x2="12" y2="23"></line>
-                                <line x1="8" y1="23" x2="16" y2="23"></line>
-                            </svg> Höre zu...</span>
-                        <!-- Transcribing state -->
-                        <span class="status-badge highlight" id="badgeTranscribe" style="display:none;"><svg
-                                viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path
-                                    d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83">
-                                </path>
-                            </svg> Transkribiere...</span>
-                        <span class="status-badge" id="badgeCut"
-                            style="display:none; color:var(--warn); border-color:var(--warn);"><svg viewBox="0 0 24 24"
-                                width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="6" cy="6" r="3"></circle>
-                                <circle cx="6" cy="18" r="3"></circle>
-                                <line x1="20" y1="4" x2="8.12" y2="15.88"></line>
-                            </svg> Cut...</span>
-                    </div>
-                    <!-- Start time added -->
-                    <span class="timestamp-badge" id="liveStartTs">Gestartet: --:--</span>
-
-                    <div class="stats-badges" id="liveBadges">
-                        <span class="stat-pill" id="liveWords" title="Anzahl der gesprochenen Wörter">0 W</span>
-                        <span class="stat-pill" id="liveTokens" title="Geschätzte KI Token">0 T</span>
-                        <span class="stat-pill" id="livePages" title="Geschätzte Buchseiten">0 S</span>
-                        <span class="stat-pill" id="liveCost" title="Kosten der API">0.0 ct</span>
-                    </div>
-                </div>
-                <!-- Fixed padding/margin bug in textarea -->
-                <textarea id="activeText" class="seamless-text" readonly placeholder="Sprich in das Mikrofon..."
-                    style="margin-bottom: 5px;"></textarea>
-            </div>
-
-            <div id="feed"></div>
-
-        </div>
-    </div>
-
-    <input type="file" id="fileUpload" hidden accept=".flac,.m4a,.mp3,.mp4,.mpeg,.mpga,.oga,.ogg,.wav,.webm,.opus,.amr">
-    <!-- External JS at the end -->
-    <script>
-        try {
-            // === ALL STATE VARIABLES AT TOP ===
-            var globalStream, mediaRecorder, chunks = [], audioCtx, analyser, dataArray;
-            var isRecording = false, isPaused = false, isCancelled = false;
-            var sessionStartTime = 0, partStartTime = 0, totalPauseDelta = 0, partPauseDelta = 0, pauseStart = 0, timerInt;
-            var micsLoaded = false;
-
-            // Wake Lock API handles retaining screen-on state during recording
-            var wakeLock = null;
-            async function requestWakeLock() {
-                try {
-                    if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
-                } catch (err) { console.log('Wake Lock Error:', err.message); }
-            }
-            async function releaseWakeLock() {
-                try {
-                    if (wakeLock !== null) { await wakeLock.release(); wakeLock = null; }
-                } catch (err) { console.log('Wake Lock Release Error:', err.message); }
-            }
-
-            // PWA Manifest Injection
-            (function injectPWA() {
-                const manifest = {
-                    "name": "Simple Transcription",
-                    "short_name": "Transcribe",
-                    "start_url": ".",
-                    "display": "standalone",
-                    "background_color": "#050505",
-                    "theme_color": "#050505",
-                    "icons": [{ "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iI2M0NzFlZCIvPjwvc3ZnPg==", "sizes": "512x512", "type": "image/svg+xml" }]
-                };
-                const stringManifest = JSON.stringify(manifest);
-                const blob = new Blob([stringManifest], { type: 'application/json' });
-                const manifestURL = URL.createObjectURL(blob);
-                let manifestLink = document.createElement('link');
-                manifestLink.rel = 'manifest';
-                manifestLink.href = manifestURL;
-                document.head.appendChild(manifestLink);
-            })();
-            var currentSessionId = null, currentPart = 1, isAutoCutting = false;
-            var pendingTranscriptions = 0, sessionBlobs = [], activeCost = 0;
-            var allTokensUsed = 0;
-            var customHues = [200, 300], draggingThumb = null;
-            var particlesArray = [], drops = [], matrixChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*';
-            var smoothedVol = 0, timeAccum = 0;
-            var wakeLock = null;
-            var pendingCopyText = null;
-            var currentAnim = 'blobs';
-            var voiceReactive = true;
-
-            window.onload = () => { document.querySelector('.scroll-zone').scrollTo(0, 0); };
-
-            const els = {
-                btnMain: document.getElementById('btnMain'), btnPause: document.getElementById('btnPause'), btnCancel: document.getElementById('btnCancel'),
-                iconMain: document.getElementById('iconMain'), iconPause: document.getElementById('iconPause'), themeIcon: document.getElementById('themeIcon'),
-                timer: document.getElementById('timer'), liveBadges: document.getElementById('liveBadges'), liveWords: document.getElementById('liveWords'), liveCost: document.getElementById('liveCost'), liveTokens: document.getElementById('liveTokens'), livePages: document.getElementById('livePages'),
-                glassBlock: document.getElementById('glassBlock'), canvas: document.getElementById('cloudCanvas'), feed: document.getElementById('feed'), activeEntry: document.getElementById('activeEntry'), activeText: document.getElementById('activeText'),
-                badgeListen: document.getElementById('badgeListen'), badgeTranscribe: document.getElementById('badgeTranscribe'), badgeCut: document.getElementById('badgeCut'), liveStartTs: document.getElementById('liveStartTs'),
-                apiKey: document.getElementById('apiKey'), fileUpload: document.getElementById('fileUpload'),
-                toast: document.getElementById('toast'), toastMsg: document.getElementById('toastMsg'), btnAutoSave: document.getElementById('btnAutoSave'), btnAutoCut: document.getElementById('btnAutoCut'), cutDisplay: document.getElementById('cutDisplay'),
-                devPanel: document.getElementById('devPanel'), apiModal: document.getElementById('apiModal'), qrModal: document.getElementById('qrModal'), micSelect: document.getElementById('micSelect'),
-                animSpeed: document.getElementById('animSpeed'), animBlur: document.getElementById('animBlur'),
-                animSize: document.getElementById('animSize'),
-                edgeGlow: document.getElementById('edgeGlow'), voiceReactiveEl: document.getElementById('voiceReactive'),
-                colorVariety: document.getElementById('colorVariety'),
-                hueStart: document.getElementById('hueStart'), hueEnd: document.getElementById('hueEnd'), hueHighlight: document.getElementById('hueHighlight')
-            };
-
-            const svgThemes = [
-                `<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>`,
-                `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>`
-            ];
-            const themes = ['light-clear', 'dark'];
-
-            function switchStudioTab(tab) {
-                document.getElementById('tabColors').classList.toggle('active', tab === 'colors');
-                document.getElementById('tabAnims').classList.toggle('active', tab === 'anims');
-                document.getElementById('viewColors').style.display = tab === 'colors' ? 'block' : 'none';
-                document.getElementById('viewAnims').style.display = tab === 'anims' ? 'block' : 'none';
-            }
-
-            function toggleModal(id) { document.getElementById(id).classList.toggle('visible'); }
-            // Close modal on outside click
-            window.onclick = function (e) { if (e.target.classList.contains('modal')) e.target.classList.remove('visible'); };
-
-            function toggleApiVisibility() { els.apiKey.type = els.apiKey.type === 'password' ? 'text' : 'password'; }
-            function saveApiAndClose() { localStorage.setItem("key_v38", els.apiKey.value); toggleModal('apiModal'); showToast("Key gespeichert"); }
-            function showQR() { document.getElementById('qrcode').innerHTML = ""; new QRCode(document.getElementById("qrcode"), { text: window.location.href.split('#')[0].split('?')[0], width: 150, height: 150, colorDark: "#000000", colorLight: "#ffffff" }); toggleModal('qrModal'); }
-
-            let currentThemeIdx = parseInt(localStorage.getItem('theme_idx_v76') || 0);
-            function cycleTheme() { currentThemeIdx = (currentThemeIdx + 1) % themes.length; applyTheme(currentThemeIdx); }
-            function applyTheme(idx) {
-                document.documentElement.setAttribute('data-theme', themes[idx]);
-                els.themeIcon.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">${svgThemes[idx]}</svg>`;
-                localStorage.setItem('theme_idx_v76', idx);
-                if (typeof updateAnimParams === 'function') updateAnimParams(true);
-                applyTransparency();
-                if (typeof window.updateHue === 'function') window.updateHue();
-            }
-            function applyTransparency() {
-                let slider = document.getElementById('uiTransparency');
-                if (!slider) return;
-                let t = parseInt(slider.value) / 100;
-                let isDark = themes[currentThemeIdx] === 'dark';
-                if (isDark) {
-                    let bg = 0.7 - t * 0.65;
-                    let btn = 0.4 - t * 0.35;
-                    let badge = 0.6 - t * 0.55;
-                    let title = 0.5 - t * 0.45;
-                    document.documentElement.style.setProperty('--glass-bg', `rgba(30,30,35,${bg.toFixed(2)})`);
-                    document.documentElement.style.setProperty('--input-bg', `rgba(0,0,0,${bg.toFixed(2)})`);
-                    document.documentElement.style.setProperty('--btn-glass', `rgba(255,255,255,${btn.toFixed(2)})`);
-                    document.documentElement.style.setProperty('--badge-bg', `rgba(0,0,0,${badge.toFixed(2)})`);
-                    document.documentElement.style.setProperty('--title-bg', `rgba(0,0,0,${title.toFixed(2)})`);
-                } else {
-                    let bg = 0.7 - t * 0.68;
-                    let btn = 0.7 - t * 0.65;
-                    let badge = 0.6 - t * 0.55;
-                    let title = 0.7 - t * 0.65;
-                    document.documentElement.style.setProperty('--glass-bg', `rgba(255,255,255,${bg.toFixed(2)})`);
-                    document.documentElement.style.setProperty('--input-bg', `rgba(255,255,255,${bg.toFixed(2)})`);
-                    document.documentElement.style.setProperty('--btn-glass', `rgba(255,255,255,${btn.toFixed(2)})`);
-                    document.documentElement.style.setProperty('--badge-bg', `rgba(255,255,255,${badge.toFixed(2)})`);
-                    document.documentElement.style.setProperty('--title-bg', `rgba(255,255,255,${title.toFixed(2)})`);
+                // Wake Lock API handles retaining screen-on state during recording
+                var wakeLock = null;
+                async function requestWakeLock() {
+                    try {
+                        if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
+                    } catch (err) { console.log('Wake Lock Error:', err.message); }
                 }
-                localStorage.setItem('ui_transparency_v76', slider.value);
-            }
-            applyTheme(currentThemeIdx);
-
-            let isAutoSave = localStorage.getItem("autodl_v72") === 'true';
-            function updateSaveBtn() { els.btnAutoSave.className = isAutoSave ? 'btn-sleek' : 'btn-sleek inactive'; }
-            window.toggleSave = () => { isAutoSave = !isAutoSave; localStorage.setItem("autodl_v72", isAutoSave); updateSaveBtn(); showToast(isAutoSave ? "Auto-Save An" : "Auto-Save Aus"); };
-            updateSaveBtn();
-
-            const cutOptions = [0, 1, 2, 3, 4, 5];
-            let currentCutIdx = localStorage.getItem("autocut_idx_v72") !== null ? parseInt(localStorage.getItem("autocut_idx_v72")) : 2;
-            function updateCutBtn() {
-                let val = cutOptions[currentCutIdx];
-                els.btnAutoCut.className = val > 0 ? 'btn-sleek' : 'btn-sleek inactive';
-                els.cutDisplay.innerText = val > 0 ? `${val} Min` : 'Off';
-            }
-            window.cycleAutoCut = () => { currentCutIdx = (currentCutIdx + 1) % cutOptions.length; localStorage.setItem("autocut_idx_v72", currentCutIdx); updateCutBtn(); };
-            updateCutBtn();
-
-            // Base Harmonious Palette
-            const baseColors = ['#8E2DE2', '#4A00E0', '#4facfe', '#00f2fe', '#fbc2eb', '#a18cd1', '#e0c3fc'];
-
-            // Helper: HEX to HSL
-            function hexToHSL(hex) {
-                let r = parseInt(hex.slice(1, 3), 16) / 255, g = parseInt(hex.slice(3, 5), 16) / 255, b = parseInt(hex.slice(5, 7), 16) / 255;
-                let max = Math.max(r, g, b), min = Math.min(r, g, b);
-                let h, s, l = (max + min) / 2;
-                if (max === min) { h = s = 0; } else {
-                    let d = max - min; s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-                    switch (max) {
-                        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-                        case g: h = (b - r) / d + 2; break;
-                        case b: h = (r - g) / d + 4; break;
-                    } h /= 6;
+                async function releaseWakeLock() {
+                    try {
+                        if (wakeLock !== null) { await wakeLock.release(); wakeLock = null; }
+                    } catch (err) { console.log('Wake Lock Release Error:', err.message); }
                 }
-                return [h * 360, s * 100, l * 100];
-            }
 
-            // Helper: HSL to HEX
-            function hslToHex(h, s, l) {
-                l /= 100; const a = s * Math.min(l, 1 - l) / 100;
-                const f = n => { const k = (n + h / 30) % 12; const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1); return Math.round(255 * color).toString(16).padStart(2, '0'); };
-                return `#${f(0)}${f(8)}${f(4)}`;
-            }
-
-            function renderThumbs() {
-                const tc = document.getElementById('thumbContainer');
-                if (!tc) return;
-                tc.innerHTML = '';
-                customHues.forEach((hue, idx) => {
-                    let btn = document.createElement('div');
-                    btn.className = 'color-thumb';
-                    btn.style.left = (hue / 360 * 100) + '%';
-                    btn.style.backgroundColor = `hsl(${hue}, 100%, 50%)`;
-
-                    let isDragging = false;
-                    let touchStartTime = 0;
-                    btn.onpointerdown = (e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        btn.setPointerCapture(e.pointerId);
-                        draggingThumb = idx;
-                        touchStartTime = Date.now();
-
-                        let rect = document.getElementById('huePicker').getBoundingClientRect();
-                        // store the exact offset of where the mouse grabbed the thumb relative to its center
-                        let grabOffsetPx = e.clientX - (rect.left + (hue / 360) * rect.width);
-                        let moved = false;
-
-                        const onMove = (ev) => {
-                            isDragging = true;
-                            let currentRect = document.getElementById('huePicker').getBoundingClientRect();
-                            // Subtract the initial grab offset so the thumb center stays perfectly locked to the exact spot on the finger
-                            let targetX = ev.clientX - grabOffsetPx;
-                            let newHue = ((targetX - currentRect.left) / currentRect.width) * 360;
-
-                            // Only mark as truly moved if hue shifts noticeably to prevent micro-jitters cancelling a tap
-                            if (Math.abs(newHue - hue) > 3) moved = true;
-
-                            newHue = Math.max(0, Math.min(360, newHue));
-                            customHues[idx] = newHue;
-                            btn.style.left = (newHue / 360 * 100) + '%';
-                            btn.style.backgroundColor = `hsl(${newHue}, 100%, 50%)`;
-                            updateHue();
-                        };
-
-                        const onUp = (ev) => {
-                            btn.releasePointerCapture(ev.pointerId);
-                            btn.removeEventListener('pointermove', onMove);
-                            btn.removeEventListener('pointerup', onUp);
-                            btn.removeEventListener('pointercancel', onUp);
-                            draggingThumb = null;
-                            setTimeout(() => isDragging = false, 50);
-
-                            // Mobile Touch: if finger was lifted quickly and didn't slide the thumb, delete it
-                            let touchDuration = Date.now() - touchStartTime;
-                            if (!moved && touchDuration < 350 && customHues.length > 1) {
-                                customHues.splice(idx, 1);
-                                renderThumbs();
-                                updateHue();
-                            }
-
-                            localStorage.setItem('custom_hues_v84', JSON.stringify(customHues));
-                        };
-
-                        btn.addEventListener('pointermove', onMove);
-                        btn.addEventListener('pointerup', onUp);
-                        btn.addEventListener('pointercancel', onUp);
+                // PWA Manifest Injection
+                (function injectPWA() {
+                    const manifest = {
+                        "name": "Simple Transcription",
+                        "short_name": "Transcribe",
+                        "start_url": ".",
+                        "display": "standalone",
+                        "background_color": "#050505",
+                        "theme_color": "#050505",
+                        "icons": [{ "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTEiIGZpbGw9IiM4RTJERTIiLz48cGF0aCBkPSJNMTIgMmEzIDMgMCAwIDAtMyAzdjhhMyAzIDAgMCAwIDYgMFY1YTMgMyAwIDAgMC0zLTN6TTE5IDExdjJhNyA3IDAgMCAxLTE0IDBWMTEiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxsaW5lIHgxPSIxMiIgeTE9IjIwIiB4Mj0iMTIiIHkyPSIyMiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxsaW5lIHgxPSI4IiB5MT0iMjIiIHgyPSIxNiIgeTI9IjIyIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS41Ii8+PC9zdmc+", "sizes": "512x512", "type": "image/svg+xml" }]
                     };
-                    tc.appendChild(btn);
-                });
-            }
+                    const stringManifest = JSON.stringify(manifest);
+                    const blob = new Blob([stringManifest], { type: 'application/json' });
+                    const manifestURL = URL.createObjectURL(blob);
+                    let manifestLink = document.createElement('link');
+                    manifestLink.rel = 'manifest';
+                    manifestLink.href = manifestURL;
+                    document.head.appendChild(manifestLink);
+                })();
+                var currentSessionId = null, currentPart = 1, isAutoCutting = false;
+                var pendingTranscriptions = 0, sessionBlobs = [], activeCost = 0;
+                var allTokensUsed = 0;
+                var customHues = [200, 300], draggingThumb = null;
+                var particlesArray = [], drops = [], matrixChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*';
+                var smoothedVol = 0, timeAccum = 0;
+                var wakeLock = null;
+                var pendingCopyText = null;
+                var currentAnim = 'blobs';
+                var voiceReactive = true;
 
-            function initMultiThumbSlider() {
-                const picker = document.getElementById('huePicker');
-                if (!picker) return;
-                try { customHues = JSON.parse(localStorage.getItem('custom_hues_v84') || "[200, 300]"); } catch (e) { customHues = [200, 300]; }
+                window.onload = () => { document.querySelector('.scroll-zone').scrollTo(0, 0); };
 
-                // Use click to add new thumbs, not mousedown, to prevent conflict with thumb dragging
-                picker.onclick = (e) => {
-                    if (e.target.classList.contains('color-thumb')) return; // handled by thumb
-                    let rect = picker.getBoundingClientRect();
-                    let hue = Math.max(0, Math.min(360, ((e.clientX - rect.left) / rect.width) * 360));
-                    customHues.push(hue);
+                const els = {
+                    btnMain: document.getElementById('btnMain'), btnPause: document.getElementById('btnPause'), btnCancel: document.getElementById('btnCancel'),
+                    iconMain: document.getElementById('iconMain'), iconPause: document.getElementById('iconPause'), themeIcon: document.getElementById('themeIcon'),
+                    timer: document.getElementById('timer'), liveBadges: document.getElementById('liveBadges'), liveWords: document.getElementById('liveWords'), liveCost: document.getElementById('liveCost'), liveTokens: document.getElementById('liveTokens'), livePages: document.getElementById('livePages'),
+                    glassBlock: document.getElementById('glassBlock'), canvas: document.getElementById('cloudCanvas'), feed: document.getElementById('feed'), activeEntry: document.getElementById('activeEntry'), activeText: document.getElementById('activeText'),
+                    badgeListen: document.getElementById('badgeListen'), badgeTranscribe: document.getElementById('badgeTranscribe'), badgeCut: document.getElementById('badgeCut'), liveStartTs: document.getElementById('liveStartTs'),
+                    apiKey: document.getElementById('apiKey'), fileUpload: document.getElementById('fileUpload'),
+                    toast: document.getElementById('toast'), toastMsg: document.getElementById('toastMsg'), btnAutoSave: document.getElementById('btnAutoSave'), btnAutoCut: document.getElementById('btnAutoCut'), cutDisplay: document.getElementById('cutDisplay'),
+                    devPanel: document.getElementById('devPanel'), apiModal: document.getElementById('apiModal'), qrModal: document.getElementById('qrModal'), micSelect: document.getElementById('micSelect'),
+                    animSpeed: document.getElementById('animSpeed'), animBlur: document.getElementById('animBlur'),
+                    animSize: document.getElementById('animSize'),
+                    edgeGlow: document.getElementById('edgeGlow'), voiceReactiveEl: document.getElementById('voiceReactive'),
+                    colorVariety: document.getElementById('colorVariety'),
+                    hueStart: document.getElementById('hueStart'), hueEnd: document.getElementById('hueEnd'), hueHighlight: document.getElementById('hueHighlight')
+                };
+
+                const svgThemes = [
+                    `<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>`,
+                    `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>`
+                ];
+                const themes = ['light-clear', 'dark'];
+
+                function switchStudioTab(tab) {
+                    document.getElementById('tabColors').classList.toggle('active', tab === 'colors');
+                    document.getElementById('tabAnims').classList.toggle('active', tab === 'anims');
+                    document.getElementById('viewColors').style.display = tab === 'colors' ? 'block' : 'none';
+                    document.getElementById('viewAnims').style.display = tab === 'anims' ? 'block' : 'none';
+                }
+
+                function toggleModal(id) { document.getElementById(id).classList.toggle('visible'); }
+                // Close modal on outside click
+                window.onclick = function (e) { if (e.target.classList.contains('modal')) e.target.classList.remove('visible'); };
+
+                function toggleApiVisibility() { els.apiKey.type = els.apiKey.type === 'password' ? 'text' : 'password'; }
+                function saveApiAndClose() { localStorage.setItem("key_v38", els.apiKey.value); toggleModal('apiModal'); showToast("Key gespeichert"); }
+                function showQR() { document.getElementById('qrcode').innerHTML = ""; new QRCode(document.getElementById("qrcode"), { text: window.location.href.split('#')[0].split('?')[0], width: 150, height: 150, colorDark: "#000000", colorLight: "#ffffff" }); toggleModal('qrModal'); }
+
+                let currentThemeIdx = parseInt(localStorage.getItem('theme_idx_v76') || 0);
+                function cycleTheme() { currentThemeIdx = (currentThemeIdx + 1) % themes.length; applyTheme(currentThemeIdx); }
+                function applyTheme(idx) {
+                    document.documentElement.setAttribute('data-theme', themes[idx]);
+                    els.themeIcon.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">${svgThemes[idx]}</svg>`;
+                    localStorage.setItem('theme_idx_v76', idx);
+                    if (typeof updateAnimParams === 'function') updateAnimParams(true);
+                    applyTransparency();
+                    if (typeof window.updateHue === 'function') window.updateHue();
+                }
+                function applyTransparency() {
+                    let slider = document.getElementById('uiTransparency');
+                    if (!slider) return;
+                    let t = parseInt(slider.value) / 100;
+                    let isDark = themes[currentThemeIdx] === 'dark';
+                    if (isDark) {
+                        let bg = 0.7 - t * 0.65;
+                        let btn = 0.4 - t * 0.35;
+                        let badge = 0.6 - t * 0.55;
+                        let title = 0.5 - t * 0.45;
+                        document.documentElement.style.setProperty('--glass-bg', `rgba(30,30,35,${bg.toFixed(2)})`);
+                        document.documentElement.style.setProperty('--input-bg', `rgba(0,0,0,${bg.toFixed(2)})`);
+                        document.documentElement.style.setProperty('--btn-glass', `rgba(255,255,255,${btn.toFixed(2)})`);
+                        document.documentElement.style.setProperty('--badge-bg', `rgba(0,0,0,${badge.toFixed(2)})`);
+                        document.documentElement.style.setProperty('--title-bg', `rgba(0,0,0,${title.toFixed(2)})`);
+                    } else {
+                        let bg = 0.7 - t * 0.68;
+                        let btn = 0.7 - t * 0.65;
+                        let badge = 0.6 - t * 0.55;
+                        let title = 0.7 - t * 0.65;
+                        document.documentElement.style.setProperty('--glass-bg', `rgba(255,255,255,${bg.toFixed(2)})`);
+                        document.documentElement.style.setProperty('--input-bg', `rgba(255,255,255,${bg.toFixed(2)})`);
+                        document.documentElement.style.setProperty('--btn-glass', `rgba(255,255,255,${btn.toFixed(2)})`);
+                        document.documentElement.style.setProperty('--badge-bg', `rgba(255,255,255,${badge.toFixed(2)})`);
+                        document.documentElement.style.setProperty('--title-bg', `rgba(255,255,255,${title.toFixed(2)})`);
+                    }
+                    localStorage.setItem('ui_transparency_v76', slider.value);
+                }
+                applyTheme(currentThemeIdx);
+
+                let isAutoSave = localStorage.getItem("autodl_v86") === 'true';
+                function updateSaveBtn() { if (els.btnAutoSave) els.btnAutoSave.className = isAutoSave ? 'icon-btn' : 'icon-btn inactive'; }
+                window.toggleSave = () => { isAutoSave = !isAutoSave; localStorage.setItem("autodl_v86", isAutoSave); updateSaveBtn(); showToast(isAutoSave ? "Auto-Save An" : "Auto-Save Aus"); };
+                updateSaveBtn();
+
+                const cutOptionsValues = [0, 0.5, 1, 2];
+                const cutOptionsLabels = ['Off', '30 Sek', '1 Min', '2 Min'];
+                const cutOptions = cutOptionsValues; // for updateTimer compatibility
+                let currentCutIdx = localStorage.getItem("autocut_idx_v86") !== null ? parseInt(localStorage.getItem("autocut_idx_v86")) : 3;
+                function updateCutBtn() {
+                    if (!els.btnAutoCut) return;
+                    let val = cutOptionsValues[currentCutIdx];
+                    els.btnAutoCut.className = val > 0 ? 'icon-btn' : 'icon-btn inactive';
+                }
+                window.cycleAutoCut = () => {
+                    currentCutIdx = (currentCutIdx + 1) % cutOptionsValues.length;
+                    localStorage.setItem("autocut_idx_v86", currentCutIdx);
+                    updateCutBtn();
+                    showToast(`Auto-Cut: ${cutOptionsLabels[currentCutIdx]}`);
+                };
+                updateCutBtn();
+
+                // Base Harmonious Palette
+                const baseColors = ['#8E2DE2', '#4A00E0', '#4facfe', '#00f2fe', '#fbc2eb', '#a18cd1', '#e0c3fc'];
+
+                // Helper: HEX to HSL
+                function hexToHSL(hex) {
+                    let r = parseInt(hex.slice(1, 3), 16) / 255, g = parseInt(hex.slice(3, 5), 16) / 255, b = parseInt(hex.slice(5, 7), 16) / 255;
+                    let max = Math.max(r, g, b), min = Math.min(r, g, b);
+                    let h, s, l = (max + min) / 2;
+                    if (max === min) { h = s = 0; } else {
+                        let d = max - min; s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                        switch (max) {
+                            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                            case g: h = (b - r) / d + 2; break;
+                            case b: h = (r - g) / d + 4; break;
+                        } h /= 6;
+                    }
+                    return [h * 360, s * 100, l * 100];
+                }
+
+                // Helper: HSL to HEX
+                function hslToHex(h, s, l) {
+                    l /= 100; const a = s * Math.min(l, 1 - l) / 100;
+                    const f = n => { const k = (n + h / 30) % 12; const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1); return Math.round(255 * color).toString(16).padStart(2, '0'); };
+                    return `#${f(0)}${f(8)}${f(4)}`;
+                }
+
+                function renderThumbs() {
+                    const tc = document.getElementById('thumbContainer');
+                    if (!tc) return;
+                    tc.innerHTML = '';
+                    customHues.forEach((hue, idx) => {
+                        let btn = document.createElement('div');
+                        btn.className = 'color-thumb';
+                        btn.style.left = (hue / 360 * 100) + '%';
+                        btn.style.backgroundColor = `hsl(${hue}, 100%, 50%)`;
+
+                        let isDragging = false;
+                        let touchStartTime = 0;
+                        btn.onpointerdown = (e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            btn.setPointerCapture(e.pointerId);
+                            draggingThumb = idx;
+                            touchStartTime = Date.now();
+
+                            let rect = document.getElementById('huePicker').getBoundingClientRect();
+                            // store the exact offset of where the mouse grabbed the thumb relative to its center
+                            let grabOffsetPx = e.clientX - (rect.left + (hue / 360) * rect.width);
+                            let moved = false;
+
+                            const onMove = (ev) => {
+                                isDragging = true;
+                                let currentRect = document.getElementById('huePicker').getBoundingClientRect();
+                                // Subtract the initial grab offset so the thumb center stays perfectly locked to the exact spot on the finger
+                                let targetX = ev.clientX - grabOffsetPx;
+                                let newHue = ((targetX - currentRect.left) / currentRect.width) * 360;
+
+                                // Only mark as truly moved if hue shifts noticeably to prevent micro-jitters cancelling a tap
+                                if (Math.abs(newHue - hue) > 3) moved = true;
+
+                                newHue = Math.max(0, Math.min(360, newHue));
+                                customHues[idx] = newHue;
+                                btn.style.left = (newHue / 360 * 100) + '%';
+                                btn.style.backgroundColor = `hsl(${newHue}, 100%, 50%)`;
+                                updateHue();
+                            };
+
+                            const onUp = (ev) => {
+                                btn.releasePointerCapture(ev.pointerId);
+                                btn.removeEventListener('pointermove', onMove);
+                                btn.removeEventListener('pointerup', onUp);
+                                btn.removeEventListener('pointercancel', onUp);
+                                draggingThumb = null;
+                                setTimeout(() => isDragging = false, 50);
+
+                                // Mobile Touch: if finger was lifted quickly and didn't slide the thumb, delete it
+                                let touchDuration = Date.now() - touchStartTime;
+                                if (!moved && touchDuration < 350 && customHues.length > 1) {
+                                    customHues.splice(idx, 1);
+                                    renderThumbs();
+                                    updateHue();
+                                }
+
+                                localStorage.setItem('custom_hues_v84', JSON.stringify(customHues));
+                            };
+
+                            btn.addEventListener('pointermove', onMove);
+                            btn.addEventListener('pointerup', onUp);
+                            btn.addEventListener('pointercancel', onUp);
+                        };
+                        tc.appendChild(btn);
+                    });
+                }
+
+                function initMultiThumbSlider() {
+                    const picker = document.getElementById('huePicker');
+                    if (!picker) return;
+                    try { customHues = JSON.parse(localStorage.getItem('custom_hues_v84') || "[200, 300]"); } catch (e) { customHues = [200, 300]; }
+
+                    // Use click to add new thumbs, not mousedown, to prevent conflict with thumb dragging
+                    picker.onclick = (e) => {
+                        if (e.target.classList.contains('color-thumb')) return; // handled by thumb
+                        let rect = picker.getBoundingClientRect();
+                        let hue = Math.max(0, Math.min(360, ((e.clientX - rect.left) / rect.width) * 360));
+                        customHues.push(hue);
+                        renderThumbs();
+                        updateHue();
+                        localStorage.setItem('custom_hues_v84', JSON.stringify(customHues));
+                    };
+                    renderThumbs();
+                }
+
+                function updateHue() {
+                    if (!els.colorVariety) els.colorVariety = document.getElementById('colorVariety');
+                    let variety = els.colorVariety ? parseInt(els.colorVariety.value) : 100;
+                    // Allow up to 3.0x scaling of base HSL saturation (from 2.0x) so colors can get insanely bright.
+                    let satScale = Math.min((variety / 50), 3.0);
+
+                    let sortedHues = [...customHues].sort((a, b) => a - b);
+                    if (sortedHues.length === 0) sortedHues = [200];
+
+                    let currentHexes = baseColors.map((hex, index) => {
+                        let [h, s, l] = hexToHSL(hex);
+                        let thumbHue = sortedHues[index % sortedHues.length];
+                        return hslToHex(thumbHue, Math.min(s * satScale, 100), l);
+                    });
+
+                    document.documentElement.style.setProperty('--c1', currentHexes[0]); document.documentElement.style.setProperty('--c2', currentHexes[1]);
+                    document.documentElement.style.setProperty('--b1', currentHexes[2]); document.documentElement.style.setProperty('--b2', currentHexes[3]);
+                    document.documentElement.style.setProperty('--b3', currentHexes[4]); document.documentElement.style.setProperty('--b4', currentHexes[5]);
+                    document.documentElement.style.setProperty('--b5', currentHexes[6]);
+
+                    window.appColors = {
+                        bg: [currentHexes[0], currentHexes[1]],
+                        blobs: [currentHexes[2], currentHexes[3], currentHexes[4], currentHexes[5], currentHexes[6]]
+                    };
+
+                    if (document.getElementById('gradientBar')) {
+                        let gradStops = sortedHues.map((h, i) => `hsl(${h}, 90%, 50%) ${(i / Math.max(1, sortedHues.length - 1)) * 100}%`).join(', ');
+                        if (sortedHues.length === 1) gradStops = `hsl(${sortedHues[0]}, 90%, 50%) 0%, hsl(${sortedHues[0]}, 90%, 50%) 100%`;
+                        document.getElementById('gradientBar').style.background = `linear-gradient(90deg, ${gradStops})`;
+                        document.getElementById('gradientBar').style.opacity = '0.8';
+                    }
+
+                    const metaTheme = document.getElementById('theme-color-meta');
+                    if (metaTheme) metaTheme.setAttribute('content', document.documentElement.getAttribute('data-theme').includes('dark') ? '#050505' : '#ffffff');
+
+                    if (typeof updateAnimParams === 'function') updateAnimParams(true);
+                }
+                if (els.colorVariety) {
+                    els.colorVariety.addEventListener('input', updateHue);
+                    els.colorVariety.addEventListener('change', () => localStorage.setItem('color_variety_v79', els.colorVariety.value));
+                }
+                // Transparency slider
+                (function () {
+                    let ts = document.getElementById('uiTransparency');
+                    if (ts) {
+                        let saved = localStorage.getItem('ui_transparency_v76');
+                        if (saved !== null) ts.value = saved;
+                        ts.addEventListener('input', applyTransparency);
+                        setTimeout(applyTransparency, 50);
+                    }
+                })();
+
+                // Voice reactivity toggle
+                if (els.voiceReactiveEl) {
+                    voiceReactive = localStorage.getItem('voice_reactive_v73') !== 'false';
+                    els.voiceReactiveEl.checked = voiceReactive;
+                    function updateVoiceToggleVisual() {
+                        let track = document.getElementById('voiceToggleTrack');
+                        let thumb = document.getElementById('voiceToggleThumb');
+                        if (track) track.style.background = voiceReactive ? 'var(--accent)' : 'var(--input-bg)';
+                        if (thumb) thumb.style.left = voiceReactive ? '18px' : '2px';
+                    }
+                    updateVoiceToggleVisual();
+                    els.voiceReactiveEl.addEventListener('change', () => {
+                        voiceReactive = els.voiceReactiveEl.checked;
+                        localStorage.setItem('voice_reactive_v73', voiceReactive);
+                        updateVoiceToggleVisual();
+                    });
+                }
+
+                window.resetDev = () => {
+                    // V92 Specifically requested: Turquoise, Purple, Peachy Red (approx 190, 275, 345)
+                    customHues = [190, 275, 345];
+                    if (els.colorVariety) els.colorVariety.value = 150; // max intensity
+                    localStorage.setItem('custom_hues_v84', JSON.stringify(customHues));
+                    localStorage.setItem('color_variety_v79', 150);
+                    let ts = document.getElementById('uiTransparency');
+                    if (ts) ts.value = 50; // exactly 50%
                     renderThumbs();
                     updateHue();
-                    localStorage.setItem('custom_hues_v84', JSON.stringify(customHues));
-                };
-                renderThumbs();
-            }
-
-            function updateHue() {
-                if (!els.colorVariety) els.colorVariety = document.getElementById('colorVariety');
-                let variety = els.colorVariety ? parseInt(els.colorVariety.value) : 100;
-                // Allow up to 3.0x scaling of base HSL saturation (from 2.0x) so colors can get insanely bright.
-                let satScale = Math.min((variety / 50), 3.0);
-
-                let sortedHues = [...customHues].sort((a, b) => a - b);
-                if (sortedHues.length === 0) sortedHues = [200];
-
-                let currentHexes = baseColors.map((hex, index) => {
-                    let [h, s, l] = hexToHSL(hex);
-                    let thumbHue = sortedHues[index % sortedHues.length];
-                    return hslToHex(thumbHue, Math.min(s * satScale, 100), l);
-                });
-
-                document.documentElement.style.setProperty('--c1', currentHexes[0]); document.documentElement.style.setProperty('--c2', currentHexes[1]);
-                document.documentElement.style.setProperty('--b1', currentHexes[2]); document.documentElement.style.setProperty('--b2', currentHexes[3]);
-                document.documentElement.style.setProperty('--b3', currentHexes[4]); document.documentElement.style.setProperty('--b4', currentHexes[5]);
-                document.documentElement.style.setProperty('--b5', currentHexes[6]);
-
-                window.appColors = {
-                    bg: [currentHexes[0], currentHexes[1]],
-                    blobs: [currentHexes[2], currentHexes[3], currentHexes[4], currentHexes[5], currentHexes[6]]
+                    els.animSpeed.value = 50; // mittig
+                    els.animBlur.value = 60; // Max Weichzeichner
+                    if (els.animSize) els.animSize.value = 50; // genau mittig
+                    if (els.rippleIntensity) els.rippleIntensity.value = 50; // mittig
+                    if (els.voiceReactiveEl) { els.voiceReactiveEl.checked = true; voiceReactive = true; }
+                    localStorage.setItem('voice_reactive_v73', 'true');
+                    updateAnimParams();
+                    applyTransparency();
+                    if (typeof updateVoiceToggleVisual === 'function') updateVoiceToggleVisual();
+                    showToast("V92 Defaults Geladen");
                 };
 
-                if (document.getElementById('gradientBar')) {
-                    let gradStops = sortedHues.map((h, i) => `hsl(${h}, 90%, 50%) ${(i / Math.max(1, sortedHues.length - 1)) * 100}%`).join(', ');
-                    if (sortedHues.length === 1) gradStops = `hsl(${sortedHues[0]}, 90%, 50%) 0%, hsl(${sortedHues[0]}, 90%, 50%) 100%`;
-                    document.getElementById('gradientBar').style.background = `linear-gradient(90deg, ${gradStops})`;
-                    document.getElementById('gradientBar').style.opacity = '0.8';
+                // Auto-apply V87 intense settings on first visit
+                if (localStorage.getItem('v87_defaults_set') !== 'true') {
+                    window.resetDev();
+                    localStorage.setItem('v87_defaults_set', 'true');
                 }
 
-                const metaTheme = document.getElementById('theme-color-meta');
-                if (metaTheme) metaTheme.setAttribute('content', document.documentElement.getAttribute('data-theme').includes('dark') ? '#050505' : '#ffffff');
-
-                if (typeof updateAnimParams === 'function') updateAnimParams(true);
-            }
-            if (els.colorVariety) {
-                els.colorVariety.addEventListener('input', updateHue);
-                els.colorVariety.addEventListener('change', () => localStorage.setItem('color_variety_v79', els.colorVariety.value));
-            }
-            // Transparency slider
-            (function () {
-                let ts = document.getElementById('uiTransparency');
-                if (ts) {
-                    let saved = localStorage.getItem('ui_transparency_v76');
-                    if (saved !== null) ts.value = saved;
-                    ts.addEventListener('input', applyTransparency);
-                    setTimeout(applyTransparency, 50);
-                }
-            })();
-
-            // Voice reactivity toggle
-            if (els.voiceReactiveEl) {
-                voiceReactive = localStorage.getItem('voice_reactive_v73') !== 'false';
-                els.voiceReactiveEl.checked = voiceReactive;
-                function updateVoiceToggleVisual() {
-                    let track = document.getElementById('voiceToggleTrack');
-                    let thumb = document.getElementById('voiceToggleThumb');
-                    if (track) track.style.background = voiceReactive ? 'var(--accent)' : 'var(--input-bg)';
-                    if (thumb) thumb.style.left = voiceReactive ? '18px' : '2px';
-                }
-                updateVoiceToggleVisual();
-                els.voiceReactiveEl.addEventListener('change', () => {
-                    voiceReactive = els.voiceReactiveEl.checked;
-                    localStorage.setItem('voice_reactive_v73', voiceReactive);
-                    updateVoiceToggleVisual();
-                });
-            }
-
-            window.resetDev = () => {
-                customHues = [200, 300];
-                if (els.colorVariety) els.colorVariety.value = 100;
-                localStorage.setItem('custom_hues_v84', JSON.stringify(customHues));
-                localStorage.setItem('color_variety_v79', 100);
-                if (els.colorVariety) els.colorVariety.value = 100;
-                let ts = document.getElementById('uiTransparency');
-                // Mobile typically prefers high transparency (less milky)
-                if (ts) ts.value = 90;
-                renderThumbs();
-                updateHue();
-                els.animSpeed.value = 50; els.animBlur.value = 60;
-                if (els.animSize) els.animSize.value = 60;
-                if (els.voiceReactiveEl) { els.voiceReactiveEl.checked = true; voiceReactive = true; }
-                localStorage.setItem('voice_reactive_v73', 'true');
-                updateAnimParams();
-                applyTransparency();
-                if (typeof updateVoiceToggleVisual === 'function') updateVoiceToggleVisual();
-                showToast("Reset");
-            };
-
-            function loadDev() {
-                if (!els.colorVariety) {
-                    els.colorVariety = document.getElementById('colorVariety');
-                    if (els.colorVariety) els.colorVariety.addEventListener('input', updateHue);
-                }
-
-                let savedVariety = localStorage.getItem('color_variety_v79');
-                if (els.colorVariety) {
-                    if (savedVariety !== null) { els.colorVariety.value = savedVariety; } else { els.colorVariety.value = 100; }
-                }
-
-                initMultiThumbSlider();
-                updateHue();
-
-                els.animSpeed.value = localStorage.getItem('anim_speed_v72') || 50;
-                els.animBlur.value = localStorage.getItem('anim_blur_v72') || 60;
-                if (els.edgeGlow) els.edgeGlow.value = localStorage.getItem('edge_glow_v73') || 0;
-                updateAnimParams(true);
-            }
-
-            function setAnim(type) {
-                currentAnim = 'blobs'; localStorage.setItem('anim_type_v72', 'blobs');
-                document.querySelectorAll('.anim-option').forEach(el => el.classList.remove('active'));
-                let activeNode = document.getElementById('anim-blobs');
-                if (activeNode) activeNode.classList.add('active');
-            }
-            setAnim('blobs');
-
-            function updateAnimParams(isLoad = false) {
-                if (!isLoad) {
-                    localStorage.setItem('anim_speed_v72', els.animSpeed.value);
-                    localStorage.setItem('anim_blur_v72', els.animBlur.value);
-                    if (els.edgeGlow) localStorage.setItem('edge_glow_v73', els.edgeGlow.value);
-                }
-
-                let blurVal = parseInt(els.animBlur.value);
-                let variety = els.colorVariety ? parseInt(els.colorVariety.value) : 100;
-
-                // Allow massive saturation scaling when variety > 100.
-                let darkSaturate = 1.0 + ((variety - 100) / 50);
-                darkSaturate = Math.max(0, darkSaturate);
-
-                // Boost brightness slightly above 100 to combat the heavy 0.6 darkening 
-                let darkBrightness = 0.6 + ((variety - 100) / 125);
-                darkBrightness = Math.max(0.6, Math.min(1.4, darkBrightness));
-
-                let isDark = document.documentElement.getAttribute('data-theme').includes('dark');
-                if (blurVal === 0) {
-                    els.canvas.style.filter = '';
-                } else {
-                    els.canvas.style.filter = `blur(${blurVal}px) ${isDark ? 'brightness(' + darkBrightness.toFixed(2) + ') saturate(' + darkSaturate.toFixed(2) + ')' : 'brightness(0.9) saturate(1.1)'}`;
-                }
-            }
-
-            // Decouple localStorage saving (change) from 60fps slider visual updates (input)
-            [els.animSpeed, els.animBlur, els.animSize].filter(Boolean).forEach(el => {
-                el.addEventListener('input', () => updateAnimParams(true));
-                el.addEventListener('change', () => updateAnimParams(false));
-            });
-            function initVisualizer() {
-                const ctx = els.canvas.getContext('2d');
-                function resizeCanvas() { els.canvas.width = window.innerWidth; els.canvas.height = window.innerHeight; }
-                window.addEventListener('resize', resizeCanvas); resizeCanvas();
-
-                function draw() {
-                    requestAnimationFrame(draw);
-                    const w = els.canvas.width; const h = els.canvas.height;
-                    const isDark = document.documentElement.getAttribute('data-theme').includes('dark');
-
-                    // Clear the background context smoothly
-                    ctx.fillStyle = isDark ? '#050505' : '#f5f5f5';
-                    ctx.fillRect(0, 0, w, h);
-
-                    const speedScale = parseInt(els.animSpeed.value) / 30;
-
-                    // Audio Reactivity (only if voice reactive toggle is on)
-                    let rawVol = 0;
-                    if (voiceReactive && analyser && isRecording && !isPaused) {
-                        if (dataArray) { analyser.getByteFrequencyData(dataArray); let sum = 0; for (let i = 0; i < dataArray.length; i++) sum += dataArray[i]; rawVol = (sum / dataArray.length); }
-                        timeAccum += (0.005 * speedScale) + (rawVol * 0.0002);
-                    } else { timeAccum += (0.005 * speedScale); }
-
-                    smoothedVol = smoothedVol * 0.85 + (Math.min(rawVol / 100, 1.0)) * 0.15;
-
-                    const colors = window.appColors ? window.appColors.blobs : ['#4facfe', '#00f2fe', '#fbc2eb', '#a18cd1', '#e0c3fc'];
-                    const bgColors = window.appColors ? window.appColors.bg : ['#8E2DE2', '#4A00E0'];
-
-                    // Use lighter blending for dark mode to prevent gray wash at high density
-                    ctx.globalCompositeOperation = isDark ? 'lighter' : 'source-over';
-
-                    let baseGrad = ctx.createLinearGradient(0, 0, w, h);
-                    baseGrad.addColorStop(0, bgColors[0] + (isDark ? '22' : '33'));
-                    baseGrad.addColorStop(1, bgColors[1] + (isDark ? '22' : '33'));
-                    ctx.fillStyle = baseGrad;
-                    ctx.fillRect(0, 0, w, h);
-
-                    const maxDim = Math.max(w, h);
-                    const numOrbs = 16;
-
-                    for (let i = 0; i < numOrbs; i++) {
-                        let cIdx = i % colors.length;
-
-                        // Complex Lissajous figure math for smooth fluid drifting
-                        let xOffset = Math.sin(timeAccum * 0.7 + i * 2.1) * Math.cos(timeAccum * 0.4 + i);
-                        let yOffset = Math.cos(timeAccum * 0.6 + i * 1.8) * Math.sin(timeAccum * 0.5 + i);
-
-                        let x = (w / 2) + xOffset * (w * 0.6);
-                        let y = (h / 2) + yOffset * (h * 0.6);
-
-                        // Radius pulses with audio intensity (smoothed)
-                        let sizeScale = (els.animSize ? parseInt(els.animSize.value) : 60) / 100;
-                        let r = (maxDim * 0.5 * sizeScale) * (0.6 + Math.sin(timeAccum * 1.2 + i * 3) * 0.2) * (1 + smoothedVol * 0.5);
-
-                        // Sharper blobs when blur is low
-                        let blurLevel = parseInt(els.animBlur.value) / 60;
-                        let coreStop = blurLevel < 0.1 ? 0.5 : (0.1 + blurLevel * 0.1);
-                        let fadeStop = blurLevel < 0.1 ? 0.8 : (0.4 + blurLevel * 0.6);
-                        const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
-                        let orbAlpha = isDark ? Math.max(0.15, 0.5 / Math.sqrt(numOrbs)) : 0.7;
-                        let aHex = Math.round(orbAlpha * 255).toString(16).padStart(2, '0');
-                        let aMid = Math.round(orbAlpha * 0.1 * 255).toString(16).padStart(2, '0');
-                        grad.addColorStop(0, colors[cIdx] + aHex);
-                        grad.addColorStop(coreStop, colors[cIdx] + aHex);
-                        grad.addColorStop(fadeStop, colors[cIdx] + aMid);
-                        grad.addColorStop(1, colors[cIdx] + '00');
-
-                        ctx.fillStyle = grad;
-                        ctx.beginPath();
-                        ctx.arc(x, y, r, 0, Math.PI * 2);
-                        ctx.fill();
+                function loadDev() {
+                    if (!els.colorVariety) {
+                        els.colorVariety = document.getElementById('colorVariety');
+                        if (els.colorVariety) els.colorVariety.addEventListener('input', updateHue);
                     }
 
-                    ctx.globalCompositeOperation = 'source-over';
-                }
-                draw();
-            }
-            initVisualizer();
-
-            async function loadMicrophones() {
-                if (micsLoaded) return;
-                try {
-                    const devices = await navigator.mediaDevices.enumerateDevices(); const audioDevs = devices.filter(d => d.kind === 'audioinput');
-                    if (audioDevs.length > 0) {
-                        els.micSelect.innerHTML = '<option value="default">Default</option>';
-                        audioDevs.forEach((d) => {
-                            let cleanName = d.label.replace(/\s*\([a-fA-F0-9]{4}:[a-fA-F0-9]{4}\)\s*/g, '').replace(/Default - /i, '').trim() || 'Microphone';
-                            els.micSelect.appendChild(new Option(`${cleanName.substring(0, 15)}..`, d.deviceId));
-                        }); micsLoaded = true;
+                    let savedVariety = localStorage.getItem('color_variety_v79');
+                    if (els.colorVariety) {
+                        if (savedVariety !== null) { els.colorVariety.value = savedVariety; } else { els.colorVariety.value = 100; }
                     }
-                } catch (e) { }
-            }
 
-            if (HARDCODED_KEY.length > 5) { els.apiKey.value = HARDCODED_KEY; } else { els.apiKey.value = localStorage.getItem("key_v38") || ""; }
-            function migrateHistory() { let h = localStorage.getItem("hist_master"); if (!h) localStorage.setItem("hist_master", "[]"); } migrateHistory(); loadDev();
+                    initMultiThumbSlider();
+                    updateHue();
 
-            function saveToHistory(id, text, ts, blobs, cost, durationStr) {
-                let h = JSON.parse(localStorage.getItem("hist_master") || "[]");
-                let existing = h.findIndex(x => x.id === id);
-                if (existing >= 0) h[existing] = { id, text, ts, cost, durationStr };
-                else { h.push({ id, text, ts, cost, durationStr }); h.sort((a, b) => b.id - a.id); if (h.length > 30) h.pop(); }
-                localStorage.setItem("hist_master", JSON.stringify(h));
-            }
-            function loadHistory() {
-                let h = JSON.parse(localStorage.getItem("hist_master") || "[]"); h.sort((a, b) => b.id - a.id);
-                els.feed.innerHTML = ""; h.forEach(e => createHistoryEntry(e.id, e.ts, e.text, [], e.cost || 0, e.durationStr || "00:00", true));
-            }
-            loadHistory();
+                    els.animSpeed.value = localStorage.getItem('anim_speed_v72') || 50;
+                    els.animBlur.value = localStorage.getItem('anim_blur_v72') || 60;
+                    if (els.animSize) els.animSize.value = localStorage.getItem('anim_size_v74') || 60;
+                    if (els.rippleIntensity) els.rippleIntensity.value = localStorage.getItem('ripple_intensity_v88') || 100;
+                    if (els.edgeGlow) els.edgeGlow.value = localStorage.getItem('edge_glow_v73') || 0;
+                    updateAnimParams(true);
+                }
 
-            function autoResizeText(textarea) {
-                textarea.style.height = 'auto';
-                setTimeout(() => {
-                    textarea.style.height = (textarea.scrollHeight + 5) + 'px';
-                    if (textarea.id === 'activeText' || textarea.parentElement.id === 'activeEntry') {
-                        textarea.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                function setAnim(type) {
+                    currentAnim = 'blobs'; localStorage.setItem('anim_type_v72', 'blobs');
+                    document.querySelectorAll('.anim-option').forEach(el => el.classList.remove('active'));
+                    let activeNode = document.getElementById('anim-blobs');
+                    if (activeNode) activeNode.classList.add('active');
+                }
+                setAnim('blobs');
+
+                function updateAnimParams(isLoad = false) {
+                    if (!isLoad) {
+                        localStorage.setItem('anim_speed_v72', els.animSpeed.value);
+                        localStorage.setItem('anim_blur_v72', els.animBlur.value);
+                        if (els.edgeGlow) localStorage.setItem('edge_glow_v73', els.edgeGlow.value);
                     }
-                }, 10);
-            }
 
-            els.btnMain.onclick = () => { if (!isRecording) startRec(); else stopRec(); };
-            els.btnPause.onclick = () => { if (isRecording && !isPaused) pauseRec(); else if (isPaused) resumeRec(); };
-            window.cancelRec = (btn) => {
-                if (!btn.classList.contains('confirm')) {
-                    btn.classList.add('confirm'); btn.innerHTML = '<span style="font-size:1rem; font-weight:bold;">🗑️?</span>'; btn.style.color = 'white'; btn.style.background = 'var(--danger)';
-                    setTimeout(() => { if (isRecording || isPaused) { btn.classList.remove('confirm'); btn.style.background = 'var(--btn-glass)'; btn.style.color = 'var(--danger)'; btn.innerHTML = '<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'; } }, 3000); return;
-                }
-                isCancelled = true; if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
-                btn.classList.remove('confirm'); btn.style.background = 'var(--btn-glass)'; btn.style.color = 'var(--danger)'; btn.innerHTML = '<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
-                resetUI();
+                    let blurVal = parseInt(els.animBlur.value);
+                    let variety = els.colorVariety ? parseInt(els.colorVariety.value) : 100;
 
-                els.activeEntry.style.display = 'none';
-            };
+                    // Allow massive saturation scaling when variety > 100, but cap at 1.5 to prevent dark mode washout.
+                    let darkSaturate = 1.0 + ((variety - 100) / 50);
+                    darkSaturate = Math.max(0, Math.min(1.8, darkSaturate));
 
-            function setMainButtonState(state) {
-                if (state === 'idle') {
-                    els.iconMain.innerHTML = '<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>';
-                    els.btnMain.className = 'btn-circle'; els.btnMain.disabled = false;
-                    els.btnPause.classList.remove('visible'); els.btnCancel.classList.remove('visible');
-                } else if (state === 'recording') {
-                    els.iconMain.innerHTML = '<rect x="6" y="6" width="12" height="12" rx="2" ry="2" fill="currentColor" stroke="none"></rect>';
-                    els.btnMain.className = 'btn-circle state-recording'; els.btnMain.disabled = false;
-                    els.iconPause.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
-                    els.btnPause.className = 'btn-circle side-btn visible'; els.btnCancel.className = 'btn-circle side-btn visible';
-                    els.timer.style.color = "var(--text)";
-                } else if (state === 'paused') {
-                    els.iconPause.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"></polygon>';
-                    els.btnPause.className = 'btn-circle side-btn visible state-paused'; els.timer.style.color = "var(--warn)";
-                }
-            }
+                    // Boost brightness slightly above 100 to combat the heavy 0.6 darkening, heavily capped to prevent whiteouts
+                    let darkBrightness = 0.6 + ((variety - 100) / 125);
+                    darkBrightness = Math.max(0.6, Math.min(0.85, darkBrightness));
 
-            function updateStatusBadges() {
-                els.badgeListen.style.display = (isRecording && !isPaused) ? 'flex' : 'none';
-                els.badgeTranscribe.style.display = pendingTranscriptions > 0 ? 'flex' : 'none';
-            }
-
-            // Play error sound
-            function playErrorBeep() {
-                if (!audioCtx) return;
-                const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
-                osc.connect(gain); gain.connect(audioCtx.destination);
-                osc.type = 'square'; osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 0.5);
-                gain.gain.setValueAtTime(0.5, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.5);
-            }
-
-            async function startRec() {
-                els.btnMain.disabled = true;
-                try {
-                    if (!globalStream || !globalStream.active) {
-                        const constraints = {
-                            noiseSuppression: true,
-                            autoGainControl: false,
-                            echoCancellation: true
-                        };
-                        const audioConfig = els.micSelect.value !== 'default' ? { deviceId: { exact: els.micSelect.value }, ...constraints } : constraints;
-
-                        let stream;
-                        try {
-                            stream = await navigator.mediaDevices.getUserMedia({ audio: audioConfig });
-                        } catch (advErr) {
-                            try {
-                                stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                            } catch (basicErr) {
-                                throw basicErr;
-                            }
-                        }
-
-                        loadMicrophones(); globalStream = stream; requestWakeLock();
-                        try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); analyser = audioCtx.createAnalyser(); analyser.fftSize = 64; audioCtx.createMediaStreamSource(stream).connect(analyser); dataArray = new Uint8Array(analyser.frequencyBinCount); } catch (e) { }
-                    }
-                    const stream = globalStream;
-
-                    chunks = []; isCancelled = false; let options = { bitsPerSecond: 32000 };
-                    if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) options.mimeType = 'audio/webm;codecs=opus';
-
-                    if (!isAutoCutting) {
-                        currentSessionId = Date.now(); currentPart = 1; sessionBlobs = []; activeCost = 0; pendingTranscriptions = 0; allTokensUsed = 0;
-                        sessionStartTime = Date.now(); totalPauseDelta = 0;
-                        const sd = new Date(sessionStartTime);
-                        els.activeText.value = '';
-                        els.liveStartTs.innerHTML = `
-<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> ${sd.toLocaleDateString()} | <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ${sd.toLocaleTimeString()}`;
-                        updateLiveStats();
-                        els.activeEntry.style.display = 'flex';
-                        els.activeEntry.classList.remove('finished-transition');
-                        autoResizeText(els.activeText);
-                    }
-                    partStartTime = Date.now(); partPauseDelta = 0;
-                    isRecording = true; updateStatusBadges();
-
-                    mediaRecorder = new MediaRecorder(stream, options);
-                    mediaRecorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
-
-                    mediaRecorder.onstop = () => {
-                        if (isCancelled) { resetUI(); els.activeEntry.style.display = 'none'; updateStatusBadges(); return; }
-                        const blob = new Blob(chunks, { type: chunks[0].type }); sessionBlobs.push(blob);
-
-                        const partSec = Math.floor((Date.now() - partStartTime - partPauseDelta) / 1000);
-                        activeCost += (partSec / 60) * 0.6;
-                        const totalSec = Math.floor((Date.now() - sessionStartTime - totalPauseDelta) / 1000);
-                        const finalDurationStr = `${Math.floor(totalSec / 60).toString().padStart(2, '0')}:${(totalSec % 60).toString().padStart(2, '0')}`;
-
-                        const wasAutoCut = isAutoCutting;
-                        processSessionAudio(blob, currentPart, wasAutoCut);
-
-                        if (isAutoCutting) {
-                            isAutoCutting = false; chunks = []; currentPart++;
-                            mediaRecorder.start(); partStartTime = Date.now(); partPauseDelta = 0;
-                        } else {
-                            if (pendingTranscriptions > 0) {
-                                els.activeText.value += '\n\n[Wartet auf finale Transkription...]';
-                                autoResizeText(els.activeText);
-                            }
-                            resetUI(); finalizeSessionWhenReady(currentSessionId, sessionBlobs, activeCost, finalDurationStr);
-                        }
-                    };
-
-                    mediaRecorder.start(); isPaused = false;
-                    if (!timerInt) timerInt = setInterval(updateTimer, 1000); setMainButtonState('recording');
-                } catch (e) {
-                    console.error('FATAL AUDIO ERROR:', e);
-                    alert('Mikrofon Fehler: ' + e.message + '\n' + e.stack);
-                    setMainButtonState('idle'); els.btnMain.disabled = false;
-                }
-            }
-
-            function performAutoCut() {
-                if (mediaRecorder && mediaRecorder.state === 'recording') {
-                    isAutoCutting = true; els.badgeCut.style.display = 'flex'; els.badgeListen.style.display = 'none';
-                    mediaRecorder.stop(); setTimeout(() => { els.badgeCut.style.display = 'none'; updateStatusBadges(); }, 1200);
-                }
-            }
-
-            function pauseRec() { if (mediaRecorder && mediaRecorder.state === "recording") { mediaRecorder.pause(); isPaused = true; pauseStart = Date.now(); setMainButtonState('paused'); updateStatusBadges(); } }
-            function resumeRec() { if (mediaRecorder && mediaRecorder.state === "paused") { mediaRecorder.resume(); isPaused = false; const delta = Date.now() - pauseStart; totalPauseDelta += delta; partPauseDelta += delta; setMainButtonState('recording'); updateStatusBadges(); } }
-            function stopRec() { if (mediaRecorder) { isAutoCutting = false; isRecording = false; updateStatusBadges(); mediaRecorder.stop(); els.btnMain.disabled = true; } }
-
-            function updateTimer() {
-                if (isPaused) return;
-                const totalSec = Math.floor((Date.now() - sessionStartTime - totalPauseDelta) / 1000);
-                const partSec = Math.floor((Date.now() - partStartTime - partPauseDelta) / 1000);
-                let cutMins = cutOptions[currentCutIdx];
-                if (cutMins > 0 && partSec >= cutMins * 60) { performAutoCut(); return; }
-                els.timer.innerText = `${Math.floor(totalSec / 60).toString().padStart(2, '0')}:${(totalSec % 60).toString().padStart(2, '0')}`;
-                updateLiveStats();
-            }
-
-            function updateLiveStats() {
-                const txt = els.activeText.value.trim(); const words = txt ? txt.split(/\s+/).length : 0;
-                els.liveWords.innerText = `${words} W`; els.liveTokens.innerText = `${Math.ceil(words / 0.75)} T`;
-                els.livePages.innerText = `${(words / 250).toFixed(1)} S`; els.liveCost.innerText = `~${activeCost.toFixed(1)} ct`;
-            }
-
-            function resetUI() {
-                isRecording = false; isPaused = false; isAutoCutting = false; clearInterval(timerInt); timerInt = null; setMainButtonState('idle'); els.timer.innerText = "00:00"; releaseWakeLock(); updateStatusBadges(); els.btnMain.disabled = false;
-            }
-            // pendingCopyText declared at top
-            function silentCopy(text) {
-                if (document.hidden) {
-                    pendingCopyText = text;
-                } else {
-                    navigator.clipboard.writeText(text).catch(e => { });
-                }
-            }
-            document.addEventListener('visibilitychange', () => {
-                if (!document.hidden && pendingCopyText) {
-                    navigator.clipboard.writeText(pendingCopyText).catch(e => { });
-                    showToast("Ausstehendes Transkript kopiert!");
-                    pendingCopyText = null;
-                }
-            });
-            function showToast(msg) { els.toastMsg.innerText = msg; els.toast.className = 'visible'; setTimeout(() => { els.toast.className = ''; }, 2500); }
-
-            async function processSessionAudio(blob, part, wasAutoCut) {
-                pendingTranscriptions++; updateStatusBadges();
-                if (!els.apiKey.value) { els.activeText.value += `\n[Wartet auf API Key...]`; autoResizeText(els.activeText); pendingTranscriptions--; updateStatusBadges(); return; }
-
-                const fd = new FormData(); fd.append("file", blob, `audio.webm`); fd.append("model", "whisper-1");
-                try {
-                    const res = await fetch("https://api.openai.com/v1/audio/transcriptions", { method: "POST", headers: { "Authorization": `Bearer ${els.apiKey.value}` }, body: fd });
-                    const data = await res.json();
-                    if (res.ok) {
-                        const newText = part > 1 ? `\n---\n${data.text}` : data.text;
-                        els.activeText.value = (els.activeText.value + newText).trim();
-                        updateLiveStats(); autoResizeText(els.activeText);
-                        // store the text in the background silently while compiling
-                        pendingCopyText = els.activeText.value;
+                    let isDark = document.documentElement.getAttribute('data-theme').includes('dark');
+                    if (blurVal === 0) {
+                        els.canvas.style.filter = '';
                     } else {
-                        els.activeText.value += `\n[API Error: ${data.error?.message}]`; autoResizeText(els.activeText);
-                        playErrorBeep(); if (isRecording && !isPaused) pauseRec(); showToast("API Fehler! Aufnahme pausiert.");
+                        els.canvas.style.filter = `blur(${blurVal}px) ${isDark ? 'brightness(' + darkBrightness.toFixed(2) + ') saturate(' + darkSaturate.toFixed(2) + ')' : 'brightness(0.9) saturate(1.1)'}`;
                     }
-                } catch (e) { els.activeText.value += `\n[Netzwerk-Fehler]`; autoResizeText(els.activeText); playErrorBeep(); if (isRecording) pauseRec(); showToast("Netzwerkfehler!"); }
-                pendingTranscriptions--; updateStatusBadges();
-            }
+                }
 
-            function finalizeSessionWhenReady(sId, bList, cost, durationStr) {
-                if (pendingTranscriptions > 0) { setTimeout(() => finalizeSessionWhenReady(sId, bList, cost, durationStr), 1000); return; }
+                // Decouple localStorage saving (change) from 60fps slider visual updates (input)
+                [els.animSpeed, els.animBlur, els.animSize, els.rippleIntensity].filter(Boolean).forEach(el => {
+                    el.addEventListener('input', () => updateAnimParams(true));
+                    el.addEventListener('change', () => {
+                        updateAnimParams(false);
+                        if (el.id === 'rippleIntensity') {
+                            localStorage.setItem('ripple_intensity_v88', el.value);
+                        } else if (el.id === 'animSize') {
+                            localStorage.setItem('anim_size_v74', el.value);
+                        }
+                    });
+                });
 
-                const finalTxt = els.activeText.value.replace(/\n\n\[Wartet auf finale Transkription\.\.\.\]/g, '').trim();
-                els.activeText.value = finalTxt; // Display clean text quickly
+                let touchRipplesEnabled = true;
+                const rippleToggle = document.getElementById('touchRippleToggle');
+                if (rippleToggle) {
+                    let saved = localStorage.getItem('touch_ripples_v87');
+                    if (saved !== null) touchRipplesEnabled = saved === 'true';
+                    rippleToggle.checked = touchRipplesEnabled;
+                    rippleToggle.addEventListener('change', () => {
+                        touchRipplesEnabled = rippleToggle.checked;
+                        localStorage.setItem('touch_ripples_v87', touchRipplesEnabled);
+                    });
+                }
 
-                if (finalTxt) {
-                    const tsFull = `${new Date().toLocaleDateString('de-DE', { dateStyle: 'short' })} | ${new Date(sessionStartTime).toLocaleTimeString('de-DE', { timeStyle: 'short' })} - ${new Date().toLocaleTimeString('de-DE', { timeStyle: 'short' })}`;
-                    saveToHistory(sId, finalTxt, tsFull, bList, cost, durationStr);
+                // Global Touch Ripples Logic
+                let activeOrbs = [];
+                let lastPointer = { x: 0, y: 0, time: 0 };
+                let isTrackingSwipe = false;
 
-                    // Instantly hide the active box to prevent massive layout shifts
-                    els.activeEntry.style.display = 'none';
+                function isValidRippleTarget(e) {
+                    let path = e.composedPath();
+                    for (let node of path) {
+                        if (node.tagName === 'BUTTON' || node.tagName === 'INPUT' || node.tagName === 'TEXTAREA' || node.tagName === 'SELECT' || node.tagName === 'SUMMARY') return false;
+                        if (node.classList && (node.classList.contains('color-thumb') || node.classList.contains('icon-btn') || node.classList.contains('glass-panel') || node.classList.contains('entry'))) return false;
+                        if (node.id === 'feed' || node.id === 'activeEntry') return false; // Prevent heavy swiping over text container blocking scrolling
+                    }
+                    return true;
+                }
 
-                    // Create the new entry immediately so it slides in via its own popIn animation
-                    createHistoryEntry(sId, tsFull, finalTxt, bList, cost, durationStr, false);
+                function triggerRipple(x, y, swipeVx = 0, swipeVy = 0) {
+                    if (!touchRipplesEnabled) return;
 
-                    silentCopy(finalTxt); if (document.hasFocus()) showToast("Gespeichert!");
-                    if (isAutoSave) dlEntryZip(sId);
+                    let intensityStr = els.rippleIntensity ? els.rippleIntensity.value : '100';
+                    let scale = parseInt(intensityStr) / 100;
 
-                    // Smooth scroll to top after a tiny delay to allow the DOM to render the new card
+                    for (let i = 0; i < 4; i++) {
+                        let angle = Math.random() * Math.PI * 2;
+                        let scatterSpeed = (5 + Math.random() * 8) * Math.sqrt(scale);
+
+                        // Inherit intense swipe velocity, scatter outward, massive visual boost
+                        let orbVx = swipeVx * 1.5 + Math.cos(angle) * scatterSpeed;
+                        let orbVy = swipeVy * 1.5 + Math.sin(angle) * scatterSpeed;
+
+                        activeOrbs.push({
+                            x: x,
+                            y: y,
+                            vx: orbVx,
+                            vy: orbVy,
+                            life: 1.0, // fades out from 1.0 to 0
+                            decay: (0.01 + Math.random() * 0.015) / Math.sqrt(scale), // Keeps them alive longer
+                            colorIdx: Math.floor(Math.random() * 5),
+                            radius: (8 + Math.random() * 15) * scale,
+                            maxLife: 1.0
+                        });
+                    }
+                }
+
+                document.addEventListener('pointerdown', (e) => {
+                    if (!isValidRippleTarget(e)) {
+                        isTrackingSwipe = false;
+                        return;
+                    }
+                    isTrackingSwipe = true;
+                    lastPointer = { x: e.clientX, y: e.clientY, time: Date.now() };
+                    triggerRipple(e.clientX, e.clientY, 0, 0); // Burst on touch
+                }, { passive: true });
+
+                document.addEventListener('pointermove', (e) => {
+                    if (!isTrackingSwipe || !touchRipplesEnabled) return;
+
+                    let now = Date.now();
+                    let dt = now - lastPointer.time;
+                    if (dt < 16) return; // Throttle roughly to 60fps
+
+                    let dx = e.clientX - lastPointer.x;
+                    let dy = e.clientY - lastPointer.y;
+                    let distSq = dx * dx + dy * dy;
+
+                    // Very responsive threshold for continuous swiping
+                    if (distSq > 30) {
+                        let vx = dx / (dt || 16) * 16;
+                        let vy = dy / (dt || 16) * 16;
+                        triggerRipple(e.clientX, e.clientY, vx, vy);
+                        lastPointer = { x: e.clientX, y: e.clientY, time: now };
+                    }
+                }, { passive: true });
+
+                document.addEventListener('pointerup', () => isTrackingSwipe = false, { passive: true });
+                document.addEventListener('pointercancel', () => isTrackingSwipe = false, { passive: true });
+
+                function initVisualizer() {
+                    const ctx = els.canvas.getContext('2d');
+                    function resizeCanvas() { els.canvas.width = window.innerWidth; els.canvas.height = window.innerHeight; }
+                    window.addEventListener('resize', resizeCanvas); resizeCanvas();
+
+                    function draw() {
+                        requestAnimationFrame(draw);
+                        const w = els.canvas.width; const h = els.canvas.height;
+                        const isDark = document.documentElement.getAttribute('data-theme').includes('dark');
+                        const speedScale = parseInt(els.animSpeed.value) / 30;
+
+                        // Audio Reactivity (only if voice reactive toggle is on)
+                        let rawVol = 0;
+                        if (voiceReactive && analyser && isRecording && !isPaused) {
+                            if (dataArray) { analyser.getByteFrequencyData(dataArray); let sum = 0; for (let i = 0; i < dataArray.length; i++) sum += dataArray[i]; rawVol = (sum / dataArray.length); }
+                            timeAccum += (0.005 * speedScale) + (rawVol * 0.0002);
+                        } else { timeAccum += (0.005 * speedScale); }
+
+                        smoothedVol = smoothedVol * 0.85 + (Math.min(rawVol / 100, 1.0)) * 0.15;
+
+                        const colors = window.appColors ? window.appColors.blobs : ['#4facfe', '#00f2fe', '#fbc2eb', '#a18cd1', '#e0c3fc'];
+                        const bgColors = window.appColors ? window.appColors.bg : ['#8E2DE2', '#4A00E0'];
+
+                        // Use entirely saturated background instead of greys to stop complimentary colors becoming muddy
+                        ctx.globalCompositeOperation = 'source-over';
+
+                        let baseGrad = ctx.createLinearGradient(0, 0, w, h);
+                        let bgAlpha = isDark ? '44' : 'A0'; // Deeply saturate the backdrop to eliminate all white spots
+                        baseGrad.addColorStop(0, bgColors[0] + bgAlpha);
+                        baseGrad.addColorStop(1, bgColors[1] + bgAlpha);
+
+                        // We must first clear to extremely dark or pure white to provide an anchor
+                        ctx.fillStyle = isDark ? '#050505' : '#ffffff';
+                        ctx.fillRect(0, 0, w, h);
+
+                        ctx.fillStyle = baseGrad;
+                        ctx.fillRect(0, 0, w, h);
+
+                        // V93: 'screen' prevents catastrophic bloom to white while keeping deep overlapping colors
+                        ctx.globalCompositeOperation = isDark ? 'screen' : 'source-over';
+
+                        const maxDim = Math.max(w, h);
+                        const numOrbs = 32;
+
+                        for (let i = 0; i < numOrbs; i++) {
+                            let cIdx = i % colors.length;
+
+                            // Complex Lissajous figure math for smooth fluid drifting
+                            let xOffset = Math.sin(timeAccum * 0.7 + i * 2.1) * Math.cos(timeAccum * 0.4 + i);
+                            let yOffset = Math.cos(timeAccum * 0.6 + i * 1.8) * Math.sin(timeAccum * 0.5 + i);
+
+                            let x = (w / 2) + xOffset * (w * 0.6);
+                            let y = (h / 2) + yOffset * (h * 0.6);
+
+                            // Constant variation multiplier (pseudo-random based on index)
+                            let variationMultiplier = 0.5 + (Math.sin(i * 12.5) * 0.5 + 0.5) * 1.5; // Scale from 0.5x to 2.0x 
+
+                            // Radius pulses with audio intensity (smoothed) and distinct variation
+                            let sizeScale = (els.animSize ? parseInt(els.animSize.value) : 100) / 100;
+                            let r = (maxDim * 0.4 * sizeScale * variationMultiplier) * (0.6 + Math.sin(timeAccum * 1.2 + i * 3) * 0.2) * (1 + smoothedVol * 0.3);
+
+                            // Sharper blobs when blur is low
+                            let blurLevel = parseInt(els.animBlur.value) / 60;
+                            let coreStop = blurLevel < 0.1 ? 0.5 : (0.1 + blurLevel * 0.1);
+                            let fadeStop = blurLevel < 0.1 ? 0.8 : (0.4 + blurLevel * 0.6);
+                            const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
+
+                            // Adjust alpha curve so small blobs are brighter and massive blobs are softer
+                            // Dark Mode uses 'lighter' which adds up extremely fast with 32 orbs. Alpha must be cut heavily to keep rich color.
+                            let baseAlpha = isDark ? Math.max(0.08, 0.2 / Math.sqrt(numOrbs)) : Math.max(0.4, 0.8 / Math.sqrt(numOrbs));
+                            let orbAlpha = Math.min(0.9, baseAlpha / (variationMultiplier * 0.6));
+                            let aHex = Math.round(orbAlpha * 255).toString(16).padStart(2, '0');
+                            let aMid = Math.round(orbAlpha * 0.15 * 255).toString(16).padStart(2, '0');
+
+                            grad.addColorStop(0, colors[cIdx] + aHex);
+                            grad.addColorStop(coreStop, colors[cIdx] + aHex);
+                            grad.addColorStop(fadeStop, colors[cIdx] + aMid);
+                            grad.addColorStop(1, colors[cIdx] + '00');
+
+                            ctx.fillStyle = grad;
+                            ctx.beginPath();
+                            ctx.arc(x, y, r, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+
+                        // Global Touch Ripples Rendering & Physics
+                        if (activeOrbs.length > 0) {
+                            ctx.globalCompositeOperation = 'lighter';
+                            for (let i = activeOrbs.length - 1; i >= 0; i--) {
+                                let o = activeOrbs[i];
+                                o.x += o.vx;
+                                o.y += o.vy;
+                                o.radius += 2.5; // Extreme expansion speed
+                                o.life -= o.decay;
+
+                                // Drawing High-Contrast Ripple
+                                if (o.life > 0) {
+                                    const grad = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.radius);
+                                    let c = colors[o.colorIdx % colors.length];
+                                    let alpha = isDark ? o.life * 0.7 : o.life * 0.9;
+                                    let aHex = Math.round(alpha * 255).toString(16).padStart(2, '0');
+                                    let aMid = Math.round(alpha * 0.5 * 255).toString(16).padStart(2, '0');
+
+                                    // Searing hot white core
+                                    grad.addColorStop(0, '#ffffff');
+                                    grad.addColorStop(0.1, c + aHex);
+                                    grad.addColorStop(0.5, c + aMid);
+                                    // Keep edges hard for a spark-like look
+                                    grad.addColorStop(1, c + '00');
+
+                                    ctx.fillStyle = grad;
+                                    ctx.beginPath();
+                                    ctx.arc(o.x, o.y, o.radius, 0, Math.PI * 2);
+                                    ctx.fill();
+                                } else {
+                                    activeOrbs.splice(i, 1);
+                                }
+                            }
+                        }
+
+                        ctx.globalCompositeOperation = 'source-over';
+                    }
+                    draw();
+                }
+                initVisualizer();
+
+                async function loadMicrophones() {
+                    if (micsLoaded) return;
+                    try {
+                        const devices = await navigator.mediaDevices.enumerateDevices(); const audioDevs = devices.filter(d => d.kind === 'audioinput');
+                        if (audioDevs.length > 0) {
+                            els.micSelect.innerHTML = '<option value="default">Default</option>';
+                            audioDevs.forEach((d) => {
+                                let cleanName = d.label.replace(/\s*\([a-fA-F0-9]{4}:[a-fA-F0-9]{4}\)\s*/g, '').replace(/Default - /i, '').trim() || 'Microphone';
+                                els.micSelect.appendChild(new Option(`${cleanName.substring(0, 15)}..`, d.deviceId));
+                            }); micsLoaded = true;
+                        }
+                    } catch (e) { }
+                }
+
+                if (HARDCODED_KEY.length > 5) { els.apiKey.value = HARDCODED_KEY; } else { els.apiKey.value = localStorage.getItem("key_v38") || ""; }
+                function migrateHistory() { let h = localStorage.getItem("hist_master"); if (!h) localStorage.setItem("hist_master", "[]"); } migrateHistory(); loadDev();
+
+                function saveToHistory(id, text, ts, blobs, cost, durationStr) {
+                    let h = JSON.parse(localStorage.getItem("hist_master") || "[]");
+                    let existing = h.findIndex(x => x.id === id);
+                    if (existing >= 0) h[existing] = { id, text, ts, cost, durationStr };
+                    else { h.push({ id, text, ts, cost, durationStr }); h.sort((a, b) => b.id - a.id); if (h.length > 30) h.pop(); }
+                    localStorage.setItem("hist_master", JSON.stringify(h));
+                }
+                function loadHistory() {
+                    let h = JSON.parse(localStorage.getItem("hist_master") || "[]"); h.sort((a, b) => b.id - a.id);
+                    els.feed.innerHTML = ""; h.forEach(e => createHistoryEntry(e.id, e.ts, e.text, [], e.cost || 0, e.durationStr || "00:00", true));
+                }
+                loadHistory();
+
+                function autoResizeText(textarea) {
+                    textarea.style.height = 'auto';
                     setTimeout(() => {
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }, 50);
-                } else {
+                        textarea.style.height = (textarea.scrollHeight + 5) + 'px';
+                        if (textarea.id === 'activeText' || textarea.parentElement.id === 'activeEntry') {
+                            textarea.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                        }
+                    }, 10);
+                }
+
+                els.btnMain.onclick = () => { if (!isRecording) startRec(); else stopRec(); };
+                els.btnPause.onclick = () => { if (isRecording && !isPaused) pauseRec(); else if (isPaused) resumeRec(); };
+                window.cancelRec = (btn) => {
+                    if (!btn.classList.contains('confirm')) {
+                        btn.classList.add('confirm'); btn.innerHTML = '<span style="font-size:1rem; font-weight:bold;">🗑️?</span>'; btn.style.color = 'white'; btn.style.background = 'var(--danger)';
+                        setTimeout(() => { if (isRecording || isPaused) { btn.classList.remove('confirm'); btn.style.background = 'var(--btn-glass)'; btn.style.color = 'var(--danger)'; btn.innerHTML = '<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'; } }, 3000); return;
+                    }
+                    isCancelled = true; if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+                    btn.classList.remove('confirm'); btn.style.background = 'var(--btn-glass)'; btn.style.color = 'var(--danger)'; btn.innerHTML = '<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+                    resetUI();
+
                     els.activeEntry.style.display = 'none';
+                };
+
+                function setMainButtonState(state) {
+                    if (state === 'idle') {
+                        els.iconMain.innerHTML = '<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>';
+                        els.btnMain.className = 'btn-circle'; els.btnMain.disabled = false;
+                        els.btnPause.classList.remove('visible'); els.btnCancel.classList.remove('visible');
+                    } else if (state === 'recording') {
+                        els.iconMain.innerHTML = '<rect x="6" y="6" width="12" height="12" rx="2" ry="2" fill="currentColor" stroke="none"></rect>';
+                        els.btnMain.className = 'btn-circle state-recording'; els.btnMain.disabled = false;
+                        els.iconPause.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
+                        els.btnPause.className = 'btn-circle side-btn visible'; els.btnCancel.className = 'btn-circle side-btn visible';
+                        els.timer.style.color = "var(--text)";
+                    } else if (state === 'paused') {
+                        els.iconPause.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"></polygon>';
+                        els.btnPause.className = 'btn-circle side-btn visible state-paused'; els.timer.style.color = "var(--warn)";
+                    }
                 }
-            }
 
-            window.fixDuration = function (audio) { if (audio.duration === Infinity || isNaN(audio.duration)) { audio.currentTime = 1e101; audio.ontimeupdate = function () { this.ontimeupdate = null; this.currentTime = 0; } } }
-
-            function createHistoryEntry(id, ts, text, blobs = [], cost = 0, durationStr = "00:00", isLoad = false) {
-                const d = document.createElement('div'); d.className = 'entry'; d.id = `e-${id}`;
-                d.audioBlobs = blobs;
-                const words = text ? text.split(/\s+/).length : 0;
-
-                let audioHtml = "";
-                let retryButton = "";
-                if (blobs.length > 0) {
-                    let players = blobs.map((b, i) => `<div class="audio-part"><span>Audio ${i + 1}</span><audio controls playsinline src="${URL.createObjectURL(b)}" onloadedmetadata="window.fixDuration(this)"></audio></div>`).join("");
-                    audioHtml = `<details class="custom-accordion"><summary><svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg> Audios (${blobs.length})</summary><div class="audio-list">${players}</div></details>`;
-                    retryButton = `<button class="mini-btn safe" onclick="retrySession(${id}, this)" title="Wiederholen (Retry)"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg></button>`;
+                function updateStatusBadges() {
+                    els.badgeListen.style.display = (isRecording && !isPaused) ? 'flex' : 'none';
+                    els.badgeTranscribe.style.display = pendingTranscriptions > 0 ? 'flex' : 'none';
                 }
 
-                d.innerHTML = `
+                // Play error sound
+                function playErrorBeep() {
+                    if (!audioCtx) return;
+                    const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+                    osc.connect(gain); gain.connect(audioCtx.destination);
+                    osc.type = 'square'; osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 0.5);
+                    gain.gain.setValueAtTime(0.5, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+                }
+
+                async function startRec() {
+                    els.btnMain.disabled = true;
+                    try {
+                        if (!globalStream || !globalStream.active) {
+                            const constraints = {
+                                noiseSuppression: true,
+                                autoGainControl: false,
+                                echoCancellation: true
+                            };
+                            const audioConfig = els.micSelect.value !== 'default' ? { deviceId: { exact: els.micSelect.value }, ...constraints } : constraints;
+
+                            let stream;
+                            try {
+                                stream = await navigator.mediaDevices.getUserMedia({ audio: audioConfig });
+                            } catch (advErr) {
+                                try {
+                                    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                                } catch (basicErr) {
+                                    throw basicErr;
+                                }
+                            }
+
+                            loadMicrophones(); globalStream = stream; requestWakeLock();
+                            try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); analyser = audioCtx.createAnalyser(); analyser.fftSize = 64; audioCtx.createMediaStreamSource(stream).connect(analyser); dataArray = new Uint8Array(analyser.frequencyBinCount); } catch (e) { }
+                        }
+                        const stream = globalStream;
+
+                        chunks = []; isCancelled = false; let options = { bitsPerSecond: 32000 };
+                        if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) options.mimeType = 'audio/webm;codecs=opus';
+
+                        if (!isAutoCutting) {
+                            // V93: If the previous session morphed into activeEntry, flush it to the feed first
+                            if (els.activeEntry.dataset.morphedId) {
+                                const morphedId = els.activeEntry.dataset.morphedId;
+                                const clone = document.createElement('div');
+                                clone.className = 'entry';
+                                clone.id = `e-${morphedId}`;
+                                clone.audioBlobs = els.activeEntry.audioBlobs || [];
+                                clone.innerHTML = els.activeEntry.innerHTML;
+                                els.feed.prepend(clone);
+                                autoResizeText(clone.querySelector('textarea'));
+                                delete els.activeEntry.dataset.morphedId;
+                                els.activeEntry.audioBlobs = null;
+                            }
+
+                            // Restore activeEntry to its original live-recording badge layout
+                            els.activeEntry.id = 'activeEntry';
+                            els.activeEntry.innerHTML = `
+                                <div class="active-top-bar" style="margin-bottom: 15px;">
+                                    <div class="status-container" id="statusContainer">
+                                        <span class="status-badge" id="badgeListen"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg> Höre zu...</span>
+                                        <span class="status-badge highlight" id="badgeTranscribe" style="display:none;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"></path></svg> Transkribiere...</span>
+                                        <span class="status-badge" id="badgeCut" style="display:none; color:var(--warn); border-color:var(--warn);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line></svg> Cut...</span>
+                                    </div>
+                                    <span class="timestamp-badge" id="liveStartTs">Gestartet: --:--</span>
+                                    <div class="stats-badges" id="liveBadges">
+                                        <span class="stat-pill" id="liveWords" title="Anzahl der gesprochenen Wörter">0 W</span>
+                                        <span class="stat-pill" id="liveTokens" title="Geschätzte KI Token">0 T</span>
+                                        <span class="stat-pill" id="livePages" title="Geschätzte Buchseiten">0 S</span>
+                                        <span class="stat-pill" id="liveCost" title="Kosten der API">0.0 ct</span>
+                                    </div>
+                                </div>
+                                <textarea id="activeText" class="seamless-text" readonly placeholder="Sprich in das Mikrofon..." style="margin-bottom: 5px;"></textarea>
+                            `;
+
+                            // Re-bind element references after rebuilding HTML
+                            els.activeText = document.getElementById('activeText');
+                            els.badgeListen = document.getElementById('badgeListen');
+                            els.badgeTranscribe = document.getElementById('badgeTranscribe');
+                            els.badgeCut = document.getElementById('badgeCut');
+                            els.liveStartTs = document.getElementById('liveStartTs');
+                            els.liveWords = document.getElementById('liveWords');
+                            els.liveTokens = document.getElementById('liveTokens');
+                            els.livePages = document.getElementById('livePages');
+                            els.liveCost = document.getElementById('liveCost');
+
+                            currentSessionId = Date.now(); currentPart = 1; sessionBlobs = []; activeCost = 0; pendingTranscriptions = 0; allTokensUsed = 0;
+                            sessionStartTime = Date.now(); totalPauseDelta = 0;
+                            const sd = new Date(sessionStartTime);
+                            els.activeText.value = '';
+                            els.liveStartTs.innerHTML = `
+<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> ${sd.toLocaleDateString()} | <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ${sd.toLocaleTimeString()}`;
+                            updateLiveStats();
+                            els.activeEntry.style.display = 'flex';
+                            autoResizeText(els.activeText);
+                        }
+                        partStartTime = Date.now(); partPauseDelta = 0;
+                        isRecording = true; updateStatusBadges();
+
+                        mediaRecorder = new MediaRecorder(stream, options);
+                        mediaRecorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+
+                        mediaRecorder.onstop = () => {
+                            if (isCancelled) { resetUI(); els.activeEntry.style.display = 'none'; updateStatusBadges(); return; }
+                            const blob = new Blob(chunks, { type: chunks[0].type }); sessionBlobs.push(blob);
+
+                            const partSec = Math.floor((Date.now() - partStartTime - partPauseDelta) / 1000);
+                            activeCost += (partSec / 60) * 0.6;
+                            const totalSec = Math.floor((Date.now() - sessionStartTime - totalPauseDelta) / 1000);
+                            const finalDurationStr = `${Math.floor(totalSec / 60).toString().padStart(2, '0')}:${(totalSec % 60).toString().padStart(2, '0')}`;
+
+                            const wasAutoCut = isAutoCutting;
+                            processSessionAudio(blob, currentPart, wasAutoCut);
+
+                            if (isAutoCutting) {
+                                isAutoCutting = false; chunks = []; currentPart++;
+                                mediaRecorder.start(); partStartTime = Date.now(); partPauseDelta = 0;
+                            } else {
+                                if (pendingTranscriptions > 0) {
+                                    els.activeText.value += '\n\n[Wartet auf finale Transkription...]';
+                                    autoResizeText(els.activeText);
+                                }
+                                resetUI(); finalizeSessionWhenReady(currentSessionId, sessionBlobs, activeCost, finalDurationStr);
+                            }
+                        };
+
+                        mediaRecorder.start(); isPaused = false;
+                        if (!timerInt) timerInt = setInterval(updateTimer, 1000); setMainButtonState('recording');
+                    } catch (e) {
+                        console.error('FATAL AUDIO ERROR:', e);
+                        alert('Mikrofon Fehler: ' + e.message + '\n' + e.stack);
+                        setMainButtonState('idle'); els.btnMain.disabled = false;
+                    }
+                }
+
+                function performAutoCut() {
+                    if (mediaRecorder && mediaRecorder.state === 'recording') {
+                        isAutoCutting = true; els.badgeCut.style.display = 'flex'; els.badgeListen.style.display = 'none';
+                        mediaRecorder.stop(); setTimeout(() => { els.badgeCut.style.display = 'none'; updateStatusBadges(); }, 1200);
+                    }
+                }
+
+                function pauseRec() { if (mediaRecorder && mediaRecorder.state === "recording") { mediaRecorder.pause(); isPaused = true; pauseStart = Date.now(); setMainButtonState('paused'); updateStatusBadges(); } }
+                function resumeRec() { if (mediaRecorder && mediaRecorder.state === "paused") { mediaRecorder.resume(); isPaused = false; const delta = Date.now() - pauseStart; totalPauseDelta += delta; partPauseDelta += delta; setMainButtonState('recording'); updateStatusBadges(); } }
+                function stopRec() { if (mediaRecorder) { isAutoCutting = false; isRecording = false; updateStatusBadges(); mediaRecorder.stop(); els.btnMain.disabled = true; } }
+
+                function updateTimer() {
+                    if (isPaused) return;
+                    const totalSec = Math.floor((Date.now() - sessionStartTime - totalPauseDelta) / 1000);
+                    const partSec = Math.floor((Date.now() - partStartTime - partPauseDelta) / 1000);
+                    let cutMins = cutOptions[currentCutIdx];
+                    if (cutMins > 0 && partSec >= cutMins * 60) { performAutoCut(); return; }
+                    els.timer.innerText = `${Math.floor(totalSec / 60).toString().padStart(2, '0')}:${(totalSec % 60).toString().padStart(2, '0')}`;
+                    updateLiveStats();
+                }
+
+                function updateLiveStats() {
+                    const txt = els.activeText.value.trim(); const words = txt ? txt.split(/\s+/).length : 0;
+                    els.liveWords.innerText = `${words} W`; els.liveTokens.innerText = `${Math.ceil(words / 0.75)} T`;
+                    els.livePages.innerText = `${(words / 250).toFixed(1)} S`; els.liveCost.innerText = `~${activeCost.toFixed(1)} ct`;
+                }
+
+                function resetUI() {
+                    isRecording = false; isPaused = false; isAutoCutting = false; clearInterval(timerInt); timerInt = null; setMainButtonState('idle'); els.timer.innerText = "00:00"; releaseWakeLock(); updateStatusBadges(); els.btnMain.disabled = false;
+                }
+                // pendingCopyText declared at top
+                function silentCopy(text) {
+                    if (document.hidden) {
+                        pendingCopyText = text;
+                    } else {
+                        navigator.clipboard.writeText(text).catch(e => { });
+                    }
+                }
+                document.addEventListener('visibilitychange', () => {
+                    if (!document.hidden && pendingCopyText) {
+                        navigator.clipboard.writeText(pendingCopyText).catch(e => { });
+                        showToast("Ausstehendes Transkript kopiert!");
+                        pendingCopyText = null;
+                    }
+                });
+                function showToast(msg) { els.toastMsg.innerText = msg; els.toast.className = 'visible'; setTimeout(() => { els.toast.className = ''; }, 2500); }
+
+                async function processSessionAudio(blob, part, wasAutoCut) {
+                    pendingTranscriptions++; updateStatusBadges();
+                    if (!els.apiKey.value) { els.activeText.value += `\n[Wartet auf API Key...]`; autoResizeText(els.activeText); pendingTranscriptions--; updateStatusBadges(); return; }
+
+                    const fd = new FormData(); fd.append("file", blob, `audio.webm`); fd.append("model", "whisper-1");
+                    try {
+                        const res = await fetch("https://api.openai.com/v1/audio/transcriptions", { method: "POST", headers: { "Authorization": `Bearer ${els.apiKey.value}` }, body: fd });
+                        const data = await res.json();
+                        if (res.ok) {
+                            const newText = part > 1 ? `\n---\n${data.text}` : data.text;
+                            els.activeText.value = (els.activeText.value + newText).trim();
+                            updateLiveStats(); autoResizeText(els.activeText);
+                            // store the text in the background silently while compiling
+                            pendingCopyText = els.activeText.value;
+                        } else {
+                            els.activeText.value += `\n[API Error: ${data.error?.message}]`; autoResizeText(els.activeText);
+                            playErrorBeep(); if (isRecording && !isPaused) pauseRec(); showToast("API Fehler! Aufnahme pausiert.");
+                        }
+                    } catch (e) { els.activeText.value += `\n[Netzwerk-Fehler]`; autoResizeText(els.activeText); playErrorBeep(); if (isRecording) pauseRec(); showToast("Netzwerkfehler!"); }
+                    pendingTranscriptions--; updateStatusBadges();
+                }
+
+                function finalizeSessionWhenReady(sId, bList, cost, durationStr) {
+                    if (pendingTranscriptions > 0) { setTimeout(() => finalizeSessionWhenReady(sId, bList, cost, durationStr), 1000); return; }
+
+                    // V93: Aggressively strip ALL variations of [Wartet...] from text before copy
+                    const finalTxt = els.activeText.value.replace(/\n*\[Wartet auf finale Transkription\.{0,3}\]\n*/gi, '').trim();
+                    els.activeText.value = finalTxt;
+
+                    if (finalTxt) {
+                        const tsFull = `${new Date().toLocaleDateString('de-DE', { dateStyle: 'short' })} | ${new Date(sessionStartTime).toLocaleTimeString('de-DE', { timeStyle: 'short' })} - ${new Date().toLocaleTimeString('de-DE', { timeStyle: 'short' })}`;
+                        const words = finalTxt.split(/\s+/).length;
+
+                        saveToHistory(sId, finalTxt, tsFull, bList, cost, durationStr);
+
+                        // V93: TRUE IN-PLACE MORPHING — Transform activeEntry into a finished entry
+                        // Instead of hiding and re-creating, we morph the live badges into the result UI
+                        let audioHtml = '';
+                        let retryButton = '';
+                        if (bList.length > 0) {
+                            let players = bList.map((b, i) => `<div class="audio-part"><span>Audio ${i + 1}</span><audio controls playsinline src="${URL.createObjectURL(b)}" onloadedmetadata="window.fixDuration(this)"></audio></div>`).join('');
+                            audioHtml = `<details class="custom-accordion"><summary><svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg> Audios (${bList.length})</summary><div class="audio-list">${players}</div></details>`;
+                            retryButton = `<button class="mini-btn safe" onclick="retrySession(${sId}, this)" title="Wiederholen (Retry)"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg></button>`;
+                        }
+
+                        // Store blobs on the active entry element (keep id='activeEntry' to preserve CSS flex-direction!)
+                        els.activeEntry.audioBlobs = bList;
+
+                        // Rebuild inner HTML to the finished entry format
+                        els.activeEntry.innerHTML = `
+                            <div class="entry-header">
+                                <div class="entry-meta-info">
+                                    <span class="date-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ${tsFull}</span>
+                                    <div class="stats-badges" style="margin-top:4px;">
+                                        <span class="stat-pill">&#9201; ${durationStr}</span>
+                                        <span class="stat-pill">${words} W</span><span class="stat-pill">${Math.ceil(words / 0.75)} T</span>
+                                        <span class="stat-pill">${(words / 250).toFixed(1)} S</span><span class="stat-pill">~${cost.toFixed(1)} ct</span>
+                                    </div>
+                                </div>
+                                <div class="entry-actions">
+                                    <button class="mini-btn action" onclick="dlEntryZip(${sId})" title="Paket Download (ZIP)"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 8v13H3V8"></path><polyline points="1 3 23 3 23 8 1 8 1 3"></polyline><line x1="10" y1="12" x2="14" y2="12"></line></svg></button>
+                                    ${retryButton}
+                                    <button class="mini-btn" onclick="doCopy(${sId}, true)" title="Text kopieren"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg></button>
+                                    <button class="mini-btn" onclick="dlTxt(${sId})" title="Text als .txt"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></button>
+                                    <button class="mini-btn danger" onclick="delEntry(${sId}, this)" title="Löschen"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                                </div>
+                            </div>
+                            <textarea id="txt-${sId}" class="seamless-text" oninput="autoResizeText(this)" style="max-height: none; overflow-y: hidden;">${finalTxt}</textarea>
+                            ${audioHtml}
+                        `;
+                        autoResizeText(els.activeEntry.querySelector('textarea'));
+
+                        // Mark as morphed so next recording knows to flush it to the feed
+                        els.activeEntry.dataset.morphedId = sId;
+
+                        // Single unified toast
+                        silentCopy(finalTxt);
+                        if (document.hasFocus()) showToast("Fertig & Kopiert!");
+                        if (isAutoSave) dlEntryZip(sId);
+
+                    } else {
+                        els.activeEntry.style.display = 'none';
+                    }
+                }
+
+                window.fixDuration = function (audio) { if (audio.duration === Infinity || isNaN(audio.duration)) { audio.currentTime = 1e101; audio.ontimeupdate = function () { this.ontimeupdate = null; this.currentTime = 0; } } }
+
+                function createHistoryEntry(id, ts, text, blobs = [], cost = 0, durationStr = "00:00", isLoad = false) {
+                    const d = document.createElement('div'); d.className = 'entry'; d.id = `e-${id}`;
+                    d.audioBlobs = blobs;
+                    const words = text ? text.split(/\s+/).length : 0;
+
+                    let audioHtml = "";
+                    let retryButton = "";
+                    if (blobs.length > 0) {
+                        let players = blobs.map((b, i) => `<div class="audio-part"><span>Audio ${i + 1}</span><audio controls playsinline src="${URL.createObjectURL(b)}" onloadedmetadata="window.fixDuration(this)"></audio></div>`).join("");
+                        audioHtml = `<details class="custom-accordion"><summary><svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg> Audios (${blobs.length})</summary><div class="audio-list">${players}</div></details>`;
+                        retryButton = `<button class="mini-btn safe" onclick="retrySession(${id}, this)" title="Wiederholen (Retry)"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg></button>`;
+                    }
+
+                    d.innerHTML = `
             <div class="entry-header">
                 <div class="entry-meta-info">
                     <span class="date-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ${ts}</span>
@@ -2190,106 +2484,128 @@
             ${audioHtml}
         `;
 
-                if (isLoad) { els.feed.appendChild(d); } else { els.feed.prepend(d); }
-                setTimeout(() => { autoResizeText(d.querySelector('textarea')); }, 300);
-            }
-
-            window.doCopy = (id, showPopup = false) => { navigator.clipboard.writeText(document.getElementById(`txt-${id}`).value); if (showPopup) { showToast("Kopiert!"); } };
-            window.delEntry = (id, btn) => {
-                if (!btn.classList.contains('confirm')) {
-                    btn.classList.add('confirm'); btn.innerHTML = '<span style="font-weight:bold;">Tatsächlich?</span>'; btn.style.background = 'var(--danger)'; btn.style.color = 'white'; btn.style.width = "auto"; btn.style.padding = "0 10px";
-                    setTimeout(() => { if (document.getElementById(`e-${id}`)) { btn.classList.remove('confirm'); btn.style.background = 'var(--btn-glass)'; btn.style.color = 'var(--text)'; btn.style.width = "34px"; btn.style.padding = "0"; btn.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`; } }, 3000); return;
+                    if (isLoad) { els.feed.appendChild(d); } else { els.feed.prepend(d); }
+                    autoResizeText(d.querySelector('textarea'));
                 }
-                document.getElementById(`e-${id}`).remove(); let h = JSON.parse(localStorage.getItem("hist_master") || "[]"); localStorage.setItem("hist_master", JSON.stringify(h.filter(x => x.id != id)));
-            };
 
-            window.clearAllHistory = () => {
-                if (confirm("Bist du sicher, dass du den gesamten Chatverlauf löschen möchtest? Dies kann nicht rückgängig gemacht werden.")) {
-                    localStorage.setItem("hist_master", "[]");
-                    window.location.reload();
-                }
-            };
+                window.doCopy = (id, showPopup = false) => { navigator.clipboard.writeText(document.getElementById(`txt-${id}`).value); if (showPopup) { showToast("Kopiert!"); } };
+                window.delEntry = (id, btn) => {
+                    if (!btn.classList.contains('confirm')) {
+                        btn.classList.add('confirm'); btn.innerHTML = '<span style="font-weight:bold;">Tatsächlich?</span>'; btn.style.background = 'var(--danger)'; btn.style.color = 'white'; btn.style.width = "auto"; btn.style.padding = "0 10px";
+                        setTimeout(() => { if (document.getElementById(`e-${id}`)) { btn.classList.remove('confirm'); btn.style.background = 'var(--btn-glass)'; btn.style.color = 'var(--text)'; btn.style.width = "34px"; btn.style.padding = "0"; btn.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`; } }, 3000); return;
+                    }
+                    document.getElementById(`e-${id}`).remove(); let h = JSON.parse(localStorage.getItem("hist_master") || "[]"); localStorage.setItem("hist_master", JSON.stringify(h.filter(x => x.id != id)));
+                };
 
-            window.dlTxt = (id) => { download(new Blob([document.getElementById(`txt-${id}`).value]), `transkript_${id}.txt`); };
-            window.dlEntryZip = async (id) => {
-                if (!window.JSZip) return; showToast("Paket wird gepackt..."); const zip = new JSZip(); const el = document.getElementById(`e-${id}`); const txt = document.getElementById(`txt-${id}`).value; const words = txt ? txt.split(/\s+/).length : 0;
-                zip.file(`transkript_${id}.txt`, txt); zip.file(`stats.txt`, `--- Statistik ---\n\nWörter: ${words}\nToken: ${Math.ceil(words / 0.75)}\nSeiten: ${(words / 250).toFixed(1)}\nID: ${id}`);
-                if (el.audioBlobs && el.audioBlobs.length > 0) { el.audioBlobs.forEach((blob, index) => { zip.folder("audio").file(`rec_${id}_part${index + 1}.${blob.type.includes('mp4') ? 'mp4' : 'webm'}`, blob); }); }
-                download(await zip.generateAsync({ type: "blob" }), `Memo_Backup_${id}.zip`);
-            };
+                window.clearAllHistory = () => {
+                    if (confirm("Bist du sicher, dass du den gesamten Chatverlauf löschen möchtest? Dies kann nicht rückgängig gemacht werden.")) {
+                        localStorage.setItem("hist_master", "[]");
+                        window.location.reload();
+                    }
+                };
 
-            window.retrySession = async (id, btn) => {
-                const el = document.getElementById(`e-${id}`);
-                if (!el || !el.audioBlobs || el.audioBlobs.length === 0) return;
-                if (!els.apiKey.value) { alert("API Key wird benötigt!"); toggleModal('settingsModal'); return; }
+                window.dlTxt = (id) => { download(new Blob([document.getElementById(`txt-${id}`).value]), `transkript_${id}.txt`); };
+                window.dlEntryZip = async (id) => {
+                    if (!window.JSZip) return; showToast("Paket wird gepackt..."); const zip = new JSZip(); const el = document.getElementById(`e-${id}`); const txt = document.getElementById(`txt-${id}`).value; const words = txt ? txt.split(/\s+/).length : 0;
+                    zip.file(`transkript_${id}.txt`, txt); zip.file(`stats.txt`, `--- Statistik ---\n\nWörter: ${words}\nToken: ${Math.ceil(words / 0.75)}\nSeiten: ${(words / 250).toFixed(1)}\nID: ${id}`);
+                    if (el.audioBlobs && el.audioBlobs.length > 0) { el.audioBlobs.forEach((blob, index) => { zip.folder("audio").file(`rec_${id}_part${index + 1}.${blob.type.includes('mp4') ? 'mp4' : 'webm'}`, blob); }); }
+                    download(await zip.generateAsync({ type: "blob" }), `Memo_Backup_${id}.zip`);
+                };
 
-                const originalIcon = btn.innerHTML;
-                btn.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" class="spin" style="animation: spin 1s linear infinite;" stroke-width="2"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>`;
-                btn.disabled = true;
+                window.retrySession = async (id, btn) => {
+                    const el = document.getElementById(`e-${id}`);
+                    if (!el || !el.audioBlobs || el.audioBlobs.length === 0) return;
+                    if (!els.apiKey.value) { alert("API Key wird benötigt!"); toggleModal('settingsModal'); return; }
 
-                let combinedText = "";
-                let i = 1;
-                for (let blob of el.audioBlobs) {
-                    const fd = new FormData(); fd.append("file", blob, `audio.webm`); fd.append("model", "whisper-1");
+                    const originalIcon = btn.innerHTML;
+                    btn.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" class="spin" style="animation: spin 1s linear infinite;" stroke-width="2"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>`;
+                    btn.disabled = true;
+
+                    let combinedText = "";
+                    let i = 1;
+                    for (let blob of el.audioBlobs) {
+                        const fd = new FormData(); fd.append("file", blob, `audio.webm`); fd.append("model", "whisper-1");
+                        try {
+                            const res = await fetch("https://api.openai.com/v1/audio/transcriptions", { method: "POST", headers: { "Authorization": `Bearer ${els.apiKey.value}` }, body: fd });
+                            const data = await res.json();
+                            if (res.ok) {
+                                combinedText += (i > 1 ? `\n---\n${data.text}` : data.text);
+                            } else {
+                                combinedText += `\n[Wiederholungs-Fehler bei Block ${i}: ${data.error?.message}]\n`;
+                            }
+                        } catch (e) { combinedText += `\n[Wiederholungs-Netzwerkfehler bei Block ${i}]\n`; }
+                        i++;
+                    }
+
+                    const ta = document.getElementById(`txt-${id}`);
+                    ta.value = combinedText.trim();
+                    autoResizeText(ta);
+                    btn.innerHTML = originalIcon;
+                    btn.disabled = false;
+
+                    // Re-save modified text logic onto history JSON
+                    let h = JSON.parse(localStorage.getItem("hist_master") || "[]");
+                    let targetIdx = h.findIndex(x => x.id === id);
+                    if (targetIdx >= 0) {
+                        h[targetIdx].text = ta.value;
+                        localStorage.setItem("hist_master", JSON.stringify(h));
+                    }
+                    showToast("Wiederholung abgeschlossen!");
+                    silentCopy(ta.value);
+                };
+
+
+                window.dlAllZip = async () => {
+                    if (!window.JSZip) return; const zip = new JSZip(); let allTxt = "--- PROTOKOLL ---\n\n";
+                    document.querySelectorAll('.entry').forEach(e => {
+                        if (e.id === "activeEntry") return;
+                        const id = e.id.replace('e-', ''); const txt = e.querySelector('textarea').value; const ts = e.querySelector('.date-badge').innerText;
+                        allTxt += `[${ts}]\n${txt}\n\n---\n\n`;
+                        if (e.audioBlobs) { e.audioBlobs.forEach((blob, index) => { zip.folder("audio").file(`rec_${id}_part${index + 1}.webm`, blob); }); }
+                    });
+                    zip.file("Alle_Transkripte.txt", allTxt);
+                    setTimeout(async () => { download(await zip.generateAsync({ type: "blob" }), `Master_Backup_${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 16)}.zip`); }, 1000);
+                };
+
+                els.fileUpload.addEventListener('change', async (e) => {
+                    const file = e.target.files[0]; if (!file) return;
+                    const id = Date.now(); const ts = new Date().toLocaleTimeString();
+                    createHistoryEntry(id, ts, "Lädt...", [file]);
+                    const textArea = document.getElementById(`txt-${id}`); const fd = new FormData(); fd.append("file", file, file.name); fd.append("model", "whisper-1");
                     try {
                         const res = await fetch("https://api.openai.com/v1/audio/transcriptions", { method: "POST", headers: { "Authorization": `Bearer ${els.apiKey.value}` }, body: fd });
                         const data = await res.json();
-                        if (res.ok) {
-                            combinedText += (i > 1 ? `\n---\n${data.text}` : data.text);
-                        } else {
-                            combinedText += `\n[Wiederholungs-Fehler bei Block ${i}: ${data.error?.message}]\n`;
-                        }
-                    } catch (e) { combinedText += `\n[Wiederholungs-Netzwerkfehler bei Block ${i}]\n`; }
-                    i++;
-                }
-
-                const ta = document.getElementById(`txt-${id}`);
-                ta.value = combinedText.trim();
-                autoResizeText(ta);
-                btn.innerHTML = originalIcon;
-                btn.disabled = false;
-
-                // Re-save modified text logic onto history JSON
-                let h = JSON.parse(localStorage.getItem("hist_master") || "[]");
-                let targetIdx = h.findIndex(x => x.id === id);
-                if (targetIdx >= 0) {
-                    h[targetIdx].text = ta.value;
-                    localStorage.setItem("hist_master", JSON.stringify(h));
-                }
-                showToast("Wiederholung abgeschlossen!");
-                silentCopy(ta.value);
-            };
-
-
-            window.dlAllZip = async () => {
-                if (!window.JSZip) return; const zip = new JSZip(); let allTxt = "--- PROTOKOLL ---\n\n";
-                document.querySelectorAll('.entry').forEach(e => {
-                    if (e.id === "activeEntry") return;
-                    const id = e.id.replace('e-', ''); const txt = e.querySelector('textarea').value; const ts = e.querySelector('.date-badge').innerText;
-                    allTxt += `[${ts}]\n${txt}\n\n---\n\n`;
-                    if (e.audioBlobs) { e.audioBlobs.forEach((blob, index) => { zip.folder("audio").file(`rec_${id}_part${index + 1}.webm`, blob); }); }
+                        if (res.ok) { textArea.value = data.text; saveToHistory(id, data.text, ts, [file], 0, "Upload"); autoResizeText(textArea); } else { textArea.value = `Error: ${data.error?.message}`; }
+                    } catch (err) { textArea.value = `Fehler: ${err.message}`; }
+                    els.fileUpload.value = '';
                 });
-                zip.file("Alle_Transkripte.txt", allTxt);
-                setTimeout(async () => { download(await zip.generateAsync({ type: "blob" }), `Master_Backup_${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 16)}.zip`); }, 1000);
-            };
 
-            els.fileUpload.addEventListener('change', async (e) => {
-                const file = e.target.files[0]; if (!file) return;
-                const id = Date.now(); const ts = new Date().toLocaleTimeString();
-                createHistoryEntry(id, ts, "Lädt...", [file]);
-                const textArea = document.getElementById(`txt-${id}`); const fd = new FormData(); fd.append("file", file, file.name); fd.append("model", "whisper-1");
-                try {
-                    const res = await fetch("https://api.openai.com/v1/audio/transcriptions", { method: "POST", headers: { "Authorization": `Bearer ${els.apiKey.value}` }, body: fd });
-                    const data = await res.json();
-                    if (res.ok) { textArea.value = data.text; saveToHistory(id, data.text, ts, [file], 0, "Upload"); autoResizeText(textArea); } else { textArea.value = `Error: ${data.error?.message}`; }
-                } catch (err) { textArea.value = `Fehler: ${err.message}`; }
-                els.fileUpload.value = '';
-            });
+                function download(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
 
-            function download(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
-            _dbg.textContent = 'JS: OK'; _dbg.style.background = 'green'; setTimeout(() => _dbg.remove(), 3000);
-        } catch (e) { _dbg.textContent = 'ERR: ' + e.message + ' @' + e.stack?.match(/:(\d+):/)?.[1]; console.error(e); }
-    </script>
+                // V94: Fix DOM — browser nests scroll-zone inside sticky-zone due to HTML parser quirks.
+                // Move scroll-zone to be a sibling of sticky-zone inside app-wrapper.
+                const stickyEl = document.querySelector('.sticky-zone');
+                const scrollEl = document.querySelector('.scroll-zone');
+                if (stickyEl && scrollEl && scrollEl.parentElement === stickyEl) {
+                    stickyEl.parentElement.appendChild(scrollEl);
+                }
+
+                // V95 fixed: Dynamic scroll mask calculation for sharp 5mm fade edge
+                function updateMaskY() {
+                    if (stickyEl && scrollEl) {
+                        const localY = stickyEl.getBoundingClientRect().bottom - scrollEl.getBoundingClientRect().top;
+                        scrollEl.style.setProperty('--mask-y', `${localY}px`);
+                    }
+                }
+                window.addEventListener('scroll', updateMaskY, { passive: true });
+                window.addEventListener('resize', updateMaskY, { passive: true });
+                const maskObserver = new MutationObserver(updateMaskY);
+                if (stickyEl) maskObserver.observe(stickyEl, { childList: true, subtree: true, attributes: true });
+                updateMaskY();
+
+                _dbg.textContent = 'JS: OK'; _dbg.style.background = 'green'; setTimeout(() => _dbg.remove(), 3000);
+            } catch (e) { _dbg.textContent = 'ERR: ' + e.message + ' @' + e.stack?.match(/:(\d+):/)?.[1]; console.error(e); }
+        </script>
 </body>
 
 </html>
