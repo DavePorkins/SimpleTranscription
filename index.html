@@ -109,7 +109,8 @@
             width: 100%;
             max-width: 780px;
             margin: 0 auto;
-            padding: 20px 10px 10px 10px;
+            /* Bottom padding set to 0 so the scroll-zone starts exactly at the border */
+            padding: 20px 10px 0px 10px;
             box-sizing: border-box;
         }
 
@@ -119,30 +120,23 @@
             overflow-x: hidden;
             min-height: 0;
             width: 100%;
-            padding-top: 5px;
+            /* 25px Top Padding prevents content from being faded at rest, giving room for the mask */
+            padding-top: 25px;
             padding-bottom: 40px;
             box-sizing: border-box;
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 8px);
-            mask-image: linear-gradient(to bottom, transparent 0px, black 8px);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 20px);
+            mask-image: linear-gradient(to bottom, transparent 0px, black 20px);
         }
 
-        #activeEntry {
-            display: none;
-            width: 100%;
-            max-width: 780px;
-            margin: 0 auto 20px auto;
-            padding: 0 10px;
-            box-sizing: border-box;
-        }
-
-        #feed {
+        .scroll-content-inner {
             width: 100%;
             max-width: 780px;
             margin: 0 auto;
             padding: 0 10px;
             box-sizing: border-box;
-            user-select: text;
-            -webkit-user-select: text;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
 
         .glass-panel {
@@ -186,7 +180,6 @@
             font-size: 1.2rem;
             font-weight: 800;
             letter-spacing: -0.5px;
-            /* Dynamic gradient based on selected vibe */
             background: linear-gradient(90deg, var(--c1), var(--c2));
             -webkit-background-clip: text;
             background-clip: text;
@@ -396,7 +389,6 @@
             z-index: 1;
         }
 
-        /* The soft glowing nebula inside the button */
         #btnMain::before {
             content: '';
             position: absolute;
@@ -496,38 +488,15 @@
             border-color: transparent;
         }
 
+        /* Fixed styling for proper margin and matching widths inside .scroll-content-inner */
         #activeEntry {
             display: none;
             flex-direction: column;
             gap: 12px;
-            margin-top: 0;
+            width: 100%;
+            box-sizing: border-box;
             transition: all 0.4s ease;
             transform-origin: top;
-        }
-
-        /* V93: Record button slow plasma animation */
-        @keyframes plasma-spin {
-            0% {
-                background-position: 0% 50%;
-            }
-
-            50% {
-                background-position: 100% 50%;
-            }
-
-            100% {
-                background-position: 0% 50%;
-            }
-        }
-
-        .rec-controls #btnMain {
-            background: var(--btn-glass);
-            color: var(--text);
-            border: none;
-        }
-
-        .rec-controls #btnMain.state-recording {
-            /* Handled above */
         }
 
         .active-top-bar {
@@ -536,7 +505,6 @@
             align-items: center;
             justify-content: center;
             width: 100%;
-            flex-direction: column;
             gap: 12px;
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
         }
@@ -640,6 +608,9 @@
             flex-direction: column;
             gap: 15px;
             width: 100%;
+            box-sizing: border-box;
+            user-select: text;
+            -webkit-user-select: text;
         }
 
         .entry {
@@ -658,7 +629,6 @@
             -webkit-backdrop-filter: var(--blur-amount);
             transition: all 0.3s;
             transform-origin: top center;
-            /* V97 fix: forces proper clipping of backdrop-filter when parent has mask-image */
             transform: translateZ(0);
         }
 
@@ -671,30 +641,6 @@
             100% {
                 opacity: 1;
                 transform: scale(1) translateY(0);
-            }
-        }
-
-        .collapse-anim {
-            animation: collapseOut 0.4s ease forwards !important;
-            overflow: hidden !important;
-        }
-
-        @keyframes collapseOut {
-            0% {
-                opacity: 1;
-                transform: scale(1);
-                max-height: 500px;
-                padding: 20px;
-                margin-bottom: 15px;
-            }
-
-            100% {
-                opacity: 0;
-                transform: scale(0.95) translateY(-20px);
-                max-height: 0;
-                padding: 0;
-                margin-bottom: 0;
-                border: none;
             }
         }
 
@@ -943,11 +889,8 @@
             cursor: grab;
             z-index: 10;
             touch-action: none;
-            /* Prevent scroll when dragging on mobile */
             user-select: none;
-            /* Prevent text selection */
             -webkit-user-select: none;
-            /* Safari */
         }
 
         .color-thumb:active {
@@ -1063,61 +1006,6 @@
         #toast.visible {
             transform: translate(-50%, 0);
             opacity: 1;
-        }
-
-        /* Smooth transform activeEntry to Finished Entry */
-        .finished-transition {
-            animation: pulseGreen 1s ease-out;
-        }
-
-        @keyframes pulseGreen {
-            0% {
-                box-shadow: 0 0 0 0 rgba(46, 213, 115, 0.4);
-            }
-
-            70% {
-                box-shadow: 0 0 0 15px rgba(46, 213, 115, 0);
-            }
-
-            100% {
-                box-shadow: 0 0 0 0 rgba(46, 213, 115, 0);
-            }
-        }
-
-        /* Dual Range Slider CSS */
-        .range-slider {
-            position: relative;
-            width: 100%;
-            height: 28px;
-            border-radius: 14px;
-            overflow: hidden;
-            border: 1px solid var(--glass-border);
-            margin-top: 4px;
-        }
-
-        .range-slider input[type=range] {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            -webkit-appearance: none;
-            appearance: none;
-            pointer-events: none;
-            background: transparent;
-            margin: 0;
-            z-index: 2;
-        }
-
-        .range-slider input[type=range]::-webkit-slider-thumb {
-            pointer-events: all;
-            width: 24px;
-            height: 24px;
-            -webkit-appearance: none;
-            background: white;
-            border-radius: 50%;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-            cursor: pointer;
         }
     </style>
 </head>
@@ -1313,7 +1201,6 @@
                                 </path>
                             </svg>
                         </button>
-                        <!-- Neu: Richtiger Refresh Button -->
                         <button class="icon-btn" onclick="window.location.reload()" title="App neu laden">
                             <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
                                 <path
@@ -1327,7 +1214,6 @@
                                 <line x1="10" y1="12" x2="14" y2="12"></line>
                             </svg>
                         </button>
-                        <!-- Neu: Teilen Icon Update -->
                         <button class="icon-btn" onclick="showQR()" title="App Teilen">
                             <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
                                 <circle cx="18" cy="5" r="3"></circle>
@@ -1349,7 +1235,6 @@
                                 <option value="default">Default</option>
                             </select>
                         </div>
-                        <!-- Neu: Clear All (Trashcan) -->
                         <button class="icon-btn" onclick="clearAllHistory()" title="Alle löschen">
                             <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"
                                 style="color:var(--danger)">
@@ -1360,7 +1245,6 @@
                             </svg>
                         </button>
 
-                        <!-- Auto-Save Icon Button -->
                         <button class="icon-btn inactive" id="btnAutoSave" onclick="toggleSave()"
                             title="Auto-Save Backup">
                             <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
@@ -1370,7 +1254,6 @@
                             </svg>
                         </button>
 
-                        <!-- Auto-Cut Icon Button -->
                         <button class="icon-btn" id="btnAutoCut" onclick="cycleAutoCut()" title="Auto-Cut Intervall">
                             <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
                                 <circle cx="6" cy="6" r="3"></circle>
@@ -1414,9 +1297,11 @@
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="scroll-zone">
-
+        <div class="scroll-zone">
+            <!-- New unifying wrapper container -->
+            <div class="scroll-content-inner">
                 <div id="activeEntry" class="glass-panel" style="display:none; padding-bottom: 25px;">
                     <div class="active-top-bar" style="margin-bottom: 15px;">
                         <div class="status-container" id="statusContainer">
@@ -1445,7 +1330,6 @@
                                     <line x1="20" y1="4" x2="8.12" y2="15.88"></line>
                                 </svg> Cut...</span>
                         </div>
-                        <!-- Start time added -->
                         <span class="timestamp-badge" id="liveStartTs">Gestartet: --:--</span>
 
                         <div class="stats-badges" id="liveBadges">
@@ -1455,13 +1339,11 @@
                             <span class="stat-pill" id="liveCost" title="Kosten der API">0.0 ct</span>
                         </div>
                     </div>
-                    <!-- Fixed padding/margin bug in textarea -->
                     <textarea id="activeText" class="seamless-text" readonly placeholder="Sprich in das Mikrofon..."
                         style="margin-bottom: 5px;"></textarea>
                 </div>
 
                 <div id="feed"></div>
-
             </div>
         </div>
 
@@ -2602,10 +2484,7 @@
                     stickyEl.parentElement.appendChild(scrollEl);
                 }
 
-
-
-                _dbg.textContent = 'JS: OK'; _dbg.style.background = 'green'; setTimeout(() => _dbg.remove(), 3000);
-            } catch (e) { _dbg.textContent = 'ERR: ' + e.message + ' @' + e.stack?.match(/:(\d+):/)?.[1]; console.error(e); }
+            } catch (e) { console.error(e); }
         </script>
 </body>
 
