@@ -128,12 +128,17 @@
         
         .icon-btn:hover, .mini-btn:hover { background: var(--btn-hover); transform: scale(1.05); }
         
-        /* Smooth glowing state for toggles */
+        /* Specialized Active States for Toggles */
         .icon-btn.active-glow { 
-            background: rgba(255, 255, 255, 0.5); 
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3); 
+            background: rgba(255, 255, 255, 0.7); 
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.5); 
             border-color: rgba(255, 255, 255, 0.8);
-            color: var(--text);
+            color: #000;
+        }
+        html[data-theme="dark"] .icon-btn.active-glow {
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+            color: #fff;
         }
 
         .mini-btn.danger { color: var(--danger); } .mini-btn.safe { color: var(--safe); } .mini-btn.action { color: var(--accent); }
@@ -145,11 +150,11 @@
             position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
         }
 
-        /* The Hero Timer */
+        /* The Hero Timer - Made elegant, thin, and matching the pastel theme */
         .timer {
             font-size: 3.5rem; font-weight: 300; letter-spacing: 2px; line-height: 1; font-variant-numeric: tabular-nums;
-            color: var(--text); opacity: 0.9;
-            text-shadow: 0 0 20px var(--c1);
+            background: linear-gradient(135deg, var(--c1), var(--c2)); -webkit-background-clip: text; background-clip: text; color: transparent;
+            filter: drop-shadow(0 0 10px rgba(161, 140, 209, 0.4));
             margin: 5px 0 15px 0; text-align: center; transition: all 0.3s;
         }
 
@@ -172,7 +177,7 @@
             box-shadow: 0 0 25px var(--c1); 
             animation: pulse-idle 2.5s infinite alternate;
         }
-        @keyframes pulse-idle { from { box-shadow: 0 0 10px rgba(161, 140, 209, 0.4); } to { box-shadow: 0 0 35px var(--c2); } }
+        @keyframes pulse-idle { from { box-shadow: 0 0 15px rgba(161, 140, 209, 0.4); } to { box-shadow: 0 0 35px var(--c2); } }
         
         #btnMain::before {
             content: ''; position: absolute; inset: -20%; background: linear-gradient(135deg, var(--c1), var(--c2), var(--c1));
@@ -194,15 +199,25 @@
         .side-btn#btnCancel { color: var(--danger); }
         .side-btn#btnPause.state-paused { background: var(--warn); color: white; border-color: transparent; }
 
-        /* Compact Header / Stats Strip (No Overlap) */
+        /* Compact Header / Stats Strip */
         .entry-header-compact {
-            display: flex; flex-wrap: wrap; gap: 8px; width: 100%; margin-bottom: 12px; align-items: center; justify-content: space-between;
+            display: flex; flex-direction: column; gap: 8px; width: 100%; margin-bottom: 12px;
+        }
+        
+        /* Alignment wrapper for badgets and stats */
+        .active-top-bar {
+            display: flex; flex-direction: column; width: 100%; gap: 8px; align-items: center; justify-content: center;
+        }
+        .status-container { display: flex; gap: 6px; align-items: center; justify-content: center; }
+
+        .stats-row {
+            display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: space-between; width: 100%;
         }
         .stats-group {
-            display: flex; flex-wrap: wrap; gap: 6px; align-items: center; flex: 1 1 auto;
+            display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; flex: 1 1 auto;
         }
         .actions-group {
-            display: flex; gap: 6px; align-items: center; flex: 0 0 auto;
+            display: flex; gap: 6px; align-items: center; justify-content: center; flex: 0 0 auto;
         }
         
         .stat-pill { 
@@ -211,12 +226,12 @@
             border: 1px solid var(--glass-border); display: inline-flex; align-items: center; gap: 5px; 
             white-space: nowrap; height: 26px; box-sizing: border-box;
         }
-        .stat-pill svg { width: 12px; height: 12px; flex-shrink: 0; }
+        .stat-pill svg { width: 14px; height: 14px; flex-shrink: 0; }
 
         .status-badge {
             font-size: 0.8rem; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; justify-content: center;
-            padding: 4px 10px; border-radius: 10px; background: var(--badge-bg); border: 1px solid var(--glass-border); color: var(--text);
-            height: 26px; box-sizing: border-box;
+            padding: 4px 12px; border-radius: 10px; background: var(--badge-bg); border: 1px solid var(--glass-border); color: var(--text);
+            height: 26px; box-sizing: border-box; margin: 0;
         }
         .status-badge.highlight { color: var(--accent); border-color: var(--accent); animation: pulse-status 1.5s infinite; }
         @keyframes pulse-status { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
@@ -352,7 +367,7 @@
                     
                     <div class="title-container">
                         <div class="title-pill">
-                            <h1>Simple Transcription <span class="version-tag">V107</span></h1>
+                            <h1>Simple Transcription <span class="version-tag">V108</span></h1>
                         </div>
                     </div>
 
@@ -360,7 +375,7 @@
                         <button class="icon-btn" onclick="toggleModal('apiModal')" title="API Key"><svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg></button>
                         <button class="icon-btn" onclick="cycleTheme()" title="Theme" id="themeIcon"></button>
                         
-                        <!-- NEW Magic Wand Randomize Icon (Sparkles) -->
+                        <!-- Magic Wand Randomize Icon -->
                         <button class="icon-btn" onclick="randomizeSetup()" title="Zufälliges Design">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"></path><path d="m14 7 3 3"></path><path d="M5 6v4"></path><path d="M19 14v4"></path><path d="M10 2v2"></path><path d="M7 8H3"></path><path d="M21 16h-4"></path><path d="M11 3H9"></path></svg>
                         </button>
@@ -394,21 +409,20 @@
                 
                 <!-- LIVE RECORDING BLOCK -->
                 <div id="activeEntry" class="glass-panel" style="display:none; flex-direction:column; margin-bottom: 15px;">
-                    <div class="entry-header-compact">
-                        <div class="stats-group" id="liveStatsContainer">
-                            <span class="status-badge" id="badgeListen" style="margin-bottom:0;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg> Höre zu...</span>
-                            <span class="status-badge highlight" id="badgeTranscribe" style="display:none; margin-bottom:0;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"></path></svg> Transkribiere...</span>
-                            <span class="stat-pill" id="liveStartTs"></span>
-                            <span class="stat-pill" id="liveWords"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> 0</span>
-                            <!-- 3D Isometric Box for Tokens -->
-                            <span class="stat-pill" id="liveTokens"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg> 0</span>
-                            <span class="stat-pill" id="liveCost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path></svg> ~0.0 ct</span>
+                    <div class="active-top-bar">
+                        <div class="status-container">
+                            <span class="status-badge" id="badgeListen"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg> Höre zu...</span>
+                            <span class="status-badge highlight" id="badgeTranscribe" style="display:none;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"></path></svg> Transkribiere...</span>
                         </div>
-                        <div class="actions-group" style="opacity: 0.2; pointer-events: none;">
-                            <button class="mini-btn"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 8v13H3V8"></path><polyline points="1 3 23 3 23 8 1 8 1 3"></polyline><line x1="10" y1="12" x2="14" y2="12"></line></svg></button>
-                            <button class="mini-btn"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg></button>
-                            <button class="mini-btn"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg></button>
-                            <button class="mini-btn"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                        
+                        <div class="stats-row">
+                            <div class="stats-group" id="liveStatsContainer">
+                                <span class="stat-pill" id="liveStartTs"></span>
+                                <span class="stat-pill" id="liveWords"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> 0</span>
+                                <!-- Isometric Hexagon Token Icon -->
+                                <span class="stat-pill" id="liveTokens"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg> 0</span>
+                                <span class="stat-pill" id="liveCost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path></svg> ~0.0 ct</span>
+                            </div>
                         </div>
                     </div>
                     <textarea id="activeText" class="seamless-text" readonly placeholder="Sprich in das Mikrofon..."></textarea>
@@ -455,7 +469,7 @@
         const els = {
             btnMain: document.getElementById('btnMain'), btnPause: document.getElementById('btnPause'), btnCancel: document.getElementById('btnCancel'),
             iconMain: document.getElementById('iconMain'), iconPause: document.getElementById('iconPause'), themeIcon: document.getElementById('themeIcon'),
-            timer: document.getElementById('timer'),
+            timer: document.getElementById('timer'), liveWords: document.getElementById('liveWords'), liveCost: document.getElementById('liveCost'), liveTokens: document.getElementById('liveTokens'),
             canvas: document.getElementById('cloudCanvas'), feed: document.getElementById('feed'), activeEntry: document.getElementById('activeEntry'), activeText: document.getElementById('activeText'),
             badgeListen: document.getElementById('badgeListen'), badgeTranscribe: document.getElementById('badgeTranscribe'), liveStartTs: document.getElementById('liveStartTs'),
             apiKey: document.getElementById('apiKey'), fileUpload: document.getElementById('fileUpload'), micSelect: document.getElementById('micSelect'),
@@ -508,7 +522,10 @@
             }
         });
 
-        function showToast(msg) { els.toastMsg.innerText = msg; els.toast.className = 'visible'; clearTimeout(toastTimeout); toastTimeout = setTimeout(()=>els.toast.className='', 2500); }
+        function showToast(msg) { 
+            els.toastMsg.innerText = msg; els.toast.className = 'visible'; 
+            clearTimeout(toastTimeout); toastTimeout = setTimeout(()=>els.toast.className='', 2500); 
+        }
         
         function playWarningSound() {
             if (!audioCtxLive) return;
@@ -556,10 +573,10 @@
         function updateCutBtn() {
             let arcs = '';
             // Using stroke-dasharray on a circle of radius 10 (Circumference ~62.83). Center 12,12.
-            // Formula: segment gap segment gap...
             if (currentCutIdx === 1) arcs = `<circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" stroke-width="2.5" stroke-dasharray="15 47.83" stroke-dashoffset="18" stroke-linecap="round"/>`;
             if (currentCutIdx === 2) arcs = `<circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" stroke-width="2.5" stroke-dasharray="15 5.94 15 26.89" stroke-dashoffset="18" stroke-linecap="round"/>`;
             if (currentCutIdx === 3) arcs = `<circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" stroke-width="2.5" stroke-dasharray="15 5.94 15 5.94 15 5.94" stroke-dashoffset="18" stroke-linecap="round"/>`;
+            if (currentCutIdx === 4) arcs = `<circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" stroke-width="2.5" stroke-dasharray="62.83 0" stroke-linecap="round"/>`;
             
             let svg = `<g transform="translate(1,0) scale(0.9)"><path d="M8 8L16 16M8 16L16 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="6" cy="6" r="2" stroke="currentColor" fill="none" stroke-width="2"/><circle cx="6" cy="18" r="2" stroke="currentColor" fill="none" stroke-width="2"/></g>${arcs}`;
             els.btnAutoCut.innerHTML = `<svg viewBox="0 0 24 24">${svg}</svg>`;
@@ -823,7 +840,6 @@
                 }
                 
                 if(maxRms > threshold) {
-                    // Mixdown to Mono for the final WAV
                     let mixed = new Float32Array(actualChunkSize);
                     for(let c=0; c<numChannels; c++) {
                         let channelData = audioBuffer.getChannelData(c);
