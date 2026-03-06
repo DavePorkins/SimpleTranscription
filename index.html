@@ -857,7 +857,7 @@
             const file = e.target.files[0]; if (!file) return;
             const id = Date.now(); const ts = new Date().toLocaleTimeString();
             
-            // UI Placeholder
+            // UI Placeholder 
             let d = document.createElement('div'); d.className='entry'; d.id=`e-${id}`; d.innerHTML = `
                 <div class="entry-header">
                     <div class="entry-meta-info"><span class="date-badge"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ${ts} (Upload)</span></div>
