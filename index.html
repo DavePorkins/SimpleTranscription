@@ -30,7 +30,7 @@
             margin: 0; padding: 0; width: 100vw; height: 100vh; height: 100dvh;
             overflow: hidden; 
             font-family: 'Inter', -apple-system, sans-serif;
-            background: var(--page-bg); transition: background 0.5s ease;
+            background: var(--page-bg); transition: background 0.4s ease;
         }
 
         :root {
@@ -48,7 +48,9 @@
             --blur-amount: blur(25px);
             --canvas-brightness: brightness(0.95) saturate(1.1);
             --page-bg: #ffffff;
-            --ui-opacity: 1; /* For dynamic audio player fading */
+            --ui-opacity: 1;
+            /* High contrast shadow to keep text readable against transparent animated backgrounds */
+            --text-glow: 0 0 8px rgba(255,255,255,0.9), 0 0 15px rgba(255,255,255,1);
         }
 
         html[data-theme="dark"] {
@@ -60,7 +62,8 @@
             --btn-text: #fff; --badge-bg: rgba(0, 0, 0, 0.4);
             --title-bg: rgba(0, 0, 0, 0.3);
             --canvas-brightness: brightness(0.5) saturate(1.3);
-            --page-bg: #050505;
+            --page-bg: #000000; /* Pure black for Android Nav Bar */
+            --text-glow: 0 0 8px rgba(0,0,0,0.9), 0 0 15px rgba(0,0,0,1);
         }
 
         #cloudCanvas {
@@ -95,9 +98,10 @@
             border-radius: 28px; border: 1px solid var(--glass-border);
             background: var(--glass-bg); backdrop-filter: var(--blur-amount); -webkit-backdrop-filter: var(--blur-amount);
             padding: 15px; width: 100%; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            transform: translateZ(0); /* Hardware acceleration for smoother scrolling/transitions */
         }
 
-        .entry { display: flex; flex-direction: column; margin-bottom: 15px; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform: translateZ(0); }
+        .entry { display: flex; flex-direction: column; margin-bottom: 15px; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes popIn { 0% { opacity: 0; transform: scale(0.95) translateY(-10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
 
         .title-container { width: 100%; display: flex; justify-content: center; margin-bottom: 10px; }
@@ -124,12 +128,12 @@
             position: relative;
         }
         .icon-btn { border-radius: 50%; width: 44px; height: 44px; flex-shrink: 0; }
-        .mini-btn { border-radius: 12px; width: 36px; height: 36px; flex-shrink: 0; }
+        .mini-btn { border-radius: 12px; width: 36px; height: 36px; flex-shrink: 0; opacity: 0.8; }
         .icon-btn svg, .mini-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
         
-        .icon-btn:hover, .mini-btn:hover { background: var(--btn-hover); transform: scale(1.05); }
+        .icon-btn:hover, .mini-btn:hover { background: var(--btn-hover); transform: scale(1.05); opacity: 1; }
         
-        /* Specialized Active States for Toggles */
+        /* Toggles (System Sound, Auto-Save) */
         .icon-btn.active-glow { 
             background: rgba(255, 255, 255, 0.7); 
             box-shadow: 0 0 12px rgba(255, 255, 255, 0.5); 
@@ -141,6 +145,11 @@
             box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
             color: #fff;
         }
+        
+        /* Auto Cut specific toggle style (No glow, just visually active) */
+        .icon-btn.active-neutral {
+            color: var(--text); background: var(--btn-hover); border-color: var(--glass-border);
+        }
 
         .mini-btn.danger { color: var(--danger); } .mini-btn.safe { color: var(--safe); } .mini-btn.action { color: var(--accent); }
 
@@ -151,24 +160,17 @@
             position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
         }
 
-        /* The Hero Timer with Base Contrast Underlay */
+        /* The Elegant Hero Timer - Pastel Gradient with Ambient Glow */
         .timer-wrapper {
-            position: relative; display: inline-block; text-align: center; margin: 0 0 15px 0; width: 100%;
-        }
-        .timer-glow-backdrop {
-            position: absolute; inset: -5px 10%; z-index: -1; border-radius: 50px;
-            background: radial-gradient(ellipse at center, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 70%);
-            opacity: 0.8; pointer-events: none; transition: opacity 0.5s;
-        }
-        html[data-theme="dark"] .timer-glow-backdrop {
-            background: radial-gradient(ellipse at center, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 70%);
+            position: relative; display: flex; justify-content: center; margin: 5px 0 15px 0; width: 100%; pointer-events: none;
         }
         .timer {
             font-size: 3.5rem; font-weight: 300; letter-spacing: 2px; line-height: 1; font-variant-numeric: tabular-nums;
-            color: var(--text);
-            text-shadow: 0 2px 10px var(--c1);
+            background: linear-gradient(135deg, var(--c1), var(--c2)); -webkit-background-clip: text; background-clip: text; color: transparent;
+            text-shadow: 0 0 25px rgba(161, 140, 209, 0.4); /* Soft ambient glow instead of hard backdrop */
             transition: all 0.3s;
         }
+        html[data-theme="dark"] .timer { text-shadow: 0 0 25px rgba(251, 194, 235, 0.3); }
 
         .rec-controls { display: flex; justify-content: center; align-items: center; gap: 15px; }
         
@@ -181,30 +183,38 @@
         .btn-circle:hover { transform: scale(1.05); background: var(--btn-hover); }
         .btn-circle:active { transform: scale(0.9); }
 
-        /* Magic Record Button - Calmer Glow */
+        /* Magic Amorphous Record Button */
         #btnMain { position: relative; overflow: hidden; z-index: 1; border: none; }
         
         #btnMain.idle { 
-            width: 80px; height: 80px; 
-            box-shadow: 0 0 10px rgba(128, 128, 128, 0.1); 
-            animation: pulse-idle 4s infinite alternate;
+            width: 75px; height: 75px; 
+            border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; /* Amorphous shape */
+            background: linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,255,255,0.1));
+            box-shadow: 0 8px 32px rgba(161, 140, 209, 0.3);
+            animation: morph 6s ease-in-out infinite alternate;
         }
-        @keyframes pulse-idle { 
-            from { box-shadow: 0 0 5px rgba(128, 128, 128, 0.1); } 
-            to { box-shadow: 0 0 15px rgba(128, 128, 128, 0.2); } 
+        html[data-theme="dark"] #btnMain.idle {
+            background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.05));
+            box-shadow: 0 8px 32px rgba(251, 194, 235, 0.2);
         }
         
-        #btnMain::before {
-            content: ''; position: absolute; inset: -20%; background: linear-gradient(135deg, var(--c1), var(--c2), var(--c1));
-            filter: blur(12px); opacity: 0.4; z-index: -1; animation: drift 4s ease infinite alternate;
+        @keyframes morph {
+            0% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; transform: scale(1); }
+            100% { border-radius: 50% 50% 40% 60% / 60% 40% 50% 60%; transform: scale(1.05); }
+        }
+        
+        #btnMain.idle::before {
+            content: ''; position: absolute; inset: -10%; background: linear-gradient(135deg, var(--c1), var(--c2));
+            filter: blur(20px); opacity: 0.3; z-index: -1; animation: drift 5s linear infinite;
         }
         
         #btnMain.state-recording { 
             width: 75px; height: 75px; border-radius: 24px; color: var(--danger); 
             box-shadow: 0 4px 20px rgba(255, 71, 87, 0.3); animation: none; 
+            background: var(--btn-glass);
         }
         #btnMain.state-recording svg { fill: currentColor; stroke: none; width: 32px; height: 32px; }
-        #btnMain.state-recording::before { background: var(--danger); opacity: 0.15; }
+        #btnMain.state-recording::before { background: var(--danger); opacity: 0.15; filter: blur(15px); }
         @keyframes drift { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         .side-btn { opacity: 0; pointer-events: none; transform: scale(0.5); width: 0; margin: 0; }
@@ -228,13 +238,15 @@
             background: var(--badge-bg); padding: 4px 10px; border-radius: 20px; 
             border: 1px solid var(--glass-border); display: inline-flex; align-items: center; gap: 5px; 
             white-space: nowrap; height: auto; min-height: 26px; box-sizing: border-box;
+            text-shadow: var(--text-glow); /* Helps readability on transparent backgrounds */
         }
-        .stat-pill svg { width: 14px; height: 14px; flex-shrink: 0; }
+        .stat-pill svg { width: 14px; height: 14px; flex-shrink: 0; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1)); }
 
         .status-badge {
             font-size: 0.8rem; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; justify-content: center;
             padding: 4px 14px; border-radius: 20px; background: var(--badge-bg); border: 1px solid var(--glass-border); color: var(--text);
             height: auto; min-height: 26px; box-sizing: border-box; margin: 0;
+            text-shadow: var(--text-glow);
         }
         .status-badge.highlight { color: var(--accent); border-color: var(--accent); animation: pulse-status 1.5s infinite; }
         @keyframes pulse-status { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
@@ -248,7 +260,7 @@
         .seamless-text::placeholder { color: var(--text-muted); opacity: 0.6; font-style: italic; }
 
         details.custom-accordion { background: var(--badge-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 10px 15px; width: 100%; margin-top: 10px; }
-        details.custom-accordion summary { font-size: 0.85rem; font-weight: 700; color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; outline:none; user-select:none; }
+        details.custom-accordion summary { font-size: 0.85rem; font-weight: 700; color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; outline:none; user-select:none; text-shadow: var(--text-glow); }
         .audio-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
         .audio-part { display: flex; align-items: center; gap: 10px; background: var(--input-bg); padding: 6px 12px; border-radius: 10px; }
         .audio-part span { font-size: 0.75rem; font-weight: bold; color: var(--text-muted); flex-shrink: 0; }
@@ -256,18 +268,19 @@
         /* Audio Player Transparency Scaling */
         audio { width: 100%; height: 30px; border-radius: 6px; outline: none; opacity: var(--ui-opacity); transition: opacity 0.3s; }
 
+        /* Modals & Settings readability */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
         .modal.visible { display: flex; animation: fadeIn 0.2s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
-        /* Modals receive a text-shadow logic to ensure text readability if transparency is maxed */
         .modal-box { 
             background: var(--glass-bg); padding: 25px; border-radius: 35px; width: 90%; max-width: 440px; 
             border: 1px solid var(--glass-border); color: var(--text); max-height: 85vh; overflow-y: auto; 
-            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4); 
+            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4); 
+            transform: translateZ(0); /* Anti-Glitch */
         }
-        .modal-box, .dev-row, .info-text { text-shadow: 0 1px 3px var(--page-bg); }
-
+        
+        .modal-box * { text-shadow: var(--text-glow); } /* Force readability on transparent UI */
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-weight: 800; font-size: 1.2rem; }
         
         .studio-tabs { display: flex; background: var(--input-bg); border-radius: 14px; padding: 4px; margin-bottom: 20px; }
@@ -282,7 +295,7 @@
             transform: translate(-50%, -50%); z-index: 10; touch-action: none; cursor: grab;
         }
         
-        .api-input-box { width: 100%; padding: 14px; border-radius: 16px; border: 1px solid var(--glass-border); background: var(--input-bg); color: var(--text); font-size: 1rem; outline: none; margin-bottom: 10px; font-family: monospace; }
+        .api-input-box { width: 100%; padding: 14px; border-radius: 16px; border: 1px solid var(--glass-border); background: var(--input-bg); color: var(--text); font-size: 1rem; outline: none; margin-bottom: 10px; font-family: monospace; text-shadow: none; }
 
         #toast {
             position: fixed; top: 20px; left: 50%; transform: translate(-50%, -150%);
@@ -291,6 +304,7 @@
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.2s;
             display: flex; align-items: center; gap: 8px; pointer-events: none; cursor: pointer;
+            text-shadow: var(--text-glow);
         }
         #toast.visible { transform: translate(-50%, 0); opacity: 1; pointer-events: all; }
     </style>
@@ -299,7 +313,7 @@
 <body>
     <canvas id="cloudCanvas"></canvas>
     
-    <div id="toast"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> <span id="toastMsg">Kopiert</span></div>
+    <div id="toast" onclick="tryCopy(null, true)"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> <span id="toastMsg">Kopiert</span></div>
 
     <!-- MODALS -->
     <div id="devPanel" class="modal">
@@ -310,8 +324,8 @@
                     Color Studio
                 </span>
                 <div style="display:flex; gap:8px;">
-                    <button class="mini-btn" onclick="resetDev()" style="width:auto; padding:0 12px; font-weight:bold;">Reset</button>
-                    <button class="mini-btn" onclick="toggleModal('devPanel')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                    <button class="mini-btn" onclick="resetDev()" style="width:auto; padding:0 12px; font-weight:bold; opacity:1;">Reset</button>
+                    <button class="mini-btn" onclick="toggleModal('devPanel')" style="opacity:1;"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
                 </div>
             </div>
             <div class="studio-tabs">
@@ -321,12 +335,12 @@
             <div id="viewColors" style="transition: opacity 0.3s;">
                 <div style="margin-bottom: 20px; padding: 0 5px;">
                     <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:700; margin-bottom:8px; color:var(--text);">Farbspektrum (Einzelne Farben)</div>
-                    <div id="huePicker" style="position:relative; height:30px; border-radius:15px; border:1px solid var(--glass-border); cursor:pointer; margin-bottom: 5px;">
+                    <div id="huePicker" style="position:relative; height:30px; border-radius:15px; border:1px solid var(--glass-border); cursor:pointer; margin-bottom: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
                         <div style="position:absolute;inset:0;background:linear-gradient(90deg, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00); border-radius:15px; opacity:0.8;"></div>
                         <div id="thumbContainer" style="position:absolute;inset:0;"></div>
                     </div>
                     <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:15px; text-align:center;">Tippen = Löschen. Ziehen = Verschieben. Klick Leer = Neu.</div>
-                    <div id="gradientBar" style="height: 24px; border-radius: 12px; margin-top: 15px; border: 1px solid var(--glass-border);"></div>
+                    <div id="gradientBar" style="height: 24px; border-radius: 12px; margin-top: 15px; border: 1px solid var(--glass-border); box-shadow: 0 2px 10px rgba(0,0,0,0.1);"></div>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:16px;">
                         <div><div style="font-size:0.85rem; font-weight:700; margin-bottom:6px; color:var(--text);">Farbintensität</div><input type="range" id="colorVariety" min="0" max="200" value="200" style="width:100%;"></div>
                         <div><div style="font-size:0.85rem; font-weight:700; margin-bottom:6px; color:var(--text);">UI Transparenz</div><input type="range" id="uiTransparency" min="0" max="100" value="70" style="width:100%;"></div>
@@ -339,7 +353,7 @@
                         <span style="font-weight:bold; color:var(--accent);">Silence Threshold</span>
                         <span style="font-size:0.7rem; font-weight:normal;">Schneidet Stille vor API-Upload.</span>
                     </div>
-                    <input type="number" id="silenceThreshold" value="0.001" step="0.0005" min="0.0001" max="0.05" style="width:75px; padding:5px; border-radius:10px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--text); text-align:center; font-weight:bold;">
+                    <input type="number" id="silenceThreshold" value="0.001" step="0.0005" min="0.0001" max="0.05" style="width:75px; padding:5px; border-radius:10px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--text); text-align:center; font-weight:bold; text-shadow:none;">
                 </div>
                 <div class="dev-row"><span>Blob-Anzahl</span> <input type="range" id="blobCount" min="1" max="50" value="20"></div>
                 <div class="dev-row"><span>Blob-Speed</span> <input type="range" id="animSpeed" min="10" max="100" value="50"></div>
@@ -351,22 +365,22 @@
 
     <div id="apiModal" class="modal">
         <div class="modal-box">
-            <div class="modal-header"><span>OpenAI API Key</span><button class="mini-btn" onclick="toggleModal('apiModal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div>
+            <div class="modal-header"><span>OpenAI API Key</span><button class="mini-btn" onclick="toggleModal('apiModal')" style="opacity:1;"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div>
             <input type="password" id="apiKey" class="api-input-box" placeholder="sk-...">
             <div style="display:flex; justify-content:space-between; margin-bottom: 20px; gap:8px;">
-                <div class="mini-btn action" onclick="saveApiAndClose()" style="flex:1; width:auto; border-radius:12px; font-weight:bold;">Speichern</div>
-                <div class="mini-btn" onclick="toggleApiVisibility()" style="flex:1; width:auto; border-radius:12px; font-weight:bold;">Sichtbar</div>
+                <div class="mini-btn action" onclick="saveApiAndClose()" style="flex:1; width:auto; border-radius:12px; font-weight:bold; opacity:1;">Speichern</div>
+                <div class="mini-btn" onclick="toggleApiVisibility()" style="flex:1; width:auto; border-radius:12px; font-weight:bold; opacity:1;">Sichtbar</div>
             </div>
             <div class="info-text" style="font-size:0.8rem; text-align:center; color:var(--text-muted);">
                 <b>Datenschutz:</b> Audios gehen zur Transkription an OpenAI, werden über die API aber <b>nicht</b> fürs Training genutzt.<br>
-                Lokale Audioverarbeitung (Silence Trim) passiert offline im Browser.
+                Lokale Audioverarbeitung passiert offline.
             </div>
         </div>
     </div>
 
     <div id="qrModal" class="modal">
         <div class="modal-box" style="text-align:center;">
-            <div class="modal-header"><span>App teilen</span><button class="mini-btn" onclick="toggleModal('qrModal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div>
+            <div class="modal-header"><span>App teilen</span><button class="mini-btn" onclick="toggleModal('qrModal')" style="opacity:1;"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div>
             <div id="qrcode" style="display:flex; justify-content:center; padding: 20px; background: white; border-radius: 20px; margin-bottom: 20px;"></div>
             <p style="font-size:1.3rem; font-weight:900; margin-bottom: 8px;">Simple Transcription</p>
         </div>
@@ -380,19 +394,16 @@
                     
                     <div class="title-container">
                         <div class="title-pill">
-                            <h1>Simple Transcription <span class="version-tag">V1.1.1</span></h1>
+                            <h1>Simple Transcription <span class="version-tag">V112</span></h1>
                         </div>
                     </div>
 
                     <div class="header-actions">
                         <button class="icon-btn" onclick="toggleModal('apiModal')" title="API Key"><svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg></button>
                         <button class="icon-btn" onclick="cycleTheme()" title="Theme" id="themeIcon"></button>
-                        
-                        <!-- Magic Wand Randomize Icon -->
                         <button class="icon-btn" onclick="randomizeSetup()" title="Zufälliges Design">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"></path><path d="m14 7 3 3"></path><path d="M5 6v4"></path><path d="M19 14v4"></path><path d="M10 2v2"></path><path d="M7 8H3"></path><path d="M21 16h-4"></path><path d="M11 3H9"></path></svg>
                         </button>
-                        
                         <button class="icon-btn" onclick="toggleModal('devPanel')" title="Studio"><svg viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r="2.5"></circle><circle cx="19" cy="13" r="2"></circle><circle cx="7" cy="8" r="2"></circle><circle cx="5" cy="15" r="2"></circle><circle cx="11" cy="19" r="2"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.3-.5-.8-.5-1.3 0-1.1.9-2 2-2h2.4c3.1 0 5.6-2.5 5.6-5.6C23 6.4 18 2 12 2z"></path></svg></button>
                         <button class="icon-btn" onclick="window.location.reload()" title="App neu laden"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg></button>
                         <button class="icon-btn" onclick="document.getElementById('fileUpload').click()" title="Audio hochladen"><svg viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></button>
@@ -409,7 +420,6 @@
                     </div>
 
                     <div class="timer-wrapper">
-                        <div class="timer-glow-backdrop"></div>
                         <div class="timer" id="timer">00:00</div>
                     </div>
 
@@ -436,9 +446,8 @@
                         <div class="stats-group" id="liveStatsContainer">
                             <span class="stat-pill" id="liveStartTs"></span>
                             <span class="stat-pill" id="liveWords"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> 0</span>
-                            <!-- Isometric Hexagon Token Icon -->
-                            <span class="stat-pill" id="liveTokens"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg> 0</span>
-                            <span class="stat-pill" id="liveCost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg> ~0.0 ct</span>
+                            <span class="stat-pill" id="liveTokens"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4.5v7L12 22l-8-4.5v-7L12 2z"></path><line x1="12" y1="22" x2="12" y2="11"></line><path d="M4 6.5l8 4.5 8-4.5"></path></svg> 0</span>
+                            <span class="stat-pill" id="liveCost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="12" r="6"></circle><path d="M18 15a6 6 0 0 0-3.36-9.1"></path></svg> ~0.0 ct</span>
                         </div>
                     </div>
                     <textarea id="activeText" class="seamless-text" readonly placeholder="Sprich in das Mikrofon..."></textarea>
@@ -507,7 +516,7 @@
         window.onclick = e => { if (e.target.classList.contains('modal')) e.target.classList.remove('visible'); };
         window.showQR = () => { document.getElementById('qrcode').innerHTML = ""; new QRCode(document.getElementById("qrcode"), { text: window.location.href.split('#')[0].split('?')[0], width: 150, height: 150, colorDark: "#000000", colorLight: "#ffffff" }); toggleModal('qrModal'); }
         
-        // Auto Resize Textarea without glitching/jumping (Anchored scroll)
+        // Auto Resize Textarea without glitching/jumping
         function autoResizeText(textarea) { 
             let container = document.querySelector('.scroll-zone');
             let st = container.scrollTop;
@@ -571,7 +580,7 @@
             applyTransparency(); updateAnimParams();
         }
 
-        // Toggles
+        // Toggles (Glow logic)
         let isAutoSave = localStorage.getItem("autodl_v86") === 'true';
         window.toggleSave = () => { isAutoSave = !isAutoSave; localStorage.setItem("autodl_v86", isAutoSave); els.btnAutoSave.className = isAutoSave ? 'icon-btn active-glow' : 'icon-btn'; showToast(isAutoSave ? "Auto-Save: An" : "Auto-Save: Aus"); };
         els.btnAutoSave.className = isAutoSave ? 'icon-btn active-glow' : 'icon-btn';
@@ -579,25 +588,27 @@
         window.toggleSysAudio = () => { sysAudioEnabled = !sysAudioEnabled; document.getElementById('sysAudioBtn').className = sysAudioEnabled ? 'icon-btn active-glow' : 'icon-btn'; showToast(sysAudioEnabled ? "System Sound: An" : "System Sound: Aus"); };
         document.getElementById('sysAudioBtn').className = sysAudioEnabled ? 'icon-btn active-glow' : 'icon-btn';
 
-        // Auto Cut Settings (Off, 15s, 30s, 1m, 2m)
+        // Auto Cut Settings (Off, 15s, 30s, 1m, 2m) strictly using absolute seconds!
         const cutOptions = [0, 15, 30, 60, 120];
-        let currentCutIdx = parseInt(localStorage.getItem("autocut_idx_v109") || 3);
+        let currentCutIdx = parseInt(localStorage.getItem("autocut_idx_v109") || 2); // Default 30s
         window.cycleAutoCut = () => { currentCutIdx = (currentCutIdx + 1) % cutOptions.length; localStorage.setItem("autocut_idx_v109", currentCutIdx); updateCutBtn(); }
         
-        // Multi-Layer SVG for the Auto-Cut Icon (No constraints on ring width)
+        // Multi-Layer SVG for the Auto-Cut Icon
         function updateCutBtn() {
             let arcs = '';
             let circ = 125.66; // 2 * PI * 20 (Radius) inside a 44x44 viewBox
-            if (currentCutIdx === 1) arcs = `<circle cx="22" cy="22" r="20" stroke="currentColor" fill="none" stroke-width="3" stroke-dasharray="${circ*0.25} ${circ*0.75}" stroke-linecap="round" transform="rotate(-90 22 22)"/>`;
-            if (currentCutIdx === 2) arcs = `<circle cx="22" cy="22" r="20" stroke="currentColor" fill="none" stroke-width="3" stroke-dasharray="${circ*0.5} ${circ*0.5}" stroke-linecap="round" transform="rotate(-90 22 22)"/>`;
-            if (currentCutIdx === 3) arcs = `<circle cx="22" cy="22" r="20" stroke="currentColor" fill="none" stroke-width="3" stroke-dasharray="${circ*0.75} ${circ*0.25}" stroke-linecap="round" transform="rotate(-90 22 22)"/>`;
-            if (currentCutIdx === 4) arcs = `<circle cx="22" cy="22" r="20" stroke="currentColor" fill="none" stroke-width="3" stroke-dasharray="${circ} 0" stroke-linecap="round" transform="rotate(-90 22 22)"/>`;
+            let opacity = document.documentElement.getAttribute('data-theme') === 'dark' ? '0.6' : '0.4';
             
-            let scissors = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M8 8L16 16M8 16L16 8"/><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/></svg>`;
+            if (currentCutIdx === 1) arcs = `<circle cx="22" cy="22" r="20" stroke="currentColor" fill="none" stroke-width="3" stroke-dasharray="${circ*0.25} ${circ*0.75}" stroke-linecap="round" transform="rotate(-90 22 22)" opacity="${opacity}"/>`;
+            if (currentCutIdx === 2) arcs = `<circle cx="22" cy="22" r="20" stroke="currentColor" fill="none" stroke-width="3" stroke-dasharray="${circ*0.5} ${circ*0.5}" stroke-linecap="round" transform="rotate(-90 22 22)" opacity="${opacity}"/>`;
+            if (currentCutIdx === 3) arcs = `<circle cx="22" cy="22" r="20" stroke="currentColor" fill="none" stroke-width="3" stroke-dasharray="${circ*0.75} ${circ*0.25}" stroke-linecap="round" transform="rotate(-90 22 22)" opacity="${opacity}"/>`;
+            if (currentCutIdx === 4) arcs = `<circle cx="22" cy="22" r="20" stroke="currentColor" fill="none" stroke-width="3" stroke-dasharray="${circ} 0" stroke-linecap="round" transform="rotate(-90 22 22)" opacity="${opacity}"/>`;
+            
+            let scissors = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg>`;
             let ring = arcs ? `<svg viewBox="0 0 44 44" style="position:absolute; inset:0; width:100%; height:100%; pointer-events:none;">${arcs}</svg>` : '';
             
             els.btnAutoCut.innerHTML = scissors + ring;
-            els.btnAutoCut.className = 'icon-btn'; // Explicitly neutral state
+            els.btnAutoCut.className = 'icon-btn'; // Always neutral base
             
             if(pwaInitDone) {
                 if (cutOptions[currentCutIdx] > 0) { showToast(`Auto-Cut: ${cutOptions[currentCutIdx]}s`); } else { showToast("Auto-Cut: Aus"); }
@@ -632,6 +643,7 @@
             let currentHexes;
             
             if (sortedHues.length === 0) {
+                // True Monochrome Mode
                 let isDark = themes[currentThemeIdx] === 'dark';
                 let monoHex = isDark ? '#ffffff' : '#000000';
                 document.documentElement.style.setProperty('--c1', monoHex); document.documentElement.style.setProperty('--c2', monoHex);
@@ -704,7 +716,6 @@
             document.documentElement.style.setProperty('--btn-glass', `rgba(255,255,255,${btn})`);
             document.documentElement.style.setProperty('--badge-bg', isDark ? `rgba(0,0,0,${0.6 - t*0.55})` : `rgba(255,255,255,${0.6 - t*0.55})`);
             
-            // Allow deeper text blending on max transparency
             let uiOp = 1 - (t * 0.4); 
             document.documentElement.style.setProperty('--ui-opacity', uiOp);
             localStorage.setItem('ui_transparency_v76', els.uiTransparency.value);
@@ -899,17 +910,18 @@
                 els.iconMain.innerHTML='<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>';
                 els.timer.innerText = "00:00"; 
                 els.btnPause.classList.remove('visible'); els.btnCancel.classList.remove('visible');
+                
+                // Hard reset cancel button state
+                els.btnCancel.classList.remove('confirm');
+                els.btnCancel.style.background='';
+                els.btnCancel.style.color='var(--danger)';
+                els.btnCancel.innerHTML='<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+                
             } else if(s==='recording') {
                 els.btnMain.className='btn-circle state-recording';
                 els.iconMain.innerHTML='<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" stroke="none"></rect>';
                 els.iconPause.innerHTML='<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
                 els.btnPause.className='btn-circle side-btn visible'; els.btnCancel.className='btn-circle side-btn visible';
-                
-                // Force reset of cancel button in case of previous abort
-                els.btnCancel.classList.remove('confirm');
-                els.btnCancel.style.background='';
-                els.btnCancel.style.color='var(--danger)';
-                els.btnCancel.innerHTML='<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
             } else if(s==='paused') {
                 els.iconPause.innerHTML='<polygon points="7 4 19 12 7 20" fill="white" stroke="none"></polygon>';
                 els.btnPause.className='btn-circle side-btn visible state-paused'; 
@@ -950,8 +962,10 @@
         function getStatSVG(type) {
             if(type === 'time') return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
             if(type === 'words') return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>`;
+            // New Technical Hexagon for Tokens
             if(type === 'tokens') return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`;
-            if(type === 'cost') return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>`;
+            // New overlapping Coins for Cost
+            if(type === 'cost') return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="12" r="6"></circle><path d="M18 15a6 6 0 0 0-3.36-9.1"></path></svg>`;
             if(type === 'date') return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>`;
             if(type === 'saved') return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg>`;
             return '';
@@ -1053,7 +1067,6 @@
             let tSec = Math.floor((Date.now()-sessionStartTime-totalPauseDelta)/1000), pSec = Math.floor((Date.now()-partStartTime-partPauseDelta)/1000);
             updateLiveStats(tSec, els.activeText.value.trim() ? els.activeText.value.trim().split(/\s+/).length : 0, activeCost);
             
-            // Auto Cut Trigger
             if(cutOptions[currentCutIdx] > 0 && pSec >= cutOptions[currentCutIdx] && !isAutoCutting) { 
                 isAutoCutting=true; 
                 mediaRecorder.stop(); 
@@ -1066,7 +1079,6 @@
             pendingTranscriptions++; updateUIBadges();
             
             if(!els.apiKey.value) { 
-                // Let offline processing naturally skip writing to UI
                 pendingTranscriptions--; updateUIBadges(); return; 
             }
             
