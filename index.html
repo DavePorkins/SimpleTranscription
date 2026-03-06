@@ -14,7 +14,7 @@
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='25' fill='%23a18cd1'/%3E%3Cpath d='M50 25a12 12 0 0 0-12 12v15a12 12 0 0 0 24 0V37a12 12 0 0 0-12-12zM70 52v2a20 20 0 0 1-40 0v-2h-5v2a25 25 0 0 0 22 24.8V85h6v-6.2a25 25 0 0 0 22-24.8v-2h-5z' fill='white'/%3E%3C/svg%3E">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" id="theme-color-meta" content="#bfa8e6">
+    <meta name="theme-color" id="theme-color-meta" content="#ffffff">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -22,13 +22,13 @@
     <style>
         /* === RESET & LAYOUT === */
         * {
-            -webkit-tap-highlight-color: transparent; /* Removes blue tap highlight on mobile */
+            -webkit-tap-highlight-color: transparent; 
             box-sizing: border-box;
         }
 
         html, body {
             margin: 0; padding: 0; width: 100vw; height: 100vh; height: 100dvh;
-            overflow: hidden; /* STRICT LOCK: Prevents double scrollbars */
+            overflow: hidden; 
             font-family: 'Inter', -apple-system, sans-serif;
             background: var(--page-bg); transition: background 0.5s ease;
         }
@@ -71,7 +71,6 @@
             position: relative; z-index: 1; display: flex; flex-direction: column; width: 100%; height: 100%;
         }
 
-        /* UNIFIED WIDTH CONTAINER for both header and feed */
         .content-width {
             width: 100%; max-width: 780px; margin: 0 auto; padding: 0 15px;
         }
@@ -83,7 +82,6 @@
         .scroll-zone {
             flex: 1 1 auto; overflow-y: auto; overflow-x: hidden;
             padding-top: 15px; padding-bottom: 60px;
-            /* Mask starts exactly where header ends */
             -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 20px);
             mask-image: linear-gradient(to bottom, transparent 0px, black 20px);
         }
@@ -130,6 +128,18 @@
         .icon-btn.active { color: var(--accent); border-color: var(--accent); background: rgba(255,255,255,0.4); }
         .mini-btn.danger { color: var(--danger); } .mini-btn.safe { color: var(--safe); } .mini-btn.action { color: var(--accent); }
 
+        .mic-container {
+            display: flex; align-items: center; gap: 5px; background: var(--btn-glass);
+            border: 1px solid var(--glass-border); border-radius: 22px; padding: 0 10px 0 5px;
+            height: 44px;
+        }
+        .mic-container svg { width: 18px; height: 18px; stroke: var(--text); fill: none; stroke-width: 2; flex-shrink: 0; margin-left: 5px; }
+        .mic-container select {
+            background: transparent; border: none; color: var(--text); outline: none; font-size: 0.85rem; font-weight: 600;
+            width: 120px; text-overflow: ellipsis; cursor: pointer; font-family: inherit;
+        }
+        .mic-container select option { background: var(--page-bg); color: var(--text); }
+
         .timer {
             font-size: 3.5rem; font-weight: 300; letter-spacing: 2px; line-height: 1; font-variant-numeric: tabular-nums;
             color: var(--text); text-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); margin: 5px 0 15px 0; text-align: center;
@@ -163,7 +173,7 @@
         .side-btn#btnPause.state-paused { background: var(--warn); color: white; border-color: transparent; }
 
         .active-top-bar, .entry-header { display: flex; flex-direction: column; align-items: center; width: 100%; gap: 8px; margin-bottom: 10px; }
-        .status-container, .stats-badges, .entry-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; align-items: center; }
+        .status-container, .stats-badges, .entry-actions { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; align-items: center; }
         
         .status-badge {
             font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;
@@ -172,10 +182,12 @@
         .status-badge.highlight { color: var(--accent); border-color: var(--accent); animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
 
-        .stat-pill { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); background: var(--badge-bg); padding: 4px 10px; border-radius: 10px; border: 1px solid var(--glass-border); }
-        .timestamp-badge { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); padding: 2px 8px; background: var(--input-bg); border-radius: 10px; text-align: center; }
-        .entry-meta-info { display: flex; flex-direction: column; align-items: center; width: 100%; justify-content: center; }
-        .date-badge { font-size: 0.85rem; color: var(--text); font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 6px; text-align: center; }
+        /* Compact Stat Pills */
+        .stat-pill { 
+            font-size: 0.75rem; font-weight: 700; color: var(--text-muted); 
+            background: var(--badge-bg); padding: 3px 8px; border-radius: 8px; 
+            border: 1px solid var(--glass-border); display: inline-flex; align-items: center; gap: 4px; 
+        }
 
         .seamless-text {
             width: 100%; background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text);
@@ -254,7 +266,7 @@
                     <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:15px; text-align:center;">Tippen = Löschen. Ziehen = Verschieben. Klick Leer = Neu.</div>
                     <div id="gradientBar" style="height: 24px; border-radius: 12px; margin-top: 15px; border: 1px solid var(--glass-border);"></div>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:16px;">
-                        <div><div style="font-size:0.85rem; font-weight:700; margin-bottom:6px;">Farbintensität</div><input type="range" id="colorVariety" min="0" max="200" value="100" style="width:100%;"></div>
+                        <div><div style="font-size:0.85rem; font-weight:700; margin-bottom:6px;">Farbintensität</div><input type="range" id="colorVariety" min="0" max="200" value="200" style="width:100%;"></div>
                         <div><div style="font-size:0.85rem; font-weight:700; margin-bottom:6px;">UI Transparenz</div><input type="range" id="uiTransparency" min="0" max="100" value="70" style="width:100%;"></div>
                     </div>
                 </div>
@@ -267,9 +279,10 @@
                     </div>
                     <input type="number" id="silenceThreshold" value="0.001" step="0.0005" min="0.0001" max="0.05" style="width:75px; padding:5px; border-radius:10px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--text); text-align:center; font-weight:bold;">
                 </div>
-                <div class="dev-row"><span>Blob-Geschwindigkeit</span> <input type="range" id="animSpeed" min="10" max="100" value="50"></div>
+                <div class="dev-row"><span>Blob-Anzahl</span> <input type="range" id="blobCount" min="1" max="50" value="20"></div>
+                <div class="dev-row"><span>Blob-Speed</span> <input type="range" id="animSpeed" min="10" max="100" value="50"></div>
                 <div class="dev-row"><span>Weichzeichner</span> <input type="range" id="animBlur" min="0" max="60" value="60"></div>
-                <div class="dev-row"><span>Größe</span> <input type="range" id="animSize" min="10" max="100" value="60"></div>
+                <div class="dev-row"><span>Größe</span> <input type="range" id="animSize" min="10" max="200" value="50"></div>
             </div>
         </div>
     </div>
@@ -312,15 +325,16 @@
                     <div class="header-actions">
                         <button class="icon-btn" onclick="toggleModal('apiModal')" title="API Key"><svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg></button>
                         <button class="icon-btn" onclick="cycleTheme()" title="Theme" id="themeIcon"></button>
+                        <button class="icon-btn" onclick="randomizeSetup()" title="Randomize Look"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></button>
                         <button class="icon-btn" onclick="toggleModal('devPanel')" title="Studio"><svg viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r="2.5"></circle><circle cx="19" cy="13" r="2"></circle><circle cx="7" cy="8" r="2"></circle><circle cx="5" cy="15" r="2"></circle><circle cx="11" cy="19" r="2"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.3-.5-.8-.5-1.3 0-1.1.9-2 2-2h2.4c3.1 0 5.6-2.5 5.6-5.6C23 6.4 18 2 12 2z"></path></svg></button>
                         <button class="icon-btn" onclick="window.location.reload()" title="App neu laden"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg></button>
                         <button class="icon-btn" onclick="document.getElementById('fileUpload').click()" title="Audio hochladen"><svg viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></button>
                         <button class="icon-btn" onclick="dlAllZip()" title="ZIP Download"><svg viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg></button>
                         <button class="icon-btn" onclick="showQR()" title="App Teilen"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg></button>
                         
-                        <div class="icon-btn" title="Mikrofon Auswahl" style="position:relative;">
+                        <div class="mic-container">
                             <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-                            <select id="micSelect" style="position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;"><option value="default">Default</option></select>
+                            <select id="micSelect"><option value="default">Default</option></select>
                         </div>
                         
                         <button class="icon-btn inactive" id="sysAudioBtn" onclick="toggleSysAudio()" title="System Sound (PC)"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg></button>
@@ -341,8 +355,7 @@
 
         <div class="scroll-zone">
             <div class="content-width">
-                <!-- LIVE RECORDING BLOCK (Strictly separated from archive) -->
-                <!-- FIXED flex-direction to keep text under the header -->
+                <!-- LIVE RECORDING BLOCK -->
                 <div id="activeEntry" class="glass-panel" style="display:none; flex-direction:column; margin-bottom: 15px;">
                     <div class="active-top-bar">
                         <div class="status-container">
@@ -351,9 +364,10 @@
                             <span class="status-badge" id="badgeCut" style="display:none; color:var(--warn); border-color:var(--warn);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line></svg> Cut...</span>
                         </div>
                         <div class="stats-badges">
-                            <span class="timestamp-badge" id="liveStartTs">--:--</span>
-                            <span class="stat-pill" id="liveWords">0 W</span><span class="stat-pill" id="liveTokens">0 T</span>
-                            <span class="stat-pill" id="livePages">0 S</span><span class="stat-pill" id="liveCost">0.0 ct</span>
+                            <span class="stat-pill" id="liveStartTs"></span>
+                            <span class="stat-pill" id="liveWords"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> 0</span>
+                            <span class="stat-pill" id="liveTokens"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon><circle cx="12" cy="12" r="3"></circle></svg> 0</span>
+                            <span class="stat-pill" id="liveCost"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path></svg> 0.0</span>
                         </div>
                     </div>
                     <textarea id="activeText" class="seamless-text" readonly placeholder="Sprich in das Mikrofon..."></textarea>
@@ -365,12 +379,10 @@
         </div>
     </div>
 
-    <!-- Upload accepts any standard audio/video format -->
     <input type="file" id="fileUpload" hidden accept="audio/*, video/*, .flac, .m4a, .mp3, .mp4, .mpeg, .mpga, .oga, .ogg, .wav, .webm, .opus, .amr">
 
     <script>
-        // === PWA Service Worker Hook (Manifest Only) ===
-        // Generates a valid manifest so Android allows "Install App" instead of just a shortcut
+        // === PWA Service Worker Hook ===
         (function initPWA() {
             const manifest = {
                 name: "Simple Transcription",
@@ -398,7 +410,7 @@
         const els = {
             btnMain: document.getElementById('btnMain'), btnPause: document.getElementById('btnPause'), btnCancel: document.getElementById('btnCancel'),
             iconMain: document.getElementById('iconMain'), iconPause: document.getElementById('iconPause'), themeIcon: document.getElementById('themeIcon'),
-            timer: document.getElementById('timer'), liveWords: document.getElementById('liveWords'), liveCost: document.getElementById('liveCost'), liveTokens: document.getElementById('liveTokens'), livePages: document.getElementById('livePages'),
+            timer: document.getElementById('timer'), liveWords: document.getElementById('liveWords'), liveCost: document.getElementById('liveCost'), liveTokens: document.getElementById('liveTokens'),
             canvas: document.getElementById('cloudCanvas'), feed: document.getElementById('feed'), activeEntry: document.getElementById('activeEntry'), activeText: document.getElementById('activeText'),
             badgeListen: document.getElementById('badgeListen'), badgeTranscribe: document.getElementById('badgeTranscribe'), badgeCut: document.getElementById('badgeCut'), liveStartTs: document.getElementById('liveStartTs'),
             apiKey: document.getElementById('apiKey'), fileUpload: document.getElementById('fileUpload'), micSelect: document.getElementById('micSelect'),
@@ -447,6 +459,15 @@
             }
         });
         function showToast(msg) { els.toastMsg.innerText = msg; els.toast.className = 'visible'; setTimeout(()=>els.toast.className='', 2500); }
+        function playWarningSound() {
+            if (!audioCtxLive) return;
+            let osc = audioCtxLive.createOscillator(); let gain = audioCtxLive.createGain();
+            osc.connect(gain); gain.connect(audioCtxLive.destination);
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(300, audioCtxLive.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, audioCtxLive.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.5, audioCtxLive.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtxLive.currentTime + 0.3);
+            osc.start(); osc.stop(audioCtxLive.currentTime + 0.3);
+        }
 
         // Themes
         const themes = ['light-clear', 'dark'];
@@ -460,6 +481,10 @@
             document.documentElement.setAttribute('data-theme', themes[currentThemeIdx]);
             els.themeIcon.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">${svgThemes[currentThemeIdx]}</svg>`;
             localStorage.setItem('theme_idx_v98', currentThemeIdx);
+            
+            const metaTheme = document.getElementById('theme-color-meta');
+            metaTheme.setAttribute('content', currentThemeIdx === 1 ? '#050505' : '#ffffff');
+            
             applyTransparency(); updateAnimParams();
         }
 
@@ -474,14 +499,14 @@
         let currentCutIdx = parseInt(localStorage.getItem("autocut_idx_v86") || 3);
         window.cycleAutoCut = () => { currentCutIdx = (currentCutIdx + 1) % cutOptions.length; localStorage.setItem("autocut_idx_v86", currentCutIdx); updateCutBtn(); }
         
-        // Beautiful Circular Arcs for Auto-Cut (Wide Radius)
+        // Wide Circular Arcs for Auto-Cut
         function updateCutBtn() {
             let arcs = '';
-            if(currentCutIdx >= 1) arcs += `<path d="M 5 19 A 10 10 0 0 0 19 19" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>`;
-            if(currentCutIdx >= 2) arcs += `<path d="M 21.5 14 A 10 10 0 0 0 14 2.5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>`;
-            if(currentCutIdx >= 3) arcs += `<path d="M 10 2.5 A 10 10 0 0 0 2.5 14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>`;
+            if(currentCutIdx >= 1) arcs += `<path d="M 4 17.5 A 10.5 10.5 0 0 0 20 17.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>`;
+            if(currentCutIdx >= 2) arcs += `<path d="M 21.5 14 A 10.5 10.5 0 0 0 13 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>`;
+            if(currentCutIdx >= 3) arcs += `<path d="M 11 2 A 10.5 10.5 0 0 0 2.5 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>`;
             
-            let svg = `<path d="M9 9L15 15M9 15L15 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="8" cy="8" r="1.5" stroke="currentColor" fill="none" stroke-width="2"/><circle cx="8" cy="16" r="1.5" stroke="currentColor" fill="none" stroke-width="2"/>${arcs}`;
+            let svg = `<path d="M10 10L14 14M10 14L14 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="9" r="1.2" stroke="currentColor" fill="none" stroke-width="2"/><circle cx="9" cy="15" r="1.2" stroke="currentColor" fill="none" stroke-width="2"/>${arcs}`;
             els.btnAutoCut.innerHTML = `<svg viewBox="0 0 24 24">${svg}</svg>`;
             els.btnAutoCut.className = cutOptions[currentCutIdx] > 0 ? 'icon-btn' : 'icon-btn inactive';
         } updateCutBtn();
@@ -508,17 +533,18 @@
         let isDraggingStudio = false; 
 
         function updateHue() {
-            let variety = parseInt(els.colorVariety.value) || 100;
-            let satScale = variety / 100; // Allows going down to 0 (Grayscale)
+            let variety = parseInt(els.colorVariety.value) || 200;
+            let satScale = variety / 100; 
             let sortedHues = [...customHues].sort((a,b) => a-b);
             let currentHexes;
             
             if (sortedHues.length === 0) {
                 // Monochrome fallback
-                currentHexes = baseColors.map(() => hslToHex(0, 0, 50));
-                document.documentElement.style.setProperty('--c1', '#a18cd1'); document.documentElement.style.setProperty('--c2', '#fbc2eb');
-                window.appColors = { bg: ['#333', '#111'], blobs: ['#ffffff', '#cccccc'] };
-                if (document.getElementById('gradientBar')) document.getElementById('gradientBar').style.background = `linear-gradient(90deg, #fff, #333)`;
+                let isDark = themes[currentThemeIdx] === 'dark';
+                let monoHex = isDark ? '#ffffff' : '#000000';
+                document.documentElement.style.setProperty('--c1', monoHex); document.documentElement.style.setProperty('--c2', monoHex);
+                window.appColors = { bg: [isDark?'#111':'#eee', isDark?'#000':'#ddd'], blobs: [monoHex] };
+                if (document.getElementById('gradientBar')) document.getElementById('gradientBar').style.background = monoHex;
             } else {
                 currentHexes = baseColors.map((hex, i) => { let [h,s,l] = hexToHSL(hex); return hslToHex(sortedHues[i % sortedHues.length], Math.min(s*satScale, 100), l); });
                 document.documentElement.style.setProperty('--c1', currentHexes[0]); document.documentElement.style.setProperty('--c2', currentHexes[1]);
@@ -536,7 +562,6 @@
                 let btn = document.createElement('div'); btn.className = 'color-thumb';
                 btn.style.left = (hue/360*100)+'%'; btn.style.backgroundColor = `hsl(${hue},100%,50%)`;
                 
-                // Safe Absolute Coordinates for Touch/Mouse to prevent jumping
                 let moved = false; let touchStart = 0; let startX = 0;
                 
                 const onStart = e => {
@@ -548,7 +573,7 @@
                 const onMove = e => {
                     e.stopPropagation(); e.preventDefault();
                     let clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                    if(Math.abs(clientX - startX) > 10) { moved = true; isDraggingStudio = true; } // 10px tolerance for "tap" vs "drag"
+                    if(Math.abs(clientX - startX) > 10) { moved = true; isDraggingStudio = true; } // 10px tolerance
                     
                     if(moved) {
                         let rect = els.huePicker.getBoundingClientRect();
@@ -595,23 +620,39 @@
             els.canvas.style.filter = blur===0 ? '' : `blur(${blur}px) ${isDark ? `brightness(${dBri}) saturate(${dSat})` : 'brightness(0.9) saturate(1.1)'}`;
         }
 
+        window.randomizeSetup = () => {
+            const count = Math.floor(Math.random() * 4) + 1;
+            customHues = [];
+            for(let i=0; i<count; i++) customHues.push(Math.random() * 360);
+            document.getElementById('animSpeed').value = 10 + Math.random() * 90;
+            document.getElementById('animBlur').value = Math.random() * 60;
+            document.getElementById('animSize').value = 30 + Math.random() * 120;
+            document.getElementById('blobCount').value = 5 + Math.random() * 35;
+            renderThumbs(); updateHue(); applyTransparency(); updateAnimParams();
+            localStorage.setItem('custom_hues_v84', JSON.stringify(customHues));
+        };
+
         window.resetDev = () => {
-            customHues = [190, 275, 345]; els.colorVariety.value = 100; els.uiTransparency.value = 50;
-            document.getElementById('animSpeed').value = 50; document.getElementById('animBlur').value = 60; document.getElementById('animSize').value = 50; document.getElementById('silenceThreshold').value = 0.001;
+            customHues = [190, 275, 345]; els.colorVariety.value = 200; els.uiTransparency.value = 50;
+            document.getElementById('animSpeed').value = 50; document.getElementById('animBlur').value = 60; 
+            document.getElementById('animSize').value = 50; document.getElementById('blobCount').value = 20; 
+            document.getElementById('silenceThreshold').value = 0.001;
             renderThumbs(); updateHue(); applyTransparency(); updateAnimParams(); localStorage.setItem('custom_hues_v84', JSON.stringify(customHues));
         };
 
-        els.colorVariety.value = localStorage.getItem('color_variety_v79') || 100;
+        els.colorVariety.value = localStorage.getItem('color_variety_v79') || 200;
         els.uiTransparency.value = localStorage.getItem('ui_transparency_v76') || 50;
         document.getElementById('animSpeed').value = localStorage.getItem('anim_speed_v72') || 50;
         document.getElementById('animBlur').value = localStorage.getItem('anim_blur_v72') || 60;
         document.getElementById('animSize').value = localStorage.getItem('anim_size_v74') || 50;
+        document.getElementById('blobCount').value = localStorage.getItem('blob_count_v104') || 20;
         document.getElementById('silenceThreshold').value = localStorage.getItem('silence_v100') || 0.001;
         
-        [els.colorVariety, els.uiTransparency, document.getElementById('animSpeed'), document.getElementById('animBlur'), document.getElementById('animSize'), document.getElementById('silenceThreshold')].forEach(e => e.addEventListener('input', () => {
+        [els.colorVariety, els.uiTransparency, document.getElementById('animSpeed'), document.getElementById('animBlur'), document.getElementById('animSize'), document.getElementById('blobCount'), document.getElementById('silenceThreshold')].forEach(e => e.addEventListener('input', () => {
             if(e===els.colorVariety) { updateHue(); localStorage.setItem('color_variety_v79', e.value); }
             if(e===els.uiTransparency) applyTransparency();
             if(e===document.getElementById('silenceThreshold')) localStorage.setItem('silence_v100', e.value);
+            if(e===document.getElementById('blobCount')) localStorage.setItem('blob_count_v104', e.value);
             updateAnimParams();
         }));
         renderThumbs(); updateHue(); applyTheme();
@@ -632,6 +673,7 @@
             function draw() {
                 requestAnimationFrame(draw);
                 let w = els.canvas.width, h = els.canvas.height, isDark = themes[currentThemeIdx]==='dark', speed = parseInt(document.getElementById('animSpeed').value)/50;
+                let bCount = parseInt(document.getElementById('blobCount').value) || 20;
                 
                 let vol=0; if(analyser && isRecording && !isPaused && dataArray) { analyser.getByteFrequencyData(dataArray); let sum=0; for(let i=0;i<dataArray.length;i++) sum+=dataArray[i]; vol=sum/dataArray.length; }
                 timeAcc += 0.005*speed + (vol*0.0001); smoothVol = smoothVol*0.8 + (Math.min(vol/100, 1.0))*0.2;
@@ -644,8 +686,8 @@
                 ctx.fillStyle = isDark?'#050505':'#ffffff'; ctx.fillRect(0,0,w,h); ctx.fillStyle = bG; ctx.fillRect(0,0,w,h);
                 ctx.globalCompositeOperation = isDark ? 'screen' : 'source-over';
 
-                let maxDim = Math.max(w,h), sizeScale = parseInt(document.getElementById('animSize').value)/100, bLv = parseInt(document.getElementById('animBlur').value)/60;
-                for(let i=0; i<20; i++) {
+                let maxDim = Math.max(w,h), sizeScale = parseInt(document.getElementById('animSize').value)/50, bLv = parseInt(document.getElementById('animBlur').value)/60;
+                for(let i=0; i<bCount; i++) {
                     let c = cList[i%cList.length];
                     let x = w/2 + Math.sin(timeAcc*0.7+i*2.1)*Math.cos(timeAcc*0.4+i)*(w*0.6);
                     let y = h/2 + Math.cos(timeAcc*0.6+i*1.8)*Math.sin(timeAcc*0.5+i)*(h*0.6);
@@ -708,23 +750,26 @@
             let length = audioBuffer.length;
 
             let validChunks = [];
-            // FIX: Mixdown to Mono accurately, AND evaluate max amplitude to normalize system sound
+            // FIX: Evaluate max energy across all channels individually so System Sound isn't diluted
             for(let i=0; i<length; i+=chunkSize) {
+                let maxRms = 0;
                 let actualChunkSize = Math.min(chunkSize, length - i);
-                let mixed = new Float32Array(actualChunkSize);
-                let maxRmsForChunk = 0;
                 
-                for(let j=0; j<actualChunkSize; j++) {
-                    let val = 0;
-                    for(let c=0; c<numChannels; c++) {
-                        val += audioBuffer.getChannelData(c)[i+j];
-                    }
-                    mixed[j] = Math.max(-1, Math.min(1, val)); // Hard clip instead of divide to prevent volume loss!
-                    maxRmsForChunk += mixed[j]*mixed[j];
+                for(let c=0; c<numChannels; c++) {
+                    let channelData = audioBuffer.getChannelData(c);
+                    let sum = 0;
+                    for(let j=0; j<actualChunkSize; j++) sum += channelData[i+j] * channelData[i+j];
+                    let rms = Math.sqrt(sum / actualChunkSize);
+                    if(rms > maxRms) maxRms = rms;
                 }
-                let rms = Math.sqrt(maxRmsForChunk / actualChunkSize);
                 
-                if(rms > threshold) {
+                if(maxRms > threshold) {
+                    // Mixdown to Mono for the final WAV
+                    let mixed = new Float32Array(actualChunkSize);
+                    for(let c=0; c<numChannels; c++) {
+                        let channelData = audioBuffer.getChannelData(c);
+                        for(let j=0; j<actualChunkSize; j++) mixed[j] += channelData[i+j] / numChannels;
+                    }
                     validChunks.push(mixed);
                 }
             }
@@ -794,7 +839,6 @@
                 audioCtxLive = new (window.AudioContext || window.webkitAudioContext)();
                 liveDest = audioCtxLive.createMediaStreamDestination();
                 
-                // Allow flexible device constraints so 'exact' doesn't trigger Hardware Errors
                 let micCfg = {noiseSuppression:true, echoCancellation:true};
                 if(els.micSelect.value !== 'default') micCfg.deviceId = els.micSelect.value;
                 
@@ -816,8 +860,10 @@
                     currentSessionId=Date.now(); currentPart=1; sessionBlobs=[]; activeCost=0; pendingTranscriptions=0;
                     sessionStartTime=Date.now(); totalPauseDelta=0;
                     let sd = new Date(sessionStartTime);
-                    els.activeText.value=''; els.liveStartTs.innerHTML = `${sd.toLocaleDateString()} | ${sd.toLocaleTimeString()}`;
-                    els.liveWords.innerText="0 W"; els.liveTokens.innerText="0 T"; els.livePages.innerText="0 S"; els.liveCost.innerText="0.0 ct";
+                    els.activeText.value=''; els.liveStartTs.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> ${sd.toLocaleDateString()} &nbsp;<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ${sd.toLocaleTimeString()}`;
+                    document.getElementById('liveWords').innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> 0`;
+                    document.getElementById('liveTokens').innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon><circle cx="12" cy="12" r="3"></circle></svg> 0`;
+                    document.getElementById('liveCost').innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path></svg> 0.0`;
                     els.activeEntry.style.display='flex'; autoResizeText(els.activeText);
                 }
                 
@@ -840,7 +886,6 @@
                         if(!wasAuto && sessionBlobs.length === 0) { els.activeEntry.style.display='none'; resetUI(); return; }
                     }
                     
-                    // Stat Calculation for Ersparte Zeit
                     let savedSec = trimmedRes ? Math.max(0, trimmedRes.origDur - trimmedRes.newDur) : 0;
                     let savedStr = savedSec > 60 ? `${(savedSec/60).toFixed(1)}m` : `${savedSec.toFixed(1)}s`;
 
@@ -863,7 +908,9 @@
             if(cutOptions[currentCutIdx]>0 && pSec >= cutOptions[currentCutIdx]*60) { isAutoCutting=true; els.badgeCut.style.display='flex'; els.badgeListen.style.display='none'; mediaRecorder.stop(); setTimeout(()=> { els.badgeCut.style.display='none'; updateUIBadges(); }, 1200); return; }
             els.timer.innerText = `${Math.floor(tSec/60).toString().padStart(2,'0')}:${(tSec%60).toString().padStart(2,'0')}`;
             let txt = els.activeText.value.trim(); let w = txt?txt.split(/\s+/).length:0;
-            els.liveWords.innerText=`${w} W`; els.liveTokens.innerText=`${Math.ceil(w/0.75)} T`; els.livePages.innerText=`${(w/250).toFixed(1)} S`; els.liveCost.innerText=`~${activeCost.toFixed(1)} ct`;
+            document.getElementById('liveWords').innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> ${w}`;
+            document.getElementById('liveTokens').innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon><circle cx="12" cy="12" r="3"></circle></svg> ${Math.ceil(w/0.75)}`;
+            document.getElementById('liveCost').innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path></svg> ~${activeCost.toFixed(1)}`;
         }
 
         function resetUI() { isRecording=isPaused=isAutoCutting=false; clearInterval(timerInt); timerInt=null; setMainButtonState('idle'); els.timer.innerText="00:00"; releaseWakeLock(); updateUIBadges(); stopHardware(); }
@@ -876,8 +923,14 @@
                 let res = await fetch("https://api.openai.com/v1/audio/transcriptions", {method:"POST", headers:{"Authorization":`Bearer ${els.apiKey.value}`}, body:fd});
                 let d = await res.json();
                 if(res.ok) { els.activeText.value = (els.activeText.value + (part>1?'\n---\n':'') + d.text).trim(); autoResizeText(els.activeText); tryCopy(els.activeText.value, false); } 
-                else { els.activeText.value += `\n[API Error: ${d.error?.message}]`; autoResizeText(els.activeText); if(isRecording&&!isPaused) togglePause(); showToast("API Fehler!"); }
-            } catch(e) { els.activeText.value += '\n[Netzwerkfehler]'; autoResizeText(els.activeText); if(isRecording) togglePause(); showToast("Netzwerkfehler!"); }
+                else { 
+                    els.activeText.value += `\n[API Error: ${d.error?.message}]`; autoResizeText(els.activeText); 
+                    playWarningSound(); showToast("API Fehler!"); 
+                }
+            } catch(e) { 
+                els.activeText.value += '\n[Netzwerkfehler]'; autoResizeText(els.activeText); 
+                playWarningSound(); showToast("Netzwerkfehler!"); 
+            }
             pendingTranscriptions--; updateUIBadges();
         }
 
@@ -890,15 +943,19 @@
                 rBtn = `<button class="mini-btn safe" onclick="retrySession(${id},this)" title="Ganzes Memo neu transkribieren"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg></button>`;
             }
             
-            let savedPill = savedStr && savedStr !== "0.0s" ? `<span class="stat-pill" title="Stille entfernt">✂️ -${savedStr}</span>` : "";
+            let savedPill = savedStr && savedStr !== "0.0s" ? `<span class="stat-pill" title="Stille entfernt"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg> -${savedStr}</span>` : "";
 
             let newE = document.createElement('div'); newE.className = 'entry'; newE.id = `e-${id}`; newE.audioBlobs = bList || [];
             newE.innerHTML = `
                 <div class="entry-header">
                     <div class="entry-meta-info">
-                        <span class="date-badge"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ${ts}</span>
-                        <div class="stats-badges" style="margin-top:4px;">
-                            <span class="stat-pill">&#9201; ${dStr}</span><span class="stat-pill">${w} W</span><span class="stat-pill">${Math.ceil(w/0.75)} T</span><span class="stat-pill">~${cost.toFixed(1)} ct</span>${savedPill}
+                        <span class="date-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> ${ts}</span>
+                        <div class="stats-badges">
+                            <span class="stat-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ${dStr}</span>
+                            <span class="stat-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> ${w}</span>
+                            <span class="stat-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon><circle cx="12" cy="12" r="3"></circle></svg> ${Math.ceil(w/0.75)}</span>
+                            <span class="stat-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path></svg> ~${cost.toFixed(1)}</span>
+                            ${savedPill}
                         </div>
                     </div>
                     <div class="entry-actions">
