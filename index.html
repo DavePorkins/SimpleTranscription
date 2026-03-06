@@ -48,6 +48,7 @@
             --blur-amount: blur(25px);
             --canvas-brightness: brightness(0.95) saturate(1.1);
             --page-bg: #ffffff;
+            --ui-opacity: 1; /* For dynamic audio player fading */
         }
 
         html[data-theme="dark"] {
@@ -150,15 +151,23 @@
             position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
         }
 
-        /* The Elegant Hero Timer */
+        /* The Hero Timer with Base Contrast Underlay */
+        .timer-wrapper {
+            position: relative; display: inline-block; text-align: center; margin: 0 0 15px 0; width: 100%;
+        }
+        .timer-glow-backdrop {
+            position: absolute; inset: -5px 10%; z-index: -1; border-radius: 50px;
+            background: radial-gradient(ellipse at center, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 70%);
+            opacity: 0.8; pointer-events: none; transition: opacity 0.5s;
+        }
+        html[data-theme="dark"] .timer-glow-backdrop {
+            background: radial-gradient(ellipse at center, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 70%);
+        }
         .timer {
             font-size: 3.5rem; font-weight: 300; letter-spacing: 2px; line-height: 1; font-variant-numeric: tabular-nums;
-            background: linear-gradient(135deg, var(--c1), var(--c2)); -webkit-background-clip: text; background-clip: text; color: transparent;
-            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.1));
-            margin: 5px 0 15px 0; text-align: center; transition: all 0.3s;
-        }
-        html[data-theme="dark"] .timer {
-            filter: drop-shadow(0 2px 10px rgba(255,255,255,0.15));
+            color: var(--text);
+            text-shadow: 0 2px 10px var(--c1);
+            transition: all 0.3s;
         }
 
         .rec-controls { display: flex; justify-content: center; align-items: center; gap: 15px; }
@@ -172,17 +181,17 @@
         .btn-circle:hover { transform: scale(1.05); background: var(--btn-hover); }
         .btn-circle:active { transform: scale(0.9); }
 
-        /* Magic Record Button */
+        /* Magic Record Button - Calmer Glow */
         #btnMain { position: relative; overflow: hidden; z-index: 1; border: none; }
         
         #btnMain.idle { 
             width: 80px; height: 80px; 
-            box-shadow: 0 0 10px rgba(128, 128, 128, 0.2); 
+            box-shadow: 0 0 10px rgba(128, 128, 128, 0.1); 
             animation: pulse-idle 4s infinite alternate;
         }
         @keyframes pulse-idle { 
             from { box-shadow: 0 0 5px rgba(128, 128, 128, 0.1); } 
-            to { box-shadow: 0 0 15px rgba(128, 128, 128, 0.3); } 
+            to { box-shadow: 0 0 15px rgba(128, 128, 128, 0.2); } 
         }
         
         #btnMain::before {
@@ -192,10 +201,10 @@
         
         #btnMain.state-recording { 
             width: 75px; height: 75px; border-radius: 24px; color: var(--danger); 
-            box-shadow: 0 4px 20px rgba(255, 71, 87, 0.4); animation: none; 
+            box-shadow: 0 4px 20px rgba(255, 71, 87, 0.3); animation: none; 
         }
         #btnMain.state-recording svg { fill: currentColor; stroke: none; width: 32px; height: 32px; }
-        #btnMain.state-recording::before { background: var(--danger); opacity: 0.2; }
+        #btnMain.state-recording::before { background: var(--danger); opacity: 0.15; }
         @keyframes drift { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         .side-btn { opacity: 0; pointer-events: none; transform: scale(0.5); width: 0; margin: 0; }
@@ -243,12 +252,22 @@
         .audio-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
         .audio-part { display: flex; align-items: center; gap: 10px; background: var(--input-bg); padding: 6px 12px; border-radius: 10px; }
         .audio-part span { font-size: 0.75rem; font-weight: bold; color: var(--text-muted); flex-shrink: 0; }
-        audio { width: 100%; height: 30px; border-radius: 6px; outline: none; }
+        
+        /* Audio Player Transparency Scaling */
+        audio { width: 100%; height: 30px; border-radius: 6px; outline: none; opacity: var(--ui-opacity); transition: opacity 0.3s; }
 
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 2000; align-items: center; justify-content: center; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
         .modal.visible { display: flex; animation: fadeIn 0.2s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .modal-box { background: var(--glass-bg); padding: 25px; border-radius: 35px; width: 90%; max-width: 440px; border: 1px solid var(--glass-border); color: var(--text); max-height: 85vh; overflow-y: auto; backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4); }
+        
+        /* Modals receive a text-shadow logic to ensure text readability if transparency is maxed */
+        .modal-box { 
+            background: var(--glass-bg); padding: 25px; border-radius: 35px; width: 90%; max-width: 440px; 
+            border: 1px solid var(--glass-border); color: var(--text); max-height: 85vh; overflow-y: auto; 
+            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4); 
+        }
+        .modal-box, .dev-row, .info-text { text-shadow: 0 1px 3px var(--page-bg); }
+
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-weight: 800; font-size: 1.2rem; }
         
         .studio-tabs { display: flex; background: var(--input-bg); border-radius: 14px; padding: 4px; margin-bottom: 20px; }
@@ -280,7 +299,7 @@
 <body>
     <canvas id="cloudCanvas"></canvas>
     
-    <div id="toast" onclick="tryCopy(null, true)"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> <span id="toastMsg">Kopiert</span></div>
+    <div id="toast"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> <span id="toastMsg">Kopiert</span></div>
 
     <!-- MODALS -->
     <div id="devPanel" class="modal">
@@ -301,7 +320,7 @@
             </div>
             <div id="viewColors" style="transition: opacity 0.3s;">
                 <div style="margin-bottom: 20px; padding: 0 5px;">
-                    <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:700; margin-bottom:8px;">Farbspektrum (Einzelne Farben)</div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:700; margin-bottom:8px; color:var(--text);">Farbspektrum (Einzelne Farben)</div>
                     <div id="huePicker" style="position:relative; height:30px; border-radius:15px; border:1px solid var(--glass-border); cursor:pointer; margin-bottom: 5px;">
                         <div style="position:absolute;inset:0;background:linear-gradient(90deg, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00); border-radius:15px; opacity:0.8;"></div>
                         <div id="thumbContainer" style="position:absolute;inset:0;"></div>
@@ -309,16 +328,16 @@
                     <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:15px; text-align:center;">Tippen = Löschen. Ziehen = Verschieben. Klick Leer = Neu.</div>
                     <div id="gradientBar" style="height: 24px; border-radius: 12px; margin-top: 15px; border: 1px solid var(--glass-border);"></div>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:16px;">
-                        <div><div style="font-size:0.85rem; font-weight:700; margin-bottom:6px;">Farbintensität</div><input type="range" id="colorVariety" min="0" max="200" value="200" style="width:100%;"></div>
-                        <div><div style="font-size:0.85rem; font-weight:700; margin-bottom:6px;">UI Transparenz</div><input type="range" id="uiTransparency" min="0" max="100" value="70" style="width:100%;"></div>
+                        <div><div style="font-size:0.85rem; font-weight:700; margin-bottom:6px; color:var(--text);">Farbintensität</div><input type="range" id="colorVariety" min="0" max="200" value="200" style="width:100%;"></div>
+                        <div><div style="font-size:0.85rem; font-weight:700; margin-bottom:6px; color:var(--text);">UI Transparenz</div><input type="range" id="uiTransparency" min="0" max="100" value="70" style="width:100%;"></div>
                     </div>
                 </div>
             </div>
             <div id="viewAnims" style="display:none; padding: 10px 0;">
                 <div class="dev-row" style="margin-bottom:20px; border-bottom:1px solid var(--glass-border); padding-bottom:15px;">
                     <div style="display:flex; flex-direction:column;">
-                        <span style="font-weight:bold; color:var(--accent);">Silence Threshold (Stille-Schnitt)</span>
-                        <span style="font-size:0.7rem; font-weight:normal;">Schneidet Stille vor API-Upload. (0.001 = fein)</span>
+                        <span style="font-weight:bold; color:var(--accent);">Silence Threshold</span>
+                        <span style="font-size:0.7rem; font-weight:normal;">Schneidet Stille vor API-Upload.</span>
                     </div>
                     <input type="number" id="silenceThreshold" value="0.001" step="0.0005" min="0.0001" max="0.05" style="width:75px; padding:5px; border-radius:10px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--text); text-align:center; font-weight:bold;">
                 </div>
@@ -361,7 +380,7 @@
                     
                     <div class="title-container">
                         <div class="title-pill">
-                            <h1>Simple Transcription <span class="version-tag">V110</span></h1>
+                            <h1>Simple Transcription <span class="version-tag">V1.1.1</span></h1>
                         </div>
                     </div>
 
@@ -389,7 +408,11 @@
                         <button class="icon-btn" id="btnAutoCut" onclick="cycleAutoCut()" title="Auto-Cut"></button>
                     </div>
 
-                    <div class="timer" id="timer">00:00</div>
+                    <div class="timer-wrapper">
+                        <div class="timer-glow-backdrop"></div>
+                        <div class="timer" id="timer">00:00</div>
+                    </div>
+
                     <div class="rec-controls">
                         <button id="btnCancel" class="btn-circle side-btn" onclick="cancelRec(this)"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
                         <button id="btnMain" class="btn-circle idle" onclick="toggleMain()"><svg id="iconMain" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg></button>
@@ -409,6 +432,7 @@
                             <span class="status-badge" id="badgeListen"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg> Höre zu...</span>
                             <span class="status-badge highlight" id="badgeTranscribe" style="display:none;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"></path></svg> Transkribiere...</span>
                         </div>
+                        
                         <div class="stats-group" id="liveStatsContainer">
                             <span class="stat-pill" id="liveStartTs"></span>
                             <span class="stat-pill" id="liveWords"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> 0</span>
@@ -492,26 +516,25 @@
             container.scrollTop = st;
         }
         
-        // Smart Toast & Catcher
+        // Smart Toast & Universal Copy Catcher
         let toastTimeout;
+        function performCopy(text) {
+            navigator.clipboard.writeText(text).catch(e=>{});
+            els.toastMsg.innerText = "Kopiert!"; els.toast.className = 'visible'; 
+            clearTimeout(toastTimeout); toastTimeout = setTimeout(()=>els.toast.className='', 2500);
+        }
         function tryCopy(text, showNow = true) {
             if (document.hasFocus()) {
-                if(text) navigator.clipboard.writeText(text).catch(e=>{});
-                if(showNow) { els.toastMsg.innerText = "Kopiert!"; els.toast.className = 'visible'; clearTimeout(toastTimeout); toastTimeout = setTimeout(()=>els.toast.className='', 2500); }
+                if(text) performCopy(text);
             } else {
                 pendingCopyText = text;
-                els.toastMsg.innerText = "Text bereit!"; els.toast.className = 'visible'; clearTimeout(toastTimeout); toastTimeout = setTimeout(()=>els.toast.className='', 3500);
+                els.toastMsg.innerText = "Text bereit!"; els.toast.className = 'visible'; 
+                clearTimeout(toastTimeout); toastTimeout = setTimeout(()=>els.toast.className='', 3500);
             }
         }
         
-        // Universal Copy Catcher
         document.body.addEventListener('click', () => {
-            if (pendingCopyText) {
-                navigator.clipboard.writeText(pendingCopyText).catch(e=>{});
-                pendingCopyText = null;
-                els.toastMsg.innerText = "Kopiert!"; els.toast.className = 'visible'; 
-                clearTimeout(toastTimeout); toastTimeout = setTimeout(()=>els.toast.className='', 2500);
-            }
+            if (pendingCopyText) { performCopy(pendingCopyText); pendingCopyText = null; }
         });
 
         function showToast(msg) { 
@@ -548,7 +571,7 @@
             applyTransparency(); updateAnimParams();
         }
 
-        // Toggles (Glow logic)
+        // Toggles
         let isAutoSave = localStorage.getItem("autodl_v86") === 'true';
         window.toggleSave = () => { isAutoSave = !isAutoSave; localStorage.setItem("autodl_v86", isAutoSave); els.btnAutoSave.className = isAutoSave ? 'icon-btn active-glow' : 'icon-btn'; showToast(isAutoSave ? "Auto-Save: An" : "Auto-Save: Aus"); };
         els.btnAutoSave.className = isAutoSave ? 'icon-btn active-glow' : 'icon-btn';
@@ -556,24 +579,25 @@
         window.toggleSysAudio = () => { sysAudioEnabled = !sysAudioEnabled; document.getElementById('sysAudioBtn').className = sysAudioEnabled ? 'icon-btn active-glow' : 'icon-btn'; showToast(sysAudioEnabled ? "System Sound: An" : "System Sound: Aus"); };
         document.getElementById('sysAudioBtn').className = sysAudioEnabled ? 'icon-btn active-glow' : 'icon-btn';
 
-        // Auto Cut Settings (Off, 15s, 30s, 1m, 2m) strictly using absolute seconds!
+        // Auto Cut Settings (Off, 15s, 30s, 1m, 2m)
         const cutOptions = [0, 15, 30, 60, 120];
-        let currentCutIdx = parseInt(localStorage.getItem("autocut_idx_v109") || 3); // Default 1 Min
+        let currentCutIdx = parseInt(localStorage.getItem("autocut_idx_v109") || 3);
         window.cycleAutoCut = () => { currentCutIdx = (currentCutIdx + 1) % cutOptions.length; localStorage.setItem("autocut_idx_v109", currentCutIdx); updateCutBtn(); }
         
-        // Clean Circular Loading Arcs for Auto-Cut (Wide Outer Ring)
+        // Multi-Layer SVG for the Auto-Cut Icon (No constraints on ring width)
         function updateCutBtn() {
             let arcs = '';
-            // Circle radius=9 -> Circumference ~56.55. Center 12,12.
-            // dasharray: segment gap segment gap. Rotate to start at top.
-            if (currentCutIdx === 1) arcs = `<circle cx="12" cy="12" r="9" stroke="currentColor" fill="none" stroke-width="2.5" stroke-dasharray="14.14 42.41" stroke-linecap="round" transform="rotate(-90 12 12)"/>`;
-            if (currentCutIdx === 2) arcs = `<circle cx="12" cy="12" r="9" stroke="currentColor" fill="none" stroke-width="2.5" stroke-dasharray="28.27 28.27" stroke-linecap="round" transform="rotate(-90 12 12)"/>`;
-            if (currentCutIdx === 3) arcs = `<circle cx="12" cy="12" r="9" stroke="currentColor" fill="none" stroke-width="2.5" stroke-dasharray="42.41 14.14" stroke-linecap="round" transform="rotate(-90 12 12)"/>`;
-            if (currentCutIdx === 4) arcs = `<circle cx="12" cy="12" r="9" stroke="currentColor" fill="none" stroke-width="2.5" stroke-dasharray="56.55 0" stroke-linecap="round" transform="rotate(-90 12 12)"/>`;
+            let circ = 125.66; // 2 * PI * 20 (Radius) inside a 44x44 viewBox
+            if (currentCutIdx === 1) arcs = `<circle cx="22" cy="22" r="20" stroke="currentColor" fill="none" stroke-width="3" stroke-dasharray="${circ*0.25} ${circ*0.75}" stroke-linecap="round" transform="rotate(-90 22 22)"/>`;
+            if (currentCutIdx === 2) arcs = `<circle cx="22" cy="22" r="20" stroke="currentColor" fill="none" stroke-width="3" stroke-dasharray="${circ*0.5} ${circ*0.5}" stroke-linecap="round" transform="rotate(-90 22 22)"/>`;
+            if (currentCutIdx === 3) arcs = `<circle cx="22" cy="22" r="20" stroke="currentColor" fill="none" stroke-width="3" stroke-dasharray="${circ*0.75} ${circ*0.25}" stroke-linecap="round" transform="rotate(-90 22 22)"/>`;
+            if (currentCutIdx === 4) arcs = `<circle cx="22" cy="22" r="20" stroke="currentColor" fill="none" stroke-width="3" stroke-dasharray="${circ} 0" stroke-linecap="round" transform="rotate(-90 22 22)"/>`;
             
-            let svg = `<g transform="scale(0.65) translate(6.5, 6.5)"><path d="M8 8L16 16M8 16L16 8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><circle cx="6" cy="6" r="2.5" stroke="currentColor" fill="none" stroke-width="2.5"/><circle cx="6" cy="18" r="2.5" stroke="currentColor" fill="none" stroke-width="2.5"/></g>${arcs}`;
-            els.btnAutoCut.innerHTML = `<svg viewBox="0 0 24 24">${svg}</svg>`;
-            els.btnAutoCut.className = cutOptions[currentCutIdx] > 0 ? 'icon-btn active-glow' : 'icon-btn';
+            let scissors = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M8 8L16 16M8 16L16 8"/><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/></svg>`;
+            let ring = arcs ? `<svg viewBox="0 0 44 44" style="position:absolute; inset:0; width:100%; height:100%; pointer-events:none;">${arcs}</svg>` : '';
+            
+            els.btnAutoCut.innerHTML = scissors + ring;
+            els.btnAutoCut.className = 'icon-btn'; // Explicitly neutral state
             
             if(pwaInitDone) {
                 if (cutOptions[currentCutIdx] > 0) { showToast(`Auto-Cut: ${cutOptions[currentCutIdx]}s`); } else { showToast("Auto-Cut: Aus"); }
@@ -608,7 +632,6 @@
             let currentHexes;
             
             if (sortedHues.length === 0) {
-                // True Monochrome Mode
                 let isDark = themes[currentThemeIdx] === 'dark';
                 let monoHex = isDark ? '#ffffff' : '#000000';
                 document.documentElement.style.setProperty('--c1', monoHex); document.documentElement.style.setProperty('--c2', monoHex);
@@ -680,6 +703,10 @@
             document.documentElement.style.setProperty('--input-bg', isDark ? `rgba(0,0,0,${bg})` : `rgba(255,255,255,${bg})`);
             document.documentElement.style.setProperty('--btn-glass', `rgba(255,255,255,${btn})`);
             document.documentElement.style.setProperty('--badge-bg', isDark ? `rgba(0,0,0,${0.6 - t*0.55})` : `rgba(255,255,255,${0.6 - t*0.55})`);
+            
+            // Allow deeper text blending on max transparency
+            let uiOp = 1 - (t * 0.4); 
+            document.documentElement.style.setProperty('--ui-opacity', uiOp);
             localStorage.setItem('ui_transparency_v76', els.uiTransparency.value);
         }
 
@@ -823,7 +850,6 @@
                 for(let i=0; i<length; i+=chunkSize) {
                     let maxRms = 0;
                     let actualChunkSize = Math.min(chunkSize, length - i);
-                    
                     for(let c=0; c<numChannels; c++) {
                         let channelData = audioBuffer.getChannelData(c);
                         let sum = 0;
@@ -831,7 +857,6 @@
                         let rms = Math.sqrt(sum / actualChunkSize);
                         if(rms > maxRms) maxRms = rms;
                     }
-                    
                     if(maxRms > threshold) {
                         let mixed = new Float32Array(actualChunkSize);
                         for(let c=0; c<numChannels; c++) {
@@ -848,18 +873,13 @@
                 let totalLen = validChunks.reduce((a,c)=>a+c.length, 0), trimmed = new Float32Array(totalLen), offset=0;
                 for(let c of validChunks) { trimmed.set(c, offset); offset+=c.length; }
                 
-                // NORMALIZATION
                 let maxAmp = 0;
                 for(let i=0; i<trimmed.length; i++) if(Math.abs(trimmed[i]) > maxAmp) maxAmp = Math.abs(trimmed[i]);
-                if(maxAmp > 0 && maxAmp < 0.9) {
-                    let multiplier = 0.9 / maxAmp;
-                    for(let i=0; i<trimmed.length; i++) trimmed[i] *= multiplier;
-                }
+                if(maxAmp > 0 && maxAmp < 0.9) { let multiplier = 0.9 / maxAmp; for(let i=0; i<trimmed.length; i++) trimmed[i] *= multiplier; }
 
                 let newDur = totalLen / sr;
                 return { blob: encodeWAV(trimmed, sr), origDur, newDur };
             } catch(e) {
-                // FALLBACK: Wenn irgendwas schiefgeht, sende immer das originale Audio anstatt es zu verlieren!
                 return { blob: blob, origDur: 0, newDur: 0 };
             }
         }
@@ -883,7 +903,13 @@
                 els.btnMain.className='btn-circle state-recording';
                 els.iconMain.innerHTML='<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" stroke="none"></rect>';
                 els.iconPause.innerHTML='<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
-                els.btnPause.className='btn-circle side-btn visible'; els.btnCancel.className='btn-circle side-btn visible'; 
+                els.btnPause.className='btn-circle side-btn visible'; els.btnCancel.className='btn-circle side-btn visible';
+                
+                // Force reset of cancel button in case of previous abort
+                els.btnCancel.classList.remove('confirm');
+                els.btnCancel.style.background='';
+                els.btnCancel.style.color='var(--danger)';
+                els.btnCancel.innerHTML='<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
             } else if(s==='paused') {
                 els.iconPause.innerHTML='<polygon points="7 4 19 12 7 20" fill="white" stroke="none"></polygon>';
                 els.btnPause.className='btn-circle side-btn visible state-paused'; 
@@ -903,10 +929,21 @@
 
         window.toggleMain = () => { if(!isRecording) startRec(); else stopRec(); };
         window.togglePause = () => { if(isRecording && !isPaused) { mediaRecorder.pause(); isPaused=true; pauseStart=Date.now(); setMainButtonState('paused'); } else if(isPaused) { mediaRecorder.resume(); isPaused=false; let d=Date.now()-pauseStart; totalPauseDelta+=d; partPauseDelta+=d; setMainButtonState('recording'); } updateUIBadges(); };
+        
+        let cancelTimeoutId;
         window.cancelRec = btn => {
-            if(!btn.classList.contains('confirm')){ btn.classList.add('confirm'); btn.innerHTML='<b>🗑️?</b>'; btn.style.color='white'; btn.style.background='var(--danger)'; setTimeout(()=>{if(isRecording||isPaused){btn.classList.remove('confirm');btn.style.background='';btn.style.color='var(--danger)';btn.innerHTML='<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';}},3000); return; }
+            if(!btn.classList.contains('confirm')){ 
+                btn.classList.add('confirm'); btn.innerHTML='<b>🗑️?</b>'; btn.style.color='white'; btn.style.background='var(--danger)'; 
+                cancelTimeoutId = setTimeout(()=>{
+                    if(isRecording||isPaused){
+                        btn.classList.remove('confirm'); btn.style.background=''; btn.style.color='var(--danger)';
+                        btn.innerHTML='<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+                    }
+                }, 3000); 
+                return; 
+            }
+            clearTimeout(cancelTimeoutId);
             isCancelled=true; if(mediaRecorder) mediaRecorder.stop(); stopHardware();
-            btn.classList.remove('confirm'); btn.style.background=''; btn.style.color='var(--danger)'; btn.innerHTML='<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
             isRecording=isPaused=isAutoCutting=false; clearInterval(timerInt); timerInt=null; setMainButtonState('idle'); releaseWakeLock(); updateUIBadges(); els.activeEntry.style.display='none';
         };
 
@@ -940,7 +977,7 @@
 
                 if(sysAudioEnabled && navigator.mediaDevices.getDisplayMedia) {
                     sysStream = await navigator.mediaDevices.getDisplayMedia({audio:true, video:true});
-                    sysStream.getVideoTracks().forEach(t=>t.stop()); // Stop video track immediately
+                    sysStream.getVideoTracks().forEach(t=>t.stop()); 
                     audioCtxLive.createMediaStreamSource(sysStream).connect(liveDest);
                 }
 
@@ -970,7 +1007,7 @@
                     let tSec = Math.floor((Date.now()-sessionStartTime-totalPauseDelta)/1000); let dStr = `${Math.floor(tSec/60).toString().padStart(2,'0')}:${(tSec%60).toString().padStart(2,'0')}`;
                     let wasAuto = isAutoCutting;
                     
-                    // INSTANT RESTART FOR AUTO-CUT (Prevents freezing timer)
+                    // Asynchronous restart to prevent timer freeze
                     if(wasAuto) {
                         isAutoCutting = false; 
                         chunks = []; 
@@ -983,14 +1020,11 @@
                         resetUI(); 
                     }
 
-                    // Async processing
                     let trimmedRes = await removeSilence(rawBlob);
                     let trimmedBlob = trimmedRes ? trimmedRes.blob : null;
                     
-                    // Discard completely empty audio chunks in auto-cut mode to prevent "---" empty lines
-                    if(!trimmedBlob && wasAuto) return;
+                    if(!trimmedBlob && wasAuto) return; // Drop silent blocks cleanly
 
-                    // Complete Silence on manual stop
                     if(!trimmedBlob && !wasAuto && sessionBlobs.length === 0) { 
                         els.activeEntry.style.display='none'; 
                         return; 
@@ -1032,7 +1066,7 @@
             pendingTranscriptions++; updateUIBadges();
             
             if(!els.apiKey.value) { 
-                // Offline mode: Just skip adding text, but allow saving audio
+                // Let offline processing naturally skip writing to UI
                 pendingTranscriptions--; updateUIBadges(); return; 
             }
             
@@ -1059,7 +1093,6 @@
             pendingTranscriptions--; updateUIBadges();
         }
 
-        // Generate Identical DOM structure for both Archives and Uploads
         function createEntryHTML(id, txt, ts, dStr, w, cost, bList, savedStr) {
             let aHtml = '', rBtn = '';
             if(bList && bList.length > 0) {
@@ -1172,7 +1205,6 @@
                 let threshold = parseFloat(document.getElementById('silenceThreshold').value) || 0.001;
                 let sr = audioBuffer.sampleRate; let chunkSize = Math.floor(sr * 0.1);
                 
-                // Mixdown to Mono & Normalize
                 let numChannels = audioBuffer.numberOfChannels; let length = audioBuffer.length;
                 let validChunks = [];
                 for(let i=0; i<length; i+=chunkSize) {
@@ -1195,7 +1227,6 @@
                 let trimmedData = new Float32Array(totalLen); let offset = 0;
                 for(let c of validChunks) { trimmedData.set(c, offset); offset+=c.length; }
                 
-                // Normalize for Whisper
                 let maxAmp = 0;
                 for(let i=0; i<trimmedData.length; i++) if(Math.abs(trimmedData[i]) > maxAmp) maxAmp = Math.abs(trimmedData[i]);
                 if(maxAmp > 0 && maxAmp < 0.9) { let multiplier = 0.9 / maxAmp; for(let i=0; i<trimmedData.length; i++) trimmedData[i] *= multiplier; }
@@ -1205,7 +1236,6 @@
                 let savedSec = Math.max(0, origDur - newDur);
                 let savedStr = savedSec > 60 ? `${(savedSec/60).toFixed(1)}m` : `${savedSec.toFixed(1)}s`;
                 
-                // Slice into Blocks based on Auto-Cut settings
                 let maxDurSec = cutOptions[currentCutIdx] > 0 ? cutOptions[currentCutIdx] : Infinity;
                 let maxSamples = maxDurSec * sr;
                 
@@ -1237,11 +1267,11 @@
                 let w = fullText.split(/\s+/).filter(x=>x).length;
                 let cost = (newDur/60)*0.6;
                 
-                let finalEl = createEntryHTML(id, fullText, `${tsDate || ''} | ${ts} (Upload)`, dStr, w, cost, bloblist, savedStr);
+                let finalEl = createEntryHTML(id, fullText, `${new Date().toLocaleDateString('de-DE',{dateStyle:'short'})} | ${ts} (Upload)`, dStr, w, cost, bloblist, savedStr);
                 document.getElementById(`e-${id}`).replaceWith(finalEl);
                 autoResizeText(finalEl.querySelector('textarea'));
                 
-                let h = JSON.parse(localStorage.getItem("hist_master")||"[]"); h.push({id:id, text:fullText, ts:`${tsDate || ''} | ${ts} (Upload)`, cost:cost, durationStr:dStr, savedStr:savedStr}); localStorage.setItem("hist_master", JSON.stringify(h));
+                let h = JSON.parse(localStorage.getItem("hist_master")||"[]"); h.push({id:id, text:fullText, ts:`${new Date().toLocaleDateString('de-DE',{dateStyle:'short'})} | ${ts} (Upload)`, cost:cost, durationStr:dStr, savedStr:savedStr}); localStorage.setItem("hist_master", JSON.stringify(h));
                 tryCopy(fullText, true);
 
             } catch (e) { document.getElementById(`txt-${id}`).value = "Fehler: " + e.message; }
