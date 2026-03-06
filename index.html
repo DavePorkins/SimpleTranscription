@@ -84,6 +84,7 @@
             padding-top: 15px; padding-bottom: 60px;
             -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 20px);
             mask-image: linear-gradient(to bottom, transparent 0px, black 20px);
+            scroll-behavior: smooth;
         }
         .scroll-zone::-webkit-scrollbar { width: 6px; }
         .scroll-zone::-webkit-scrollbar-track { background: transparent; }
@@ -122,94 +123,108 @@
             position: relative;
         }
         .icon-btn { border-radius: 50%; width: 44px; height: 44px; flex-shrink: 0; }
-        .mini-btn { border-radius: 12px; width: 100%; height: 100%; flex-shrink: 0; }
+        .mini-btn { border-radius: 12px; width: 34px; height: 34px; flex-shrink: 0; }
         .icon-btn svg, .mini-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
         
         .icon-btn:hover, .mini-btn:hover { background: var(--btn-hover); transform: scale(1.05); }
-        /* Active Toggles */
-        .icon-btn.active { color: var(--accent); background: var(--btn-glass); box-shadow: 0 0 12px rgba(161, 140, 209, 0.4); border-color: var(--accent); }
         
+        /* Specialized Active States for Toggles (No color change, just bright glow) */
+        .icon-btn.active-glow { 
+            background: rgba(255, 255, 255, 0.7); 
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.5); 
+            border-color: rgba(255, 255, 255, 0.8);
+            color: #000;
+        }
+        html[data-theme="dark"] .icon-btn.active-glow {
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
         .mini-btn.danger { color: var(--danger); } .mini-btn.safe { color: var(--safe); } .mini-btn.action { color: var(--accent); }
 
         .mic-container {
-            display: flex; align-items: center; gap: 5px; background: var(--btn-glass);
-            border: 1px solid var(--glass-border); border-radius: 22px; padding: 0 10px 0 5px;
-            height: 44px;
+            display: flex; align-items: center; justify-content: center; position: relative;
         }
-        .mic-container svg { width: 18px; height: 18px; stroke: var(--text); fill: none; stroke-width: 2; flex-shrink: 0; margin-left: 5px; }
         .mic-container select {
-            background: transparent; border: none; color: var(--text); outline: none; font-size: 0.85rem; font-weight: 600;
-            width: 120px; text-overflow: ellipsis; cursor: pointer; font-family: inherit;
+            position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
         }
-        .mic-container select option { background: var(--page-bg); color: var(--text); }
 
         /* The Hero Timer */
         .timer {
-            font-size: 4.2rem; font-weight: 800; letter-spacing: 2px; line-height: 1; font-variant-numeric: tabular-nums;
-            background: linear-gradient(135deg, var(--c1), var(--c2)); -webkit-background-clip: text; background-clip: text; color: transparent;
-            filter: drop-shadow(0 4px 15px rgba(0, 0, 0, 0.15)); margin: 0 0 15px 0; text-align: center;
-            display: none; /* Hidden when idle */
+            font-size: 3.5rem; font-weight: 800; letter-spacing: 2px; line-height: 1; font-variant-numeric: tabular-nums;
+            color: var(--text); text-shadow: 0 0 20px var(--c1);
+            margin: 5px 0 15px 0; text-align: center; transition: all 0.3s;
         }
 
-        .rec-controls { display: flex; justify-content: center; align-items: center; gap: 20px; }
+        .rec-controls { display: flex; justify-content: center; align-items: center; gap: 15px; }
         
         .btn-circle {
             border: 1px solid var(--glass-border); cursor: pointer; display: flex; align-items: center; justify-content: center;
             background: var(--btn-glass); color: var(--text); border-radius: 50%;
-            width: 55px; height: 55px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); backdrop-filter: blur(10px); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 45px; height: 45px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); backdrop-filter: blur(10px); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .btn-circle svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 2; }
+        .btn-circle svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; }
         .btn-circle:hover { transform: scale(1.05); background: var(--btn-hover); }
         .btn-circle:active { transform: scale(0.9); }
 
         /* Magic Record Button */
         #btnMain { position: relative; overflow: hidden; z-index: 1; border: none; }
-        #btnMain svg { width: 34px; height: 34px; transition: all 0.3s; }
         
         #btnMain.idle { 
-            width: 85px; height: 85px; 
+            width: 80px; height: 80px; 
             box-shadow: 0 0 25px var(--c1); 
             animation: pulse-idle 2.5s infinite alternate;
         }
-        @keyframes pulse-idle { from { box-shadow: 0 0 15px rgba(161, 140, 209, 0.5); } to { box-shadow: 0 0 35px rgba(251, 194, 235, 0.8); } }
+        @keyframes pulse-idle { from { box-shadow: 0 0 15px rgba(161, 140, 209, 0.4); } to { box-shadow: 0 0 35px rgba(251, 194, 235, 0.7); } }
         
         #btnMain::before {
             content: ''; position: absolute; inset: -20%; background: linear-gradient(135deg, var(--c1), var(--c2), var(--c1));
             filter: blur(12px); opacity: 0.4; z-index: -1; animation: drift 4s ease infinite alternate;
         }
-        #btnMain.state-recording { width: 55px; height: 55px; border-radius: 20px; color: var(--danger); box-shadow: 0 4px 20px rgba(255, 71, 87, 0.4); animation: none; }
-        #btnMain.state-recording svg { fill: currentColor; stroke: none; width: 24px; height: 24px; }
-        #btnMain.state-recording::before { background: var(--danger); opacity: 0.15; }
+        
+        #btnMain.state-recording { 
+            width: 55px; height: 55px; border-radius: 16px; color: var(--danger); 
+            box-shadow: 0 4px 20px rgba(255, 71, 87, 0.4); animation: none; 
+        }
+        #btnMain.state-recording svg { fill: currentColor; stroke: none; width: 22px; height: 22px; }
+        #btnMain.state-recording::before { background: var(--danger); opacity: 0.2; }
         @keyframes drift { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         .side-btn { opacity: 0; pointer-events: none; transform: scale(0.5); width: 0; margin: 0; }
-        .side-btn.visible { opacity: 1; pointer-events: all; transform: scale(1); width: 55px; margin: 0 5px; }
+        .side-btn.visible { opacity: 1; pointer-events: all; transform: scale(1); width: 45px; margin: 0 5px; }
         .side-btn#btnCancel { color: var(--danger); }
         .side-btn#btnPause.state-paused { background: var(--warn); color: white; border-color: transparent; }
 
-        /* 2x2 Header Layout for Entries */
-        .entry-header-grid {
-            display: flex; gap: 10px; width: 100%; align-items: stretch; flex-wrap: wrap; margin-bottom: 10px;
+        /* Compact Header / Stats Strip */
+        .entry-header-compact {
+            display: flex; flex-direction: column; gap: 8px; width: 100%; margin-bottom: 12px;
         }
-        .stats-grid {
-            flex: 1; min-width: 200px; display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 6px;
+        .stats-row {
+            display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: flex-start; width: 100%;
         }
-        .actions-grid {
-            display: grid; grid-template-columns: repeat(2, 40px); grid-template-rows: repeat(2, 40px); gap: 6px; flex-shrink: 0;
-            margin-left: auto;
+        .actions-row {
+            display: flex; gap: 6px; align-items: center; justify-content: flex-end; width: 100%; margin-top: -34px; pointer-events: none;
+        }
+        .actions-row > * { pointer-events: auto; } /* Re-enable clicks for buttons */
+
+        /* Prevent overlap on very small screens */
+        @media (max-width: 480px) {
+            .actions-row { margin-top: 4px; justify-content: flex-start; }
         }
         
         .stat-pill { 
             font-size: 0.75rem; font-weight: 700; color: var(--text-muted); 
-            background: var(--badge-bg); padding: 6px 10px; border-radius: 12px; 
-            border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: flex-start; gap: 6px; 
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            background: var(--badge-bg); padding: 4px 8px; border-radius: 10px; 
+            border: 1px solid var(--glass-border); display: inline-flex; align-items: center; gap: 5px; 
+            white-space: nowrap; height: 26px; box-sizing: border-box;
         }
+        .stat-pill svg { width: 12px; height: 12px; flex-shrink: 0; }
 
         .status-badge {
-            font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px; justify-content: center;
-            padding: 6px 15px; border-radius: 20px; background: var(--badge-bg); border: 1px solid var(--glass-border); color: var(--text);
-            width: 100%; margin-bottom: 10px;
+            font-size: 0.85rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; justify-content: center;
+            padding: 4px 12px; border-radius: 12px; background: var(--badge-bg); border: 1px solid var(--glass-border); color: var(--text);
+            margin-bottom: 8px; align-self: flex-start; height: 26px;
         }
         .status-badge.highlight { color: var(--accent); border-color: var(--accent); animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
@@ -220,6 +235,7 @@
             line-height: 1.6; font-size: 15px; outline: none; padding: 15px; border-radius: 20px;
             transition: opacity 0.3s;
         }
+        .seamless-text::placeholder { color: var(--text-muted); opacity: 0.6; font-style: italic; }
 
         details.custom-accordion { background: var(--badge-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 10px 15px; width: 100%; margin-top: 10px; }
         details.custom-accordion summary { font-size: 0.85rem; font-weight: 700; color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; outline:none; user-select:none; }
@@ -263,7 +279,7 @@
 <body>
     <canvas id="cloudCanvas"></canvas>
     
-    <div id="toast"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> <span id="toastMsg">Kopiert</span></div>
+    <div id="toast" onclick="tryCopy(null, true)"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> <span id="toastMsg">Kopiert</span></div>
 
     <!-- MODALS -->
     <div id="devPanel" class="modal">
@@ -351,15 +367,17 @@
                     <div class="header-actions">
                         <button class="icon-btn" onclick="toggleModal('apiModal')" title="API Key"><svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg></button>
                         <button class="icon-btn" onclick="cycleTheme()" title="Theme" id="themeIcon"></button>
-                        <!-- Randomize Setup (Magic Wand) -->
-                        <button class="icon-btn" onclick="randomizeSetup()" title="Randomize Look"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M15 4V2"></path><path d="M15 16v-2"></path><path d="M8 9h2"></path><path d="M20 9h2"></path><path d="M17.8 11.8L19 13"></path><path d="M15 9h.01"></path><path d="M17.8 6.2L19 5"></path><path d="m3 21 9-9"></path><path d="M12.2 6.2L11 5"></path></svg></button>
+                        
+                        <!-- NEW Magic Wand Randomize Icon -->
+                        <button class="icon-btn" onclick="randomizeSetup()" title="Zufälliges Design"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="m15 5 4 4"></path><path d="M13 3.5a2.12 2.12 0 0 0-3 3L3 13.5l-2 7 7-2 7-7a2.12 2.12 0 0 0 0-3z"></path><path d="m19 13 2 2"></path><path d="m2 2 2 2"></path><path d="m20 4 2-2"></path></svg></button>
+                        
                         <button class="icon-btn" onclick="toggleModal('devPanel')" title="Studio"><svg viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r="2.5"></circle><circle cx="19" cy="13" r="2"></circle><circle cx="7" cy="8" r="2"></circle><circle cx="5" cy="15" r="2"></circle><circle cx="11" cy="19" r="2"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.3-.5-.8-.5-1.3 0-1.1.9-2 2-2h2.4c3.1 0 5.6-2.5 5.6-5.6C23 6.4 18 2 12 2z"></path></svg></button>
                         <button class="icon-btn" onclick="window.location.reload()" title="App neu laden"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg></button>
                         <button class="icon-btn" onclick="document.getElementById('fileUpload').click()" title="Audio hochladen"><svg viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></button>
                         
-                        <div class="icon-btn" title="Mikrofon Auswahl" style="position:relative;">
+                        <div class="icon-btn mic-container" title="Mikrofon Auswahl">
                             <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-                            <select id="micSelect" style="position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;"><option value="default">Default</option></select>
+                            <select id="micSelect"></select>
                         </div>
                         
                         <button class="icon-btn" id="sysAudioBtn" onclick="toggleSysAudio()" title="System Sound (PC)"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg></button>
@@ -379,24 +397,17 @@
 
         <div class="scroll-zone">
             <div class="content-width">
+                
                 <!-- LIVE RECORDING BLOCK -->
                 <div id="activeEntry" class="glass-panel" style="display:none; flex-direction:column; margin-bottom: 15px;">
-                    <span class="status-badge" id="badgeListen"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg> Höre zu...</span>
-                    <span class="status-badge highlight" id="badgeTranscribe" style="display:none;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"></path></svg> Transkribiere...</span>
-                    
-                    <div class="entry-header-grid">
-                        <div class="stats-grid">
+                    <div class="entry-header-compact">
+                        <div class="stats-row">
+                            <span class="status-badge" id="badgeListen"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg> Höre zu...</span>
+                            <span class="status-badge highlight" id="badgeTranscribe" style="display:none;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"></path></svg> Transkribiere...</span>
                             <span class="stat-pill" id="liveStartTs"></span>
-                            <span class="stat-pill" id="liveWords"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> 00:00 &nbsp;|&nbsp; <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> 0</span>
-                            <span class="stat-pill" id="liveCost"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path></svg> ~0.0 ct</span>
-                            <span class="stat-pill" id="liveTokens"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon></svg> 0</span>
-                        </div>
-                        <!-- Placeholder for alignment with archive -->
-                        <div class="actions-grid" style="opacity: 0.2; pointer-events: none;">
-                            <button class="mini-btn"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 8v13H3V8"></path><polyline points="1 3 23 3 23 8 1 8 1 3"></polyline><line x1="10" y1="12" x2="14" y2="12"></line></svg></button>
-                            <button class="mini-btn"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg></button>
-                            <button class="mini-btn"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg></button>
-                            <button class="mini-btn"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                            <span class="stat-pill" id="liveWords"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> 0</span>
+                            <span class="stat-pill" id="liveTokens"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon></svg> 0</span>
+                            <span class="stat-pill" id="liveCost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path></svg> ~0.0 ct</span>
                         </div>
                     </div>
                     <textarea id="activeText" class="seamless-text" readonly placeholder="Sprich in das Mikrofon..."></textarea>
@@ -408,24 +419,26 @@
         </div>
     </div>
 
-    <!-- Upload accepts any standard audio/video format -->
     <input type="file" id="fileUpload" hidden accept="audio/*, video/*">
 
     <script>
         // === PWA Service Worker Hook ===
-        (function initPWA() {
+        function updatePWAManifest() {
+            let isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            let bg = isDark ? "#050505" : "#ffffff";
             const manifest = {
                 name: "Simple Transcription",
                 short_name: "Transcribe",
                 start_url: window.location.href.split('?')[0].split('#')[0],
                 display: "standalone",
-                background_color: "#000000",
-                theme_color: "#000000",
+                background_color: bg,
+                theme_color: bg,
                 icons: [{ src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjI1IiBmaWxsPSIjYTE4Y2QxIi8+PHBhdGggZD0iTTUwIDI1YTEyIDEyIDAgMCAwLTEyIDEydjE1YTEyIDEyIDAgMCAwIDI0IDBWMzdhMTIgMTIgMCAwIDAtMTItMTJ6TTcwIDUydjJhMjAgMjAgMCAwIDEtNDAgMHYtMmgtNXYyYTI1IDI1IDAgMCAwIDIyIDI0LjhWODVoNnYtNi4yYTI1IDI1IDAgMCAwIDIyLTI0Ljh2LTJoLTV6IiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg==", sizes: "192x192", type: "image/svg+xml", purpose: "any maskable" }]
             };
             const blob = new Blob([JSON.stringify(manifest)], {type: 'application/manifest+json'});
             document.getElementById('pwa-manifest').href = URL.createObjectURL(blob);
-        })();
+        }
+        updatePWAManifest();
 
         // === CORE STATE ===
         var mediaRecorder, chunks = [], audioCtxLive, liveDest, analyser, dataArray;
@@ -442,7 +455,7 @@
             iconMain: document.getElementById('iconMain'), iconPause: document.getElementById('iconPause'), themeIcon: document.getElementById('themeIcon'),
             timer: document.getElementById('timer'), liveWords: document.getElementById('liveWords'), liveCost: document.getElementById('liveCost'), liveTokens: document.getElementById('liveTokens'),
             canvas: document.getElementById('cloudCanvas'), feed: document.getElementById('feed'), activeEntry: document.getElementById('activeEntry'), activeText: document.getElementById('activeText'),
-            badgeListen: document.getElementById('badgeListen'), badgeTranscribe: document.getElementById('badgeTranscribe'), badgeCut: document.getElementById('badgeCut'), liveStartTs: document.getElementById('liveStartTs'),
+            badgeListen: document.getElementById('badgeListen'), badgeTranscribe: document.getElementById('badgeTranscribe'), liveStartTs: document.getElementById('liveStartTs'),
             apiKey: document.getElementById('apiKey'), fileUpload: document.getElementById('fileUpload'), micSelect: document.getElementById('micSelect'),
             toast: document.getElementById('toast'), toastMsg: document.getElementById('toastMsg'), btnAutoSave: document.getElementById('btnAutoSave'), btnAutoCut: document.getElementById('btnAutoCut'),
             colorVariety: document.getElementById('colorVariety'), uiTransparency: document.getElementById('uiTransparency'), huePicker: document.getElementById('huePicker')
@@ -474,7 +487,7 @@
         // Smart Toast & Catcher
         function tryCopy(text, showNow = true) {
             if (document.hasFocus()) {
-                navigator.clipboard.writeText(text).catch(e=>{});
+                if(text) navigator.clipboard.writeText(text).catch(e=>{});
                 if(showNow) { els.toastMsg.innerText = "Kopiert!"; els.toast.className = 'visible'; setTimeout(()=>els.toast.className='', 2500); }
             } else {
                 pendingCopyText = text;
@@ -514,33 +527,38 @@
             document.documentElement.setAttribute('data-theme', themes[currentThemeIdx]);
             els.themeIcon.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">${svgThemes[currentThemeIdx]}</svg>`;
             localStorage.setItem('theme_idx_v98', currentThemeIdx);
+            
+            const metaTheme = document.getElementById('theme-color-meta');
+            metaTheme.setAttribute('content', currentThemeIdx === 1 ? '#050505' : '#ffffff');
+            updatePWAManifest();
             applyTransparency(); updateAnimParams();
         }
 
-        // Toggles
+        // Toggles (Glow logic instead of color logic)
         let isAutoSave = localStorage.getItem("autodl_v86") === 'true';
-        window.toggleSave = () => { isAutoSave = !isAutoSave; localStorage.setItem("autodl_v86", isAutoSave); els.btnAutoSave.className = isAutoSave ? 'icon-btn active' : 'icon-btn'; showToast(isAutoSave ? "Auto-Save An" : "Auto-Save Aus"); };
-        els.btnAutoSave.className = isAutoSave ? 'icon-btn active' : 'icon-btn';
+        window.toggleSave = () => { isAutoSave = !isAutoSave; localStorage.setItem("autodl_v86", isAutoSave); els.btnAutoSave.className = isAutoSave ? 'icon-btn active-glow' : 'icon-btn'; showToast(isAutoSave ? "Auto-Save An" : "Auto-Save Aus"); };
+        els.btnAutoSave.className = isAutoSave ? 'icon-btn active-glow' : 'icon-btn';
 
-        window.toggleSysAudio = () => { sysAudioEnabled = !sysAudioEnabled; document.getElementById('sysAudioBtn').className = sysAudioEnabled ? 'icon-btn active' : 'icon-btn'; showToast(sysAudioEnabled ? "System-Audio An" : "System-Audio Aus"); };
-        document.getElementById('sysAudioBtn').className = sysAudioEnabled ? 'icon-btn active' : 'icon-btn';
+        window.toggleSysAudio = () => { sysAudioEnabled = !sysAudioEnabled; document.getElementById('sysAudioBtn').className = sysAudioEnabled ? 'icon-btn active-glow' : 'icon-btn'; showToast(sysAudioEnabled ? "System Sound An" : "System Sound Aus"); };
+        document.getElementById('sysAudioBtn').className = sysAudioEnabled ? 'icon-btn active-glow' : 'icon-btn';
 
-        const cutOptions = [0, 0.5, 1, 2];
-        let currentCutIdx = parseInt(localStorage.getItem("autocut_idx_v86") || 3);
-        window.cycleAutoCut = () => { currentCutIdx = (currentCutIdx + 1) % cutOptions.length; localStorage.setItem("autocut_idx_v86", currentCutIdx); updateCutBtn(); }
+        // Auto Cut Settings (Off, 15s, 30s, 1m, 2m)
+        const cutOptions = [0, 0.25, 0.5, 1, 2];
+        let currentCutIdx = parseInt(localStorage.getItem("autocut_idx_v106") || 4);
+        window.cycleAutoCut = () => { currentCutIdx = (currentCutIdx + 1) % cutOptions.length; localStorage.setItem("autocut_idx_v106", currentCutIdx); updateCutBtn(); }
         
-        // Beautiful Circular Arcs for Auto-Cut (Wide Radius, True Circle logic)
+        // Clean Circular Loading Arcs for Auto-Cut
         function updateCutBtn() {
             let arcs = '';
-            // Using stroke-dasharray on a circle of radius 10 (Circumference ~62.83). Center 12,12.
-            // Dasharray: segment, gap.
-            if (currentCutIdx === 1) arcs = `<circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" stroke-width="2.5" stroke-dasharray="15 47.83" stroke-dashoffset="18" stroke-linecap="round"/>`;
-            if (currentCutIdx === 2) arcs = `<circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" stroke-width="2.5" stroke-dasharray="15 5.94 15 26.89" stroke-dashoffset="18" stroke-linecap="round"/>`;
-            if (currentCutIdx === 3) arcs = `<circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" stroke-width="2.5" stroke-dasharray="15 5.94 15 5.94 15 5.94" stroke-dashoffset="18" stroke-linecap="round"/>`;
+            // Circle radius=10 -> Circumference ~62.83.
+            if (currentCutIdx === 1) arcs = `<circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" stroke-width="2" stroke-dasharray="15.7 47.1" stroke-dashoffset="18" stroke-linecap="round"/>`;
+            if (currentCutIdx === 2) arcs = `<circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" stroke-width="2" stroke-dasharray="31.4 31.4" stroke-dashoffset="18" stroke-linecap="round"/>`;
+            if (currentCutIdx === 3) arcs = `<circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" stroke-width="2" stroke-dasharray="47.1 15.7" stroke-dashoffset="18" stroke-linecap="round"/>`;
+            if (currentCutIdx === 4) arcs = `<circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" stroke-width="2" stroke-dasharray="62.83 0" stroke-linecap="round"/>`;
             
-            let svg = `<path d="M10 10L14 14M10 14L14 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="9" r="1" stroke="currentColor" fill="none" stroke-width="2"/><circle cx="9" cy="15" r="1" stroke="currentColor" fill="none" stroke-width="2"/>${arcs}`;
+            let svg = `<path d="M10 10L14 14M10 14L14 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="8" cy="8" r="1.5" stroke="currentColor" fill="none" stroke-width="2"/><circle cx="16" cy="16" r="1.5" stroke="currentColor" fill="none" stroke-width="2"/>${arcs}`;
             els.btnAutoCut.innerHTML = `<svg viewBox="0 0 24 24">${svg}</svg>`;
-            els.btnAutoCut.className = cutOptions[currentCutIdx] > 0 ? 'icon-btn active' : 'icon-btn';
+            if (cutOptions[currentCutIdx] > 0) { showToast(`Auto-Cut: ${cutOptions[currentCutIdx]*60}s`); } else { showToast("Auto-Cut: Aus"); }
         } updateCutBtn();
 
         // === COLOR STUDIO ===
@@ -571,7 +589,7 @@
             let currentHexes;
             
             if (sortedHues.length === 0) {
-                // Monochrome Mode
+                // True Monochrome Mode
                 let isDark = themes[currentThemeIdx] === 'dark';
                 let monoHex = isDark ? '#ffffff' : '#000000';
                 document.documentElement.style.setProperty('--c1', monoHex); document.documentElement.style.setProperty('--c2', monoHex);
@@ -837,12 +855,12 @@
             if(s==='idle') {
                 els.btnMain.className='btn-circle idle';
                 els.iconMain.innerHTML='<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>';
-                els.timer.style.display = 'none';
+                els.timer.style.display = 'block'; els.timer.innerText = "00:00"; // Always visible now
                 els.btnPause.classList.remove('visible'); els.btnCancel.classList.remove('visible');
             } else if(s==='recording') {
                 els.btnMain.className='btn-circle state-recording';
                 els.iconMain.innerHTML='<rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor" stroke="none"></rect>';
-                els.timer.style.display = 'block'; els.timer.style.color="var(--text)";
+                els.timer.style.color="var(--text)";
                 els.iconPause.innerHTML='<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
                 els.btnPause.className='btn-circle side-btn visible'; els.btnCancel.className='btn-circle side-btn visible'; 
             } else if(s==='paused') {
@@ -865,8 +883,15 @@
             if(!btn.classList.contains('confirm')){ btn.classList.add('confirm'); btn.innerHTML='<b>🗑️?</b>'; btn.style.color='white'; btn.style.background='var(--danger)'; setTimeout(()=>{if(isRecording||isPaused){btn.classList.remove('confirm');btn.style.background='';btn.style.color='var(--danger)';btn.innerHTML='<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';}},3000); return; }
             isCancelled=true; if(mediaRecorder) mediaRecorder.stop(); stopHardware();
             btn.classList.remove('confirm'); btn.style.background=''; btn.style.color='var(--danger)'; btn.innerHTML='<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
-            isRecording=isPaused=isAutoCutting=false; clearInterval(timerInt); timerInt=null; setMainButtonState('idle'); els.timer.innerText="00:00"; releaseWakeLock(); updateUIBadges(); els.activeEntry.style.display='none';
+            isRecording=isPaused=isAutoCutting=false; clearInterval(timerInt); timerInt=null; setMainButtonState('idle'); releaseWakeLock(); updateUIBadges(); els.activeEntry.style.display='none';
         };
+
+        function updateLiveStats(tSec, w, cost) {
+            els.timer.innerText = `${Math.floor(tSec/60).toString().padStart(2,'0')}:${(tSec%60).toString().padStart(2,'0')}`;
+            document.getElementById('liveWords').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> ${w}`;
+            document.getElementById('liveTokens').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon></svg> ${Math.ceil(w/0.75)}`;
+            document.getElementById('liveCost').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path></svg> ~${cost.toFixed(1)} ct`;
+        }
 
         async function startRec() {
             try {
@@ -895,10 +920,8 @@
                     sessionStartTime=Date.now(); totalPauseDelta=0;
                     let sd = new Date(sessionStartTime);
                     els.activeText.value=''; els.activeText.placeholder='Sprich in das Mikrofon...';
-                    els.liveStartTs.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> ${sd.toLocaleDateString()} &nbsp;|&nbsp; <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ${sd.toLocaleTimeString()}`;
-                    document.getElementById('liveWords').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> 0`;
-                    document.getElementById('liveTokens').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon></svg> 0`;
-                    document.getElementById('liveCost').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path></svg> 0.0 ct`;
+                    els.liveStartTs.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> ${sd.toLocaleDateString()} &nbsp;<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ${sd.toLocaleTimeString()}`;
+                    updateLiveStats(0, 0, 0.0);
                     els.activeEntry.style.display='flex'; autoResizeText(els.activeText);
                 }
                 
@@ -918,6 +941,7 @@
                         sessionBlobs.push(trimmedBlob);
                         processAudio(trimmedBlob, currentPart, wasAuto);
                     } else {
+                        // Completely silent block -> Skip OpenAI API call entirely
                         if(!wasAuto && sessionBlobs.length === 0) { els.activeEntry.style.display='none'; resetUI(); return; }
                     }
                     
@@ -927,7 +951,7 @@
                     if(isAutoCutting) {
                         isAutoCutting=false; chunks=[]; currentPart++; mediaRecorder.start(); partStartTime=Date.now(); partPauseDelta=0;
                     } else {
-                        if(pendingTranscriptions>0) { els.activeText.placeholder = 'Wird transkribiert...'; }
+                        if(pendingTranscriptions>0) els.activeText.placeholder = 'Wird transkribiert...';
                         resetUI(); finalizeArchive(currentSessionId, sessionBlobs, activeCost, dStr, savedStr);
                     }
                 };
@@ -940,25 +964,38 @@
         function timerTick() {
             if(isPaused) return;
             let tSec = Math.floor((Date.now()-sessionStartTime-totalPauseDelta)/1000), pSec = Math.floor((Date.now()-partStartTime-partPauseDelta)/1000);
-            if(cutOptions[currentCutIdx]>0 && pSec >= cutOptions[currentCutIdx]*60) { isAutoCutting=true; els.badgeCut.style.display='flex'; els.badgeListen.style.display='none'; mediaRecorder.stop(); setTimeout(()=> { els.badgeCut.style.display='none'; updateUIBadges(); }, 1200); return; }
-            els.timer.innerText = `${Math.floor(tSec/60).toString().padStart(2,'0')}:${(tSec%60).toString().padStart(2,'0')}`;
-            let txt = els.activeText.value.trim(); let w = txt?txt.split(/\s+/).length:0;
-            document.getElementById('liveWords').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> ${w}`;
-            document.getElementById('liveTokens').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon></svg> ${Math.ceil(w/0.75)}`;
-            document.getElementById('liveCost').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path></svg> ~${activeCost.toFixed(1)} ct`;
+            updateLiveStats(tSec, els.activeText.value.trim() ? els.activeText.value.trim().split(/\s+/).length : 0, activeCost);
+            
+            // Auto Cut Trigger Fix (Doesn't freeze UI anymore)
+            if(cutOptions[currentCutIdx]>0 && pSec >= cutOptions[currentCutIdx]*60 && !isAutoCutting) { 
+                isAutoCutting=true; els.badgeCut.style.display='flex'; els.badgeListen.style.display='none'; 
+                mediaRecorder.stop(); 
+                setTimeout(()=> { els.badgeCut.style.display='none'; updateUIBadges(); }, 1200); 
+            }
         }
 
-        function resetUI() { isRecording=isPaused=isAutoCutting=false; clearInterval(timerInt); timerInt=null; setMainButtonState('idle'); els.timer.innerText="00:00"; releaseWakeLock(); updateUIBadges(); stopHardware(); }
+        function resetUI() { isRecording=isPaused=isAutoCutting=false; clearInterval(timerInt); timerInt=null; setMainButtonState('idle'); releaseWakeLock(); updateUIBadges(); stopHardware(); }
 
         async function processAudio(blob, part) {
             pendingTranscriptions++; updateUIBadges();
-            if(!els.apiKey.value) { els.activeText.value += (els.activeText.value ? '\n' : '') + '[Kein API Key]'; autoResizeText(els.activeText); pendingTranscriptions--; updateUIBadges(); return; }
+            
+            if(!els.apiKey.value) { 
+                els.activeText.value = (els.activeText.value + (part>1?'\n':'') + '[Kein API Key - Audio gekürzt]').trim(); 
+                autoResizeText(els.activeText); 
+                pendingTranscriptions--; updateUIBadges(); return; 
+            }
+            
             let fd = new FormData(); fd.append("file", blob, "audio.wav"); fd.append("model", "whisper-1");
             try {
                 let res = await fetch("https://api.openai.com/v1/audio/transcriptions", {method:"POST", headers:{"Authorization":`Bearer ${els.apiKey.value}`}, body:fd});
                 let d = await res.json();
                 if(res.ok) { 
-                    if(d.text.trim()) { els.activeText.value = (els.activeText.value + (part>1?'\n':'') + d.text).trim(); autoResizeText(els.activeText); tryCopy(els.activeText.value, false); }
+                    if(d.text.trim()) { 
+                        els.activeText.value = (els.activeText.value + (els.activeText.value.trim() ? '\n' : '') + d.text).trim(); 
+                        autoResizeText(els.activeText); 
+                        tryCopy(els.activeText.value, false);
+                        els.activeText.scrollIntoView({ behavior: "smooth", block: "end" });
+                    }
                 } 
                 else { 
                     els.activeText.value += (els.activeText.value ? '\n' : '') + `[API Error: ${d.error?.message}]`; autoResizeText(els.activeText); 
@@ -971,7 +1008,7 @@
             pendingTranscriptions--; updateUIBadges();
         }
 
-        // Helper to generate the exact identical DOM structure for both Archives and Uploads
+        // Generate Identical DOM structure for both Archives and Uploads
         function createEntryHTML(id, txt, ts, dStr, w, cost, bList, savedStr) {
             let aHtml = '', rBtn = '';
             if(bList && bList.length > 0) {
@@ -980,20 +1017,19 @@
                 rBtn = `<button class="mini-btn safe" onclick="retrySession(${id},this)" title="Ganzes Memo neu transkribieren"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg></button>`;
             }
             
-            let savedPill = savedStr && savedStr !== "0.0s" ? `<span class="stat-pill" title="Stille entfernt"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg> -${savedStr}</span>` : "";
+            let savedPill = savedStr && savedStr !== "0.0s" ? `<span class="stat-pill" title="Stille entfernt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg> -${savedStr}</span>` : "";
 
             let newE = document.createElement('div'); newE.className = 'entry'; newE.id = `e-${id}`; newE.audioBlobs = bList || [];
             newE.innerHTML = `
-                <div class="entry-header-grid">
-                    <div class="stats-grid">
-                        <span class="stat-pill" style="grid-column: 1 / -1;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> ${ts}</span>
-                        <span class="stat-pill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ${dStr}</span>
-                        <span class="stat-pill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> ${w}</span>
-                        <span class="stat-pill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path></svg> ~${cost.toFixed(1)} ct</span>
-                        <span class="stat-pill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon></svg> ${Math.ceil(w/0.75)}</span>
+                <div class="entry-header-compact">
+                    <div class="stats-row">
+                        <span class="stat-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> ${ts.split(' | ')[0]} &nbsp;<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ${ts.split(' | ')[1] || ts}</span>
+                        <span class="stat-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> ${w}</span>
+                        <span class="stat-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon></svg> ${Math.ceil(w/0.75)}</span>
+                        <span class="stat-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path></svg> ~${cost.toFixed(1)} ct</span>
                         ${savedPill}
                     </div>
-                    <div class="actions-grid">
+                    <div class="actions-row">
                         <button class="mini-btn action" onclick="dlEntryZip(${id})" title="ZIP Download"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 8v13H3V8"></path><polyline points="1 3 23 3 23 8 1 8 1 3"></polyline><line x1="10" y1="12" x2="14" y2="12"></line></svg></button>
                         ${rBtn}
                         <button class="mini-btn" onclick="navigator.clipboard.writeText(document.getElementById('txt-${id}').value); showToast('Kopiert!');" title="Kopieren"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg></button>
@@ -1009,7 +1045,8 @@
         function finalizeArchive(sId, bList, cost, dStr, savedStr) {
             if(pendingTranscriptions>0) { setTimeout(()=>finalizeArchive(sId,bList,cost,dStr,savedStr),1000); return; }
             let txt = els.activeText.value.trim();
-            if(!txt) { els.activeEntry.style.display='none'; return; }
+            if(!txt && bList.length === 0) { els.activeEntry.style.display='none'; return; }
+            if(!txt) txt = "[Keine Sprache erkannt / Nur Audio gespeichert]";
             
             let w = txt.split(/\s+/).filter(x=>x).length;
             let tsDate = new Date(sessionStartTime).toLocaleDateString('de-DE',{dateStyle:'short'});
@@ -1023,6 +1060,7 @@
             
             els.activeText.value = ''; els.activeText.placeholder = 'Sprich in das Mikrofon...'; els.activeEntry.style.display = 'none';
             tryCopy(txt, true); if(isAutoSave) dlEntryZip(sId);
+            window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top to see new entry
         }
 
         function loadHistory() {
@@ -1072,6 +1110,7 @@
             
             let d = createEntryHTML(id, "Verarbeite Datei...", `${ts} (Upload)`, "...", 0, 0, [], "");
             els.feed.prepend(d); els.fileUpload.value = '';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
 
             try {
                 let actx = new (window.AudioContext || window.webkitAudioContext)({sampleRate: 16000});
@@ -1128,6 +1167,7 @@
                 
                 let fullText = ""; let iter = 1;
                 for(let b of bloblist) {
+                    if(!els.apiKey.value) { fullText += (iter>1?'\n':'') + "[Kein API Key]"; iter++; continue; }
                     let fd = new FormData(); fd.append("file", b, "audio.wav"); fd.append("model", "whisper-1");
                     let res = await fetch("https://api.openai.com/v1/audio/transcriptions", { method: "POST", headers: { "Authorization": `Bearer ${els.apiKey.value}` }, body: fd });
                     let data = await res.json();
@@ -1145,11 +1185,11 @@
                 let w = fullText.split(/\s+/).filter(x=>x).length;
                 let cost = (newDur/60)*0.6;
                 
-                let finalEl = createEntryHTML(id, fullText, `${ts} (Upload)`, dStr, w, cost, bloblist, savedStr);
+                let finalEl = createEntryHTML(id, fullText, `${tsDate || ''} | ${ts} (Upload)`, dStr, w, cost, bloblist, savedStr);
                 document.getElementById(`e-${id}`).replaceWith(finalEl);
                 autoResizeText(finalEl.querySelector('textarea'));
                 
-                let h = JSON.parse(localStorage.getItem("hist_master")||"[]"); h.push({id:id, text:fullText, ts:`${ts} (Upload)`, cost:cost, durationStr:dStr, savedStr:savedStr}); localStorage.setItem("hist_master", JSON.stringify(h));
+                let h = JSON.parse(localStorage.getItem("hist_master")||"[]"); h.push({id:id, text:fullText, ts:`${tsDate || ''} | ${ts} (Upload)`, cost:cost, durationStr:dStr, savedStr:savedStr}); localStorage.setItem("hist_master", JSON.stringify(h));
                 tryCopy(fullText, true);
 
             } catch (e) { document.getElementById(`txt-${id}`).value = "Fehler: " + e.message; }
