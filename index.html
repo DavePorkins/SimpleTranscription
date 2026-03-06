@@ -9,8 +9,8 @@
     <meta http-equiv="Expires" content="0">
     <title>Simple Transcription</title>
 
-    <!-- PWA & Favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='25' fill='%23a18cd1'/><path d='M50 25a12 12 0 0 0-12 12v15a12 12 0 0 0 24 0V37a12 12 0 0 0-12-12zM70 52v2a20 20 0 0 1-40 0v-2h-5v2a25 25 0 0 0 22 24.8V85h6v-6.2a25 25 0 0 0 22-24.8v-2h-5z' fill='white'/></svg>">
+    <!-- PWA Manifest Hook -->
+    <link id="pwa-manifest" rel="manifest">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" id="theme-color-meta" content="#bfa8e6">
@@ -92,23 +92,26 @@
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
         }
 
-        .entry { margin-bottom: 15px; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform: translateZ(0); }
+        .entry { display: flex; flex-direction: column; margin-bottom: 15px; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform: translateZ(0); }
         @keyframes popIn { 0% { opacity: 0; transform: scale(0.95) translateY(-10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+
+        .title-container {
+            width: 100%; display: flex; justify-content: center; margin-bottom: 10px;
+        }
 
         .title-pill {
             background: var(--title-bg); border: 1px solid var(--glass-border);
-            padding: 8px 24px; border-radius: 50px; display: inline-flex; align-items: baseline; gap: 8px;
+            padding: 8px 24px; border-radius: 50px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            margin-bottom: 10px;
         }
 
         h1 {
             margin: 0; font-size: 1.2rem; font-weight: 800; letter-spacing: -0.5px;
             background: linear-gradient(90deg, var(--c1), var(--c2)); -webkit-background-clip: text; color: transparent;
-            filter: saturate(0.65) opacity(0.9); /* Pastel Look */
+            filter: saturate(0.65) opacity(0.9); /* Pastel Look */ display: flex; align-items: center; gap: 8px;
         }
 
-        .version-tag { font-size: 0.5em; font-weight: 800; color: var(--text); background: rgba(128, 128, 128, 0.2); border-radius: 4px; padding: 2px 6px; }
+        .version-tag { font-size: 0.5em; font-weight: 800; color: var(--text); background: rgba(128, 128, 128, 0.2); border-radius: 4px; padding: 2px 6px; line-height: 1;}
 
         .header-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; user-select: none; }
 
@@ -167,8 +170,9 @@
         @keyframes pulse { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
 
         .stat-pill { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); background: var(--badge-bg); padding: 4px 10px; border-radius: 10px; border: 1px solid var(--glass-border); }
-        .timestamp-badge { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); padding: 2px 8px; background: var(--input-bg); border-radius: 10px; }
-        .date-badge { font-size: 0.85rem; color: var(--text); font-weight: 800; display: flex; align-items: center; gap: 6px; }
+        .timestamp-badge { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); padding: 2px 8px; background: var(--input-bg); border-radius: 10px; text-align: center; }
+        .entry-meta-info { display: flex; flex-direction: column; align-items: center; width: 100%; justify-content: center; }
+        .date-badge { font-size: 0.85rem; color: var(--text); font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 6px; text-align: center; }
 
         .seamless-text {
             width: 100%; background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text);
@@ -186,7 +190,7 @@
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 2000; align-items: center; justify-content: center; }
         .modal.visible { display: flex; animation: fadeIn 0.2s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .modal-box { background: var(--glass-bg); padding: 25px; border-radius: 35px; width: 90%; max-width: 440px; border: 1px solid var(--glass-border); color: var(--text); box-sizing: border-box; max-height: 85vh; overflow-y: auto; backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+        .modal-box { background: var(--glass-bg); padding: 25px; border-radius: 35px; width: 90%; max-width: 440px; border: 1px solid var(--glass-border); color: var(--text); box-sizing: border-box; max-height: 85vh; overflow-y: auto; backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-weight: 800; font-size: 1.2rem; }
         
         .studio-tabs { display: flex; background: var(--input-bg); border-radius: 14px; padding: 4px; margin-bottom: 20px; }
@@ -256,9 +260,9 @@
                 <div class="dev-row" style="margin-bottom:20px; border-bottom:1px solid var(--glass-border); padding-bottom:15px;">
                     <div style="display:flex; flex-direction:column;">
                         <span style="font-weight:bold; color:var(--accent);">Silence Threshold (Stille-Schnitt)</span>
-                        <span style="font-size:0.7rem; font-weight:normal;">Schneidet Stille vor API-Upload. (0.01 = fein)</span>
+                        <span style="font-size:0.7rem; font-weight:normal;">Schneidet Stille vor API-Upload. (0.001 = fein)</span>
                     </div>
-                    <input type="number" id="silenceThreshold" value="0.01" step="0.005" min="0.001" max="0.1" style="width:60px; padding:5px; border-radius:10px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--text); text-align:center;">
+                    <input type="number" id="silenceThreshold" value="0.001" step="0.0005" min="0.0001" max="0.05" style="width:70px; padding:5px; border-radius:10px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--text); text-align:center;">
                 </div>
                 <div class="dev-row"><span>Blob-Geschwindigkeit</span> <input type="range" id="animSpeed" min="10" max="100" value="50"></div>
                 <div class="dev-row"><span>Weichzeichner</span> <input type="range" id="animBlur" min="0" max="60" value="60"></div>
@@ -295,14 +299,18 @@
         <div class="sticky-zone">
             <div class="content-width">
                 <div class="glass-panel">
-                    <div class="top-row">
-                        <div class="title-pill"><h1>Simple Transcription <span class="version-tag">V100</span></h1></div>
+                    
+                    <div class="title-container">
+                        <div class="title-pill">
+                            <h1>Simple Transcription <span class="version-tag">V101</span></h1>
+                        </div>
                     </div>
 
                     <div class="header-actions">
                         <button class="icon-btn" onclick="toggleModal('apiModal')" title="API Key"><svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg></button>
                         <button class="icon-btn" onclick="cycleTheme()" title="Theme" id="themeIcon"></button>
                         <button class="icon-btn" onclick="toggleModal('devPanel')" title="Studio"><svg viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r="2.5"></circle><circle cx="19" cy="13" r="2"></circle><circle cx="7" cy="8" r="2"></circle><circle cx="5" cy="15" r="2"></circle><circle cx="11" cy="19" r="2"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.3-.5-.8-.5-1.3 0-1.1.9-2 2-2h2.4c3.1 0 5.6-2.5 5.6-5.6C23 6.4 18 2 12 2z"></path></svg></button>
+                        <button class="icon-btn" onclick="window.location.reload()" title="App neu laden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg></button>
                         <button class="icon-btn" onclick="document.getElementById('fileUpload').click()" title="Audio hochladen"><svg viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></button>
                         <button class="icon-btn" onclick="dlAllZip()" title="ZIP Download"><svg viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg></button>
                         <button class="icon-btn" onclick="showQR()" title="App Teilen"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg></button>
@@ -330,7 +338,8 @@
         <div class="scroll-zone">
             <div class="content-width">
                 <!-- LIVE RECORDING BLOCK (Strictly separated from archive) -->
-                <div id="activeEntry" class="glass-panel" style="display:none; margin-bottom: 15px;">
+                <!-- FIXED flex-direction to keep text under the header -->
+                <div id="activeEntry" class="glass-panel" style="display:none; flex-direction:column; margin-bottom: 15px;">
                     <div class="active-top-bar">
                         <div class="status-container">
                             <span class="status-badge" id="badgeListen"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg> Höre zu...</span>
@@ -352,9 +361,31 @@
         </div>
     </div>
 
-    <input type="file" id="fileUpload" hidden accept=".flac,.m4a,.mp3,.mp4,.mpeg,.mpga,.oga,.ogg,.wav,.webm,.opus,.amr">
+    <!-- Upload accepts any standard audio/video format -->
+    <input type="file" id="fileUpload" hidden accept="audio/*, video/*, .flac, .m4a, .mp3, .mp4, .mpeg, .mpga, .oga, .ogg, .wav, .webm, .opus, .amr">
 
     <script>
+        // === PWA Service Worker Hook for "Install App" ===
+        (function initPWA() {
+            const manifest = {
+                name: "Simple Transcription",
+                short_name: "Transcribe",
+                start_url: window.location.href.split('?')[0].split('#')[0],
+                display: "standalone",
+                background_color: "#050505",
+                theme_color: "#bfa8e6",
+                icons: [{ src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjOTlkZGZmIi8+PHBhdGggZD0iTTUwIDIwYTEwIDEwIDAgMCAwLTEwIDEwdjI1YTEwIDEwIDAgMCAwIDIwIDBWMzBhMTAgMTAgMCAwIDAtMTAtMTB6TTY4IDU1djJhMTggMTggMCAwIDEtMzYgMHYtMmgtNXYyYTIzIDIzIDAgMCAwIDIxIDIydjhoMTB2LThhMjMgMjMgMCAwIDAgMjEtMjJ2LTJoLTV6IiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjk1Ii8+PC9zdmc+", sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" }]
+            };
+            document.getElementById('pwa-manifest').href = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(manifest));
+
+            // Dummy SW trick to make Chrome prompt the "Install App" button instead of just a shortcut
+            if ('serviceWorker' in navigator) {
+                const swCode = `self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>self.clients.claim());self.addEventListener('fetch',e=>{});`;
+                const swBlob = new Blob([swCode], {type:'application/javascript'});
+                navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(e=>{});
+            }
+        })();
+
         // === CORE STATE ===
         var mediaRecorder, chunks = [], audioCtxLive, liveDest, analyser, dataArray;
         var micStream = null, sysStream = null;
@@ -389,7 +420,14 @@
         window.toggleModal = id => document.getElementById(id).classList.toggle('visible');
         window.onclick = e => { if (e.target.classList.contains('modal')) e.target.classList.remove('visible'); };
         window.showQR = () => { document.getElementById('qrcode').innerHTML = ""; new QRCode(document.getElementById("qrcode"), { text: window.location.href.split('#')[0].split('?')[0], width: 150, height: 150, colorDark: "#000000", colorLight: "#ffffff" }); toggleModal('qrModal'); }
-        function autoResizeText(textarea) { textarea.style.height = 'auto'; setTimeout(() => { textarea.style.height = (textarea.scrollHeight + 5) + 'px'; }, 10); }
+        
+        // Auto Resize Textarea without glitching/jumping
+        function autoResizeText(textarea) { 
+            let scrollTop = window.scrollY; // anchor to prevent jumping
+            textarea.style.height = '0px'; 
+            textarea.style.height = (textarea.scrollHeight + 5) + 'px'; 
+            window.scrollTo(0, scrollTop);
+        }
         
         // Smart Toast
         function tryCopy(text, showNow = true) {
@@ -436,13 +474,14 @@
         let currentCutIdx = parseInt(localStorage.getItem("autocut_idx_v86") || 3);
         window.cycleAutoCut = () => { currentCutIdx = (currentCutIdx + 1) % cutOptions.length; localStorage.setItem("autocut_idx_v86", currentCutIdx); updateCutBtn(); }
         
+        // Beautiful Circular Arcs for Auto-Cut
         function updateCutBtn() {
             let arcs = '';
-            if(currentCutIdx >= 1) arcs += `<path d="M 5.5 16.5 A 10 10 0 0 0 18.5 16.5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>`;
-            if(currentCutIdx >= 2) arcs += `<path d="M 19.5 14 A 10 10 0 0 0 13.5 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>`;
-            if(currentCutIdx >= 3) arcs += `<path d="M 10.5 3 A 10 10 0 0 0 4.5 14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>`;
+            if(currentCutIdx >= 1) arcs += `<path d="M 6 17 A 8 8 0 0 0 18 17" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>`;
+            if(currentCutIdx >= 2) arcs += `<path d="M 19 13 A 8 8 0 0 0 13 5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>`;
+            if(currentCutIdx >= 3) arcs += `<path d="M 11 5 A 8 8 0 0 0 5 13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>`;
             
-            let svg = `<path d="M7 7L17 17M7 17L17 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="7" cy="7" r="2.5" stroke="currentColor" fill="none" stroke-width="2"/><circle cx="7" cy="17" r="2.5" stroke="currentColor" fill="none" stroke-width="2"/>${arcs}`;
+            let svg = `<path d="M8 8L16 16M8 16L16 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="8" cy="8" r="2" stroke="currentColor" fill="none" stroke-width="2"/><circle cx="8" cy="16" r="2" stroke="currentColor" fill="none" stroke-width="2"/>${arcs}`;
             els.btnAutoCut.innerHTML = `<svg viewBox="0 0 24 24">${svg}</svg>`;
             els.btnAutoCut.className = cutOptions[currentCutIdx] > 0 ? 'icon-btn' : 'icon-btn inactive';
         } updateCutBtn();
@@ -466,6 +505,8 @@
         }
 
         let customHues = JSON.parse(localStorage.getItem('custom_hues_v84') || "[190, 275, 345]");
+        let isDraggingStudio = false; // Prevent new thumb generation after dragging
+
         function updateHue() {
             let variety = parseInt(els.colorVariety.value) || 100;
             let satScale = Math.min((variety / 50), 3.0);
@@ -489,15 +530,15 @@
                 // Touch Fix for Android
                 let startX=0, startHue=0, moved=false, touchStart=0;
                 btn.addEventListener('touchstart', e => { e.stopPropagation(); e.preventDefault(); startX = e.touches[0].clientX; startHue = hue; moved = false; touchStart = Date.now(); }, {passive:false});
-                btn.addEventListener('touchmove', e => { e.stopPropagation(); e.preventDefault(); let diffX = e.touches[0].clientX - startX; if(Math.abs(diffX)>3) moved = true; let rect = els.huePicker.getBoundingClientRect(); let nHue = Math.max(0, Math.min(360, startHue + (diffX / rect.width)*360)); customHues[idx] = nHue; btn.style.left = (nHue/360*100)+'%'; btn.style.backgroundColor = `hsl(${nHue},100%,50%)`; updateHue(); }, {passive:false});
-                btn.addEventListener('touchend', e => { e.stopPropagation(); e.preventDefault(); if (!moved && (Date.now()-touchStart)<400 && customHues.length>1) { customHues.splice(idx,1); renderThumbs(); updateHue(); } localStorage.setItem('custom_hues_v84', JSON.stringify(customHues)); });
+                btn.addEventListener('touchmove', e => { e.stopPropagation(); e.preventDefault(); let diffX = e.touches[0].clientX - startX; if(Math.abs(diffX)>3) { moved = true; isDraggingStudio = true; } let rect = els.huePicker.getBoundingClientRect(); let nHue = Math.max(0, Math.min(360, startHue + (diffX / rect.width)*360)); customHues[idx] = nHue; btn.style.left = (nHue/360*100)+'%'; btn.style.backgroundColor = `hsl(${nHue},100%,50%)`; updateHue(); }, {passive:false});
+                btn.addEventListener('touchend', e => { e.stopPropagation(); e.preventDefault(); if (!moved && (Date.now()-touchStart)<400 && customHues.length>1) { customHues.splice(idx,1); renderThumbs(); updateHue(); } localStorage.setItem('custom_hues_v84', JSON.stringify(customHues)); setTimeout(()=>isDraggingStudio=false, 100); });
                 
                 // Mouse Fix
-                btn.onmousedown = e => { e.stopPropagation(); e.preventDefault(); startX=e.clientX; startHue=hue; moved=false; touchStart=Date.now(); let move = ev => { if(Math.abs(ev.clientX-startX)>3) moved=true; let r = els.huePicker.getBoundingClientRect(); let nHue = Math.max(0, Math.min(360, startHue + ((ev.clientX-startX)/r.width)*360)); customHues[idx]=nHue; btn.style.left=(nHue/360*100)+'%'; btn.style.backgroundColor=`hsl(${nHue},100%,50%)`; updateHue(); }; let up = ev => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); if(!moved && (Date.now()-touchStart)<400 && customHues.length>1){ customHues.splice(idx,1); renderThumbs(); updateHue(); } localStorage.setItem('custom_hues_v84', JSON.stringify(customHues)); }; window.addEventListener('mousemove', move); window.addEventListener('mouseup', up); };
+                btn.onmousedown = e => { e.stopPropagation(); e.preventDefault(); startX=e.clientX; startHue=hue; moved=false; touchStart=Date.now(); let move = ev => { if(Math.abs(ev.clientX-startX)>3) { moved=true; isDraggingStudio=true; } let r = els.huePicker.getBoundingClientRect(); let nHue = Math.max(0, Math.min(360, startHue + ((ev.clientX-startX)/r.width)*360)); customHues[idx]=nHue; btn.style.left=(nHue/360*100)+'%'; btn.style.backgroundColor=`hsl(${nHue},100%,50%)`; updateHue(); }; let up = ev => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); if(!moved && (Date.now()-touchStart)<400 && customHues.length>1){ customHues.splice(idx,1); renderThumbs(); updateHue(); } localStorage.setItem('custom_hues_v84', JSON.stringify(customHues)); setTimeout(()=>isDraggingStudio=false, 100); }; window.addEventListener('mousemove', move); window.addEventListener('mouseup', up); };
                 tc.appendChild(btn);
             });
         }
-        els.huePicker.onclick = e => { if(e.target.classList.contains('color-thumb')) return; let rect = els.huePicker.getBoundingClientRect(); customHues.push(Math.max(0, Math.min(360, ((e.clientX-rect.left)/rect.width)*360))); renderThumbs(); updateHue(); localStorage.setItem('custom_hues_v84', JSON.stringify(customHues)); };
+        els.huePicker.onclick = e => { if(e.target.classList.contains('color-thumb') || isDraggingStudio) return; let rect = els.huePicker.getBoundingClientRect(); customHues.push(Math.max(0, Math.min(360, ((e.clientX-rect.left)/rect.width)*360))); renderThumbs(); updateHue(); localStorage.setItem('custom_hues_v84', JSON.stringify(customHues)); };
 
         function applyTransparency() {
             let t = parseInt(els.uiTransparency.value) / 100; let isDark = themes[currentThemeIdx] === 'dark';
@@ -517,7 +558,7 @@
 
         window.resetDev = () => {
             customHues = [190, 275, 345]; els.colorVariety.value = 150; els.uiTransparency.value = 50;
-            document.getElementById('animSpeed').value = 50; document.getElementById('animBlur').value = 60; document.getElementById('animSize').value = 50; document.getElementById('silenceThreshold').value = 0.01;
+            document.getElementById('animSpeed').value = 50; document.getElementById('animBlur').value = 60; document.getElementById('animSize').value = 50; document.getElementById('silenceThreshold').value = 0.001;
             renderThumbs(); updateHue(); applyTransparency(); updateAnimParams(); localStorage.setItem('custom_hues_v84', JSON.stringify(customHues));
         };
 
@@ -526,7 +567,7 @@
         document.getElementById('animSpeed').value = localStorage.getItem('anim_speed_v72') || 50;
         document.getElementById('animBlur').value = localStorage.getItem('anim_blur_v72') || 60;
         document.getElementById('animSize').value = localStorage.getItem('anim_size_v74') || 50;
-        document.getElementById('silenceThreshold').value = localStorage.getItem('silence_v100') || 0.01;
+        document.getElementById('silenceThreshold').value = localStorage.getItem('silence_v100') || 0.001;
         
         [els.colorVariety, els.uiTransparency, document.getElementById('animSpeed'), document.getElementById('animBlur'), document.getElementById('animSize'), document.getElementById('silenceThreshold')].forEach(e => e.addEventListener('input', () => {
             if(e===els.colorVariety) { updateHue(); localStorage.setItem('color_variety_v79', e.value); }
@@ -619,18 +660,31 @@
         }
 
         async function removeSilence(blob) {
-            let threshold = parseFloat(document.getElementById('silenceThreshold').value) || 0.01;
+            let threshold = parseFloat(document.getElementById('silenceThreshold').value) || 0.001;
             let actx = new (window.AudioContext || window.webkitAudioContext)({sampleRate: 16000});
             let arrayBuffer = await blob.arrayBuffer();
             let audioBuffer = await actx.decodeAudioData(arrayBuffer);
-            let rawData = audioBuffer.getChannelData(0), sr = audioBuffer.sampleRate, chunkSize = Math.floor(sr * 0.1), validChunks = [];
-            for(let i=0; i<rawData.length; i+=chunkSize) {
-                let chunk = rawData.subarray(i, i+chunkSize), sum=0;
+            let sr = audioBuffer.sampleRate, chunkSize = Math.floor(sr * 0.1);
+            
+            // SYSTEM AUDIO FIX: Mix all channels down to Mono. 
+            // So if system sound is on channel 1 and mic on 0, nothing gets lost!
+            let numChannels = audioBuffer.numberOfChannels;
+            let length = audioBuffer.length;
+            let mixedData = new Float32Array(length);
+            for(let c=0; c<numChannels; c++) {
+                let channelData = audioBuffer.getChannelData(c);
+                for(let i=0; i<length; i++) mixedData[i] += channelData[i] / numChannels;
+            }
+
+            let validChunks = [];
+            for(let i=0; i<length; i+=chunkSize) {
+                let chunk = mixedData.subarray(i, i+chunkSize), sum=0;
                 for(let j=0; j<chunk.length; j++) sum+=chunk[j]*chunk[j];
                 if(Math.sqrt(sum/chunk.length) > threshold) validChunks.push(chunk);
             }
             let origDur = audioBuffer.duration;
             if(validChunks.length === 0) return { blob: null, origDur, newDur: 0 }; // All silent
+            
             let totalLen = validChunks.reduce((a,c)=>a+c.length, 0), trimmed = new Float32Array(totalLen), offset=0;
             for(let c of validChunks) { trimmed.set(c, offset); offset+=c.length; }
             let newDur = totalLen / sr;
@@ -681,7 +735,8 @@
                 audioCtxLive = new (window.AudioContext || window.webkitAudioContext)();
                 liveDest = audioCtxLive.createMediaStreamDestination();
                 
-                let micCfg = els.micSelect.value !== 'default' ? {deviceId:{exact:els.micSelect.value}, noiseSuppression:true, echoCancellation:true} : {noiseSuppression:true, echoCancellation:true};
+                // Mic Selection Bug Fix (removed 'exact')
+                let micCfg = els.micSelect.value !== 'default' ? {deviceId: els.micSelect.value, noiseSuppression:true, echoCancellation:true} : {noiseSuppression:true, echoCancellation:true};
                 micStream = await navigator.mediaDevices.getUserMedia({audio:micCfg});
                 audioCtxLive.createMediaStreamSource(micStream).connect(liveDest);
 
@@ -715,7 +770,6 @@
                     let tSec = Math.floor((Date.now()-sessionStartTime-totalPauseDelta)/1000); let dStr = `${Math.floor(tSec/60).toString().padStart(2,'0')}:${(tSec%60).toString().padStart(2,'0')}`;
                     let wasAuto = isAutoCutting;
                     
-                    // Client-Side Silence Trimmer integration!
                     let trimmedRes = await removeSilence(rawBlob);
                     let trimmedBlob = trimmedRes ? trimmedRes.blob : null;
                     if(trimmedBlob) {
@@ -820,7 +874,7 @@
             });
         } loadHistory();
 
-        window.delEntry = (id, btn) => { if(!btn.classList.contains('confirm')){ btn.classList.add('confirm'); btn.innerHTML='<b>Sicher?</b>'; btn.style.background='var(--danger)'; btn.style.color='white'; btn.style.width="auto"; btn.style.padding="0 10px"; setTimeout(()=>{if(document.getElementById(`e-${id}`)){btn.classList.remove('confirm');btn.style.background='';btn.style.color='';btn.style.width="34px";btn.style.padding="0";btn.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';}},3000); return; } document.getElementById(`e-${id}`).remove(); let h = JSON.parse(localStorage.getItem("hist_master")||"[]"); localStorage.setItem("hist_master", JSON.stringify(h.filter(x=>x.id!=id))); };
+        window.delEntry = (id, btn) => { if(!btn.classList.contains('confirm')){ btn.classList.add('confirm'); btn.innerHTML='<b>Sicher?</b>'; btn.style.background='var(--danger)'; btn.style.color='white'; btn.style.width="auto"; btn.style.padding="0 10px"; setTimeout(()=>{if(document.getElementById(`e-${id}`)){btn.classList.remove('confirm');btn.style.background='';btn.style.color='';btn.style.width="34px";btn.style.padding="0";btn.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2v2"></path></svg>';}},3000); return; } document.getElementById(`e-${id}`).remove(); let h = JSON.parse(localStorage.getItem("hist_master")||"[]"); localStorage.setItem("hist_master", JSON.stringify(h.filter(x=>x.id!=id))); };
         window.clearAllHistory = () => { if(confirm("Gesamten Verlauf löschen?")) { localStorage.setItem("hist_master","[]"); window.location.reload(); } };
 
         window.dlEntryZip = async id => { if(!window.JSZip) return; showToast("Packe ZIP..."); let z=new JSZip(), e=document.getElementById(`e-${id}`), t=document.getElementById(`txt-${id}`).value, w=t?t.split(/\s+/).filter(x=>x).length:0; z.file(`text_${id}.txt`, t); z.file(`stats.txt`, `Wörter: ${w}\nToken: ${Math.ceil(w/0.75)}\nID: ${id}`); if(e.audioBlobs && e.audioBlobs.length > 0) e.audioBlobs.forEach((b,i)=>z.folder("audio").file(`rec_${i+1}.wav`, b)); let a=document.createElement('a'); a.href=URL.createObjectURL(await z.generateAsync({type:"blob"})); a.download=`Backup_${id}.zip`; a.click(); };
@@ -852,42 +906,81 @@
             btn.innerHTML=ori; btn.disabled=false;
         };
 
-        // File Upload (Audio Processing)
+        // File Upload (Advanced Chunk Processing & Trimming)
         els.fileUpload.addEventListener('change', async (e) => {
             const file = e.target.files[0]; if (!file) return;
             const id = Date.now(); const ts = new Date().toLocaleTimeString();
             
-            // UI Placeholder 
-            let d = document.createElement('div'); d.className='entry'; d.id=`e-${id}`; d.innerHTML = `
-                <div class="entry-header">
-                    <div class="entry-meta-info"><span class="date-badge"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ${ts} (Upload)</span></div>
-                </div><textarea id="txt-${id}" class="seamless-text" readonly>Verarbeite Datei (Trimme Stille)...</textarea>`;
+            let d = createEntryHTML(id, "Verarbeite Datei...", `${ts} (Upload)`, "...", 0, 0, []);
             els.feed.prepend(d); els.fileUpload.value = '';
 
             try {
-                let trimmedRes = await removeSilence(file);
-                let trimmed = trimmedRes ? trimmedRes.blob : null;
-                if(!trimmed) trimmed = file; // Fallback falls komplett stumm
+                let actx = new (window.AudioContext || window.webkitAudioContext)({sampleRate: 16000});
+                let arrayBuffer = await file.arrayBuffer();
+                let audioBuffer = await actx.decodeAudioData(arrayBuffer);
                 
-                let newDur = trimmedRes ? trimmedRes.newDur : 0;
-                let dStr = `${Math.floor(newDur/60).toString().padStart(2,'0')}:${(Math.floor(newDur)%60).toString().padStart(2,'0')}`;
+                let threshold = parseFloat(document.getElementById('silenceThreshold').value) || 0.001;
+                let sr = audioBuffer.sampleRate; let chunkSize = Math.floor(sr * 0.1);
                 
-                let ta = document.getElementById(`txt-${id}`); ta.value = "Transkribiere...";
-                let fd = new FormData(); fd.append("file", trimmed, "audio.wav"); fd.append("model", "whisper-1");
-                let res = await fetch("https://api.openai.com/v1/audio/transcriptions", { method: "POST", headers: { "Authorization": `Bearer ${els.apiKey.value}` }, body: fd });
-                let data = await res.json();
-                if (res.ok) { 
-                    let w = data.text.split(/\s+/).filter(x=>x).length;
-                    let cost = (newDur/60)*0.6; 
-                    
-                    let finalEl = createEntryHTML(id, data.text, `${ts} (Upload)`, dStr, w, cost, [trimmed]);
-                    d.replaceWith(finalEl);
-                    autoResizeText(finalEl.querySelector('textarea')); 
-                    
-                    let h = JSON.parse(localStorage.getItem("hist_master")||"[]"); h.push({id:id, text:data.text, ts:`${ts} (Upload)`, cost:cost, durationStr:dStr}); localStorage.setItem("hist_master", JSON.stringify(h));
-                    tryCopy(data.text, true);
-                } else ta.value = `Error: ${data.error?.message}`;
-            } catch(err) { document.getElementById(`txt-${id}`).value = `Fehler: ${err.message}`; }
+                // Mixdown to Mono
+                let numChannels = audioBuffer.numberOfChannels; let length = audioBuffer.length;
+                let mixedData = new Float32Array(length);
+                for(let c=0; c<numChannels; c++) {
+                    let channelData = audioBuffer.getChannelData(c);
+                    for(let i=0; i<length; i++) mixedData[i] += channelData[i] / numChannels;
+                }
+                
+                // Trim Silence
+                let validChunks = [];
+                for(let i=0; i<length; i+=chunkSize) {
+                    let chunk = mixedData.subarray(i, i+chunkSize), sum=0;
+                    for(let j=0; j<chunk.length; j++) sum+=chunk[j]*chunk[j];
+                    if(Math.sqrt(sum/chunk.length) > threshold) validChunks.push(chunk);
+                }
+                
+                if(validChunks.length === 0) { document.getElementById(`txt-${id}`).value = "Datei ist komplett stumm."; return; }
+                
+                let totalLen = validChunks.reduce((a,c)=>a+c.length, 0);
+                let trimmedData = new Float32Array(totalLen); let offset = 0;
+                for(let c of validChunks) { trimmedData.set(c, offset); offset+=c.length; }
+                
+                // Slice into Blocks based on Auto-Cut settings
+                let maxDurSec = cutOptions[currentCutIdx] > 0 ? cutOptions[currentCutIdx] * 60 : Infinity;
+                let maxSamples = maxDurSec * sr;
+                
+                let bloblist = [];
+                for(let i=0; i<trimmedData.length; i+=maxSamples) {
+                    let slice = trimmedData.subarray(i, Math.min(i+maxSamples, trimmedData.length));
+                    bloblist.push(encodeWAV(slice, sr));
+                }
+                
+                document.getElementById(`txt-${id}`).value = `Transkribiere ${bloblist.length} Teil(e)...`;
+                
+                let fullText = ""; let i = 1;
+                for(let b of bloblist) {
+                    let fd = new FormData(); fd.append("file", b, "audio.wav"); fd.append("model", "whisper-1");
+                    let res = await fetch("https://api.openai.com/v1/audio/transcriptions", { method: "POST", headers: { "Authorization": `Bearer ${els.apiKey.value}` }, body: fd });
+                    let data = await res.json();
+                    if(res.ok) fullText += (i>1?'\n---\n':'') + data.text;
+                    else fullText += (i>1?'\n---\n':'') + `[Fehler in Teil ${i}: ${data.error?.message}]`;
+                    i++;
+                    document.getElementById(`txt-${id}`).value = fullText;
+                    autoResizeText(document.getElementById(`txt-${id}`));
+                }
+                
+                let totalDur = totalLen / sr;
+                let dStr = `${Math.floor(totalDur/60).toString().padStart(2,'0')}:${(Math.floor(totalDur)%60).toString().padStart(2,'0')}`;
+                let w = fullText.split(/\s+/).filter(x=>x).length;
+                let cost = (totalDur/60)*0.6;
+                
+                let finalEl = createEntryHTML(id, fullText, `${ts} (Upload)`, dStr, w, cost, bloblist);
+                document.getElementById(`e-${id}`).replaceWith(finalEl);
+                autoResizeText(finalEl.querySelector('textarea'));
+                
+                let h = JSON.parse(localStorage.getItem("hist_master")||"[]"); h.push({id:id, text:fullText, ts:`${ts} (Upload)`, cost:cost, durationStr:dStr}); localStorage.setItem("hist_master", JSON.stringify(h));
+                tryCopy(fullText, true);
+
+            } catch (e) { document.getElementById(`txt-${id}`).value = "Fehler: " + e.message; }
         });
 
     </script>
