@@ -11,6 +11,7 @@
 
     <!-- PWA Manifest Hook -->
     <link id="pwa-manifest" rel="manifest">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='25' fill='%23a18cd1'/%3E%3Cpath d='M50 25a12 12 0 0 0-12 12v15a12 12 0 0 0 24 0V37a12 12 0 0 0-12-12zM70 52v2a20 20 0 0 1-40 0v-2h-5v2a25 25 0 0 0 22 24.8V85h6v-6.2a25 25 0 0 0 22-24.8v-2h-5z' fill='white'/%3E%3C/svg%3E">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" id="theme-color-meta" content="#bfa8e6">
@@ -19,9 +20,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
     <style>
+        /* === RESET & LAYOUT === */
+        * {
+            -webkit-tap-highlight-color: transparent; /* No blue selection boxes on mobile */
+        }
+
         html, body {
             margin: 0; padding: 0; width: 100vw; height: 100vh; height: 100dvh;
-            /* STRICT LOCK: Prevents double scrollbars */
             overflow: hidden; 
             font-family: 'Inter', -apple-system, sans-serif;
             background: var(--page-bg); transition: background 0.5s ease;
@@ -77,7 +82,6 @@
         .scroll-zone {
             flex: 1 1 auto; overflow-y: auto; overflow-x: hidden;
             padding-top: 15px; padding-bottom: 60px;
-            /* Mask starts exactly where header ends */
             -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 20px);
             mask-image: linear-gradient(to bottom, transparent 0px, black 20px);
         }
@@ -108,7 +112,7 @@
         h1 {
             margin: 0; font-size: 1.2rem; font-weight: 800; letter-spacing: -0.5px;
             background: linear-gradient(90deg, var(--c1), var(--c2)); -webkit-background-clip: text; color: transparent;
-            filter: saturate(0.65) opacity(0.9); /* Pastel Look */ display: flex; align-items: center; gap: 8px;
+            filter: saturate(0.65) opacity(0.9); display: flex; align-items: center; gap: 8px;
         }
 
         .version-tag { font-size: 0.5em; font-weight: 800; color: var(--text); background: rgba(128, 128, 128, 0.2); border-radius: 4px; padding: 2px 6px; line-height: 1;}
@@ -119,13 +123,26 @@
             background: var(--btn-glass); border: 1px solid var(--glass-border); color: var(--text);
             display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;
         }
-        .icon-btn { border-radius: 50%; width: 44px; height: 44px; }
-        .mini-btn { border-radius: 12px; width: 34px; height: 34px; }
+        .icon-btn { border-radius: 50%; width: 44px; height: 44px; flex-shrink: 0; }
+        .mini-btn { border-radius: 12px; width: 34px; height: 34px; flex-shrink: 0; }
         .icon-btn svg, .mini-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
         .icon-btn:hover, .mini-btn:hover { background: var(--btn-hover); transform: scale(1.05); }
         .icon-btn.inactive { opacity: 0.5; background: transparent; border-color: transparent; }
         .icon-btn.active { color: var(--accent); border-color: var(--accent); background: rgba(255,255,255,0.4); }
         .mini-btn.danger { color: var(--danger); } .mini-btn.safe { color: var(--safe); } .mini-btn.action { color: var(--accent); }
+
+        /* Mic Dropdown Pill */
+        .mic-container {
+            display: flex; align-items: center; gap: 5px; background: var(--btn-glass);
+            border: 1px solid var(--glass-border); border-radius: 22px; padding: 0 10px 0 5px;
+            height: 44px; box-sizing: border-box;
+        }
+        .mic-container svg { width: 18px; height: 18px; stroke: var(--text); fill: none; stroke-width: 2; flex-shrink: 0; margin-left: 5px; }
+        .mic-container select {
+            background: transparent; border: none; color: var(--text); outline: none; font-size: 0.85rem; font-weight: 600;
+            width: 120px; text-overflow: ellipsis; cursor: pointer; font-family: inherit;
+        }
+        .mic-container select option { background: var(--page-bg); color: var(--text); }
 
         .timer {
             font-size: 3.5rem; font-weight: 300; letter-spacing: 2px; line-height: 1; font-variant-numeric: tabular-nums;
@@ -260,7 +277,7 @@
                 <div class="dev-row" style="margin-bottom:20px; border-bottom:1px solid var(--glass-border); padding-bottom:15px;">
                     <div style="display:flex; flex-direction:column;">
                         <span style="font-weight:bold; color:var(--accent);">Silence Threshold (Stille-Schnitt)</span>
-                        <span style="font-size:0.7rem; font-weight:normal;">Schneidet Stille vor API-Upload. (0.001 = fein)</span>
+                        <span style="font-size:0.7rem; font-weight:normal;">Schneidet Stille vor API-Upload.</span>
                     </div>
                     <input type="number" id="silenceThreshold" value="0.001" step="0.0005" min="0.0001" max="0.05" style="width:70px; padding:5px; border-radius:10px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--text); text-align:center;">
                 </div>
@@ -302,7 +319,7 @@
                     
                     <div class="title-container">
                         <div class="title-pill">
-                            <h1>Simple Transcription <span class="version-tag">V101</span></h1>
+                            <h1>Simple Transcription <span class="version-tag">V103</span></h1>
                         </div>
                     </div>
 
@@ -315,10 +332,12 @@
                         <button class="icon-btn" onclick="dlAllZip()" title="ZIP Download"><svg viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg></button>
                         <button class="icon-btn" onclick="showQR()" title="App Teilen"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg></button>
                         
-                        <div class="icon-btn" title="Mikrofon" style="position:relative;">
+                        <!-- NEW STYLED MIC DROPDOWN -->
+                        <div class="mic-container">
                             <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-                            <select id="micSelect" style="position:absolute; inset:0; opacity:0; cursor:pointer;"><option value="default">Default</option></select>
+                            <select id="micSelect"><option value="default">Default</option></select>
                         </div>
+                        
                         <button class="icon-btn inactive" id="sysAudioBtn" onclick="toggleSysAudio()" title="System Sound (PC)"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg></button>
                         <button class="icon-btn" onclick="clearAllHistory()" title="Alle löschen"><svg viewBox="0 0 24 24" style="color:var(--danger)"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
                         <button class="icon-btn inactive" id="btnAutoSave" onclick="toggleSave()" title="Auto-Save"><svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg></button>
@@ -365,7 +384,8 @@
     <input type="file" id="fileUpload" hidden accept="audio/*, video/*, .flac, .m4a, .mp3, .mp4, .mpeg, .mpga, .oga, .ogg, .wav, .webm, .opus, .amr">
 
     <script>
-        // === PWA Service Worker Hook for "Install App" ===
+        // === PWA Service Worker Hook (Manifest Only) ===
+        // Inject a fully valid manifest. Note: Android Chrome requires a valid 'start_url' and 'icons'.
         (function initPWA() {
             const manifest = {
                 name: "Simple Transcription",
@@ -374,16 +394,9 @@
                 display: "standalone",
                 background_color: "#050505",
                 theme_color: "#bfa8e6",
-                icons: [{ src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjOTlkZGZmIi8+PHBhdGggZD0iTTUwIDIwYTEwIDEwIDAgMCAwLTEwIDEwdjI1YTEwIDEwIDAgMCAwIDIwIDBWMzBhMTAgMTAgMCAwIDAtMTAtMTB6TTY4IDU1djJhMTggMTggMCAwIDEtMzYgMHYtMmgtNXYyYTIzIDIzIDAgMCAwIDIxIDIydjhoMTB2LThhMjMgMjMgMCAwIDAgMjEtMjJ2LTJoLTV6IiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjk1Ii8+PC9zdmc+", sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" }]
+                icons: [{ src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='25' fill='%23a18cd1'/%3E%3Cpath d='M50 25a12 12 0 0 0-12 12v15a12 12 0 0 0 24 0V37a12 12 0 0 0-12-12zM70 52v2a20 20 0 0 1-40 0v-2h-5v2a25 25 0 0 0 22 24.8V85h6v-6.2a25 25 0 0 0 22-24.8v-2h-5z' fill='white'/%3E%3C/svg%3E", sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" }]
             };
-            document.getElementById('pwa-manifest').href = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(manifest));
-
-            // Dummy SW trick to make Chrome prompt the "Install App" button instead of just a shortcut
-            if ('serviceWorker' in navigator) {
-                const swCode = `self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>self.clients.claim());self.addEventListener('fetch',e=>{});`;
-                const swBlob = new Blob([swCode], {type:'application/javascript'});
-                navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(e=>{});
-            }
+            document.getElementById('pwa-manifest').href = "data:application/manifest+json;charset=utf-8," + encodeURIComponent(JSON.stringify(manifest));
         })();
 
         // === CORE STATE ===
@@ -477,9 +490,9 @@
         // Beautiful Circular Arcs for Auto-Cut
         function updateCutBtn() {
             let arcs = '';
-            if(currentCutIdx >= 1) arcs += `<path d="M 6 17 A 8 8 0 0 0 18 17" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>`;
-            if(currentCutIdx >= 2) arcs += `<path d="M 19 13 A 8 8 0 0 0 13 5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>`;
-            if(currentCutIdx >= 3) arcs += `<path d="M 11 5 A 8 8 0 0 0 5 13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>`;
+            if(currentCutIdx >= 1) arcs += `<path d="M 5 18 A 10 10 0 0 0 19 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>`;
+            if(currentCutIdx >= 2) arcs += `<path d="M 21 14 A 10 10 0 0 0 13 2" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>`;
+            if(currentCutIdx >= 3) arcs += `<path d="M 11 2 A 10 10 0 0 0 3 14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>`;
             
             let svg = `<path d="M8 8L16 16M8 16L16 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="8" cy="8" r="2" stroke="currentColor" fill="none" stroke-width="2"/><circle cx="8" cy="16" r="2" stroke="currentColor" fill="none" stroke-width="2"/>${arcs}`;
             els.btnAutoCut.innerHTML = `<svg viewBox="0 0 24 24">${svg}</svg>`;
@@ -527,14 +540,48 @@
                 let btn = document.createElement('div'); btn.className = 'color-thumb';
                 btn.style.left = (hue/360*100)+'%'; btn.style.backgroundColor = `hsl(${hue},100%,50%)`;
                 
-                // Touch Fix for Android
-                let startX=0, startHue=0, moved=false, touchStart=0;
-                btn.addEventListener('touchstart', e => { e.stopPropagation(); e.preventDefault(); startX = e.touches[0].clientX; startHue = hue; moved = false; touchStart = Date.now(); }, {passive:false});
-                btn.addEventListener('touchmove', e => { e.stopPropagation(); e.preventDefault(); let diffX = e.touches[0].clientX - startX; if(Math.abs(diffX)>3) { moved = true; isDraggingStudio = true; } let rect = els.huePicker.getBoundingClientRect(); let nHue = Math.max(0, Math.min(360, startHue + (diffX / rect.width)*360)); customHues[idx] = nHue; btn.style.left = (nHue/360*100)+'%'; btn.style.backgroundColor = `hsl(${nHue},100%,50%)`; updateHue(); }, {passive:false});
-                btn.addEventListener('touchend', e => { e.stopPropagation(); e.preventDefault(); if (!moved && (Date.now()-touchStart)<400 && customHues.length>1) { customHues.splice(idx,1); renderThumbs(); updateHue(); } localStorage.setItem('custom_hues_v84', JSON.stringify(customHues)); setTimeout(()=>isDraggingStudio=false, 100); });
+                // Pure Absolute Coordinate Logic for Touch & Mouse (Fix for jumping)
+                let moved = false; let touchStart = 0;
                 
-                // Mouse Fix
-                btn.onmousedown = e => { e.stopPropagation(); e.preventDefault(); startX=e.clientX; startHue=hue; moved=false; touchStart=Date.now(); let move = ev => { if(Math.abs(ev.clientX-startX)>3) { moved=true; isDraggingStudio=true; } let r = els.huePicker.getBoundingClientRect(); let nHue = Math.max(0, Math.min(360, startHue + ((ev.clientX-startX)/r.width)*360)); customHues[idx]=nHue; btn.style.left=(nHue/360*100)+'%'; btn.style.backgroundColor=`hsl(${nHue},100%,50%)`; updateHue(); }; let up = ev => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); if(!moved && (Date.now()-touchStart)<400 && customHues.length>1){ customHues.splice(idx,1); renderThumbs(); updateHue(); } localStorage.setItem('custom_hues_v84', JSON.stringify(customHues)); setTimeout(()=>isDraggingStudio=false, 100); }; window.addEventListener('mousemove', move); window.addEventListener('mouseup', up); };
+                const onStart = e => {
+                    e.stopPropagation(); e.preventDefault();
+                    moved = false; touchStart = Date.now();
+                };
+                
+                const onMove = e => {
+                    e.stopPropagation(); e.preventDefault();
+                    moved = true; isDraggingStudio = true;
+                    let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    let rect = els.huePicker.getBoundingClientRect();
+                    let nHue = Math.max(0, Math.min(360, ((clientX - rect.left) / rect.width) * 360));
+                    customHues[idx] = nHue;
+                    btn.style.left = (nHue/360*100)+'%'; btn.style.backgroundColor = `hsl(${nHue},100%,50%)`;
+                    updateHue();
+                };
+                
+                const onEnd = e => {
+                    e.stopPropagation(); e.preventDefault();
+                    if (!moved && (Date.now()-touchStart)<400 && customHues.length>1) {
+                        customHues.splice(idx,1); renderThumbs(); updateHue();
+                    }
+                    localStorage.setItem('custom_hues_v84', JSON.stringify(customHues));
+                    setTimeout(()=>isDraggingStudio=false, 100);
+                    // Clear listeners if mouse
+                    window.onmousemove = null; window.onmouseup = null;
+                };
+
+                // Touch Events
+                btn.addEventListener('touchstart', onStart, {passive:false});
+                btn.addEventListener('touchmove', onMove, {passive:false});
+                btn.addEventListener('touchend', onEnd);
+                
+                // Mouse Events
+                btn.onmousedown = e => {
+                    onStart(e);
+                    window.onmousemove = onMove;
+                    window.onmouseup = onEnd;
+                };
+                
                 tc.appendChild(btn);
             });
         }
@@ -665,25 +712,36 @@
             let arrayBuffer = await blob.arrayBuffer();
             let audioBuffer = await actx.decodeAudioData(arrayBuffer);
             let sr = audioBuffer.sampleRate, chunkSize = Math.floor(sr * 0.1);
-            
-            // SYSTEM AUDIO FIX: Mix all channels down to Mono. 
-            // So if system sound is on channel 1 and mic on 0, nothing gets lost!
             let numChannels = audioBuffer.numberOfChannels;
             let length = audioBuffer.length;
-            let mixedData = new Float32Array(length);
-            for(let c=0; c<numChannels; c++) {
-                let channelData = audioBuffer.getChannelData(c);
-                for(let i=0; i<length; i++) mixedData[i] += channelData[i] / numChannels;
-            }
 
             let validChunks = [];
+            // FIX: Evaluate max energy across all channels individually so System Sound isn't diluted
             for(let i=0; i<length; i+=chunkSize) {
-                let chunk = mixedData.subarray(i, i+chunkSize), sum=0;
-                for(let j=0; j<chunk.length; j++) sum+=chunk[j]*chunk[j];
-                if(Math.sqrt(sum/chunk.length) > threshold) validChunks.push(chunk);
+                let maxRms = 0;
+                let actualChunkSize = Math.min(chunkSize, length - i);
+                
+                for(let c=0; c<numChannels; c++) {
+                    let channelData = audioBuffer.getChannelData(c);
+                    let sum = 0;
+                    for(let j=0; j<actualChunkSize; j++) sum += channelData[i+j] * channelData[i+j];
+                    let rms = Math.sqrt(sum / actualChunkSize);
+                    if(rms > maxRms) maxRms = rms;
+                }
+                
+                if(maxRms > threshold) {
+                    // Mixdown to Mono for the final WAV
+                    let mixed = new Float32Array(actualChunkSize);
+                    for(let c=0; c<numChannels; c++) {
+                        let channelData = audioBuffer.getChannelData(c);
+                        for(let j=0; j<actualChunkSize; j++) mixed[j] += channelData[i+j] / numChannels;
+                    }
+                    validChunks.push(mixed);
+                }
             }
+            
             let origDur = audioBuffer.duration;
-            if(validChunks.length === 0) return { blob: null, origDur, newDur: 0 }; // All silent
+            if(validChunks.length === 0) return { blob: null, origDur, newDur: 0 };
             
             let totalLen = validChunks.reduce((a,c)=>a+c.length, 0), trimmed = new Float32Array(totalLen), offset=0;
             for(let c of validChunks) { trimmed.set(c, offset); offset+=c.length; }
@@ -716,9 +774,10 @@
 
         function updateUIBadges() { els.badgeListen.style.display = (isRecording && !isPaused) ? 'flex' : 'none'; els.badgeTranscribe.style.display = pendingTranscriptions > 0 ? 'flex' : 'none'; }
 
-        async function stopHardware() {
+        function stopHardware() {
             if(micStream) { micStream.getTracks().forEach(t=>t.stop()); micStream = null; }
             if(sysStream) { sysStream.getTracks().forEach(t=>t.stop()); sysStream = null; }
+            if(audioCtxLive) { audioCtxLive.close(); audioCtxLive = null; }
         }
 
         window.toggleMain = () => { if(!isRecording) startRec(); else stopRec(); };
@@ -735,7 +794,7 @@
                 audioCtxLive = new (window.AudioContext || window.webkitAudioContext)();
                 liveDest = audioCtxLive.createMediaStreamDestination();
                 
-                // Mic Selection Bug Fix (removed 'exact')
+                // Allow flexible device constraints so 'exact' doesn't trigger Hardware Errors
                 let micCfg = els.micSelect.value !== 'default' ? {deviceId: els.micSelect.value, noiseSuppression:true, echoCancellation:true} : {noiseSuppression:true, echoCancellation:true};
                 micStream = await navigator.mediaDevices.getUserMedia({audio:micCfg});
                 audioCtxLive.createMediaStreamSource(micStream).connect(liveDest);
@@ -839,7 +898,7 @@
                         <button class="mini-btn action" onclick="dlEntryZip(${id})" title="ZIP Download"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 8v13H3V8"></path><polyline points="1 3 23 3 23 8 1 8 1 3"></polyline><line x1="10" y1="12" x2="14" y2="12"></line></svg></button>
                         ${rBtn}
                         <button class="mini-btn" onclick="navigator.clipboard.writeText(document.getElementById('txt-${id}').value); showToast('Kopiert!');" title="Kopieren"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg></button>
-                        <button class="mini-btn danger" onclick="delEntry(${id},this)" title="Löschen"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                        <button class="mini-btn danger" onclick="delEntry(${id},this)" title="Löschen"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2v2"></path></svg></button>
                     </div>
                 </div>
                 <textarea id="txt-${id}" class="seamless-text" oninput="autoResizeText(this)">${txt}</textarea>
