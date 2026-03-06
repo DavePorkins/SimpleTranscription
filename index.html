@@ -9,7 +9,7 @@
     <meta http-equiv="Expires" content="0">
     <title>Simple Transcription</title>
 
-    <!-- Dynamic PWA Manifest & Favicon (Injected via JS below) -->
+    <!-- Dynamic PWA Manifest & Favicon -->
     <link id="pwa-manifest" rel="manifest">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='25' fill='%23a18cd1'/%3E%3Cpath d='M50 25a12 12 0 0 0-12 12v15a12 12 0 0 0 24 0V37a12 12 0 0 0-12-12zM70 52v2a20 20 0 0 1-40 0v-2h-5v2a25 25 0 0 0 22 24.8V85h6v-6.2a25 25 0 0 0 22-24.8v-2h-5z' fill='white'/%3E%3C/svg%3E">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -108,7 +108,7 @@
 
         h1 {
             margin: 0; font-size: 1.2rem; font-weight: 800; letter-spacing: -0.5px;
-            background: linear-gradient(90deg, var(--c1), var(--c2)); -webkit-background-clip: text; color: transparent;
+            background: linear-gradient(90deg, var(--c1), var(--c2)); -webkit-background-clip: text; background-clip: text; color: transparent;
             filter: saturate(0.65) opacity(0.9); display: flex; align-items: center; gap: 8px;
         }
 
@@ -122,16 +122,33 @@
             position: relative;
         }
         .icon-btn { border-radius: 50%; width: 44px; height: 44px; flex-shrink: 0; }
-        .mini-btn { border-radius: 12px; width: 34px; height: 34px; flex-shrink: 0; }
+        .mini-btn { border-radius: 12px; width: 100%; height: 100%; flex-shrink: 0; }
         .icon-btn svg, .mini-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        
         .icon-btn:hover, .mini-btn:hover { background: var(--btn-hover); transform: scale(1.05); }
-        .icon-btn.inactive { opacity: 0.5; background: transparent; border-color: transparent; }
-        .icon-btn.active { color: var(--accent); border-color: var(--accent); background: rgba(255,255,255,0.4); }
+        /* Active Toggles */
+        .icon-btn.active { color: var(--accent); background: var(--btn-glass); box-shadow: 0 0 12px rgba(161, 140, 209, 0.4); border-color: var(--accent); }
+        
         .mini-btn.danger { color: var(--danger); } .mini-btn.safe { color: var(--safe); } .mini-btn.action { color: var(--accent); }
 
+        .mic-container {
+            display: flex; align-items: center; gap: 5px; background: var(--btn-glass);
+            border: 1px solid var(--glass-border); border-radius: 22px; padding: 0 10px 0 5px;
+            height: 44px;
+        }
+        .mic-container svg { width: 18px; height: 18px; stroke: var(--text); fill: none; stroke-width: 2; flex-shrink: 0; margin-left: 5px; }
+        .mic-container select {
+            background: transparent; border: none; color: var(--text); outline: none; font-size: 0.85rem; font-weight: 600;
+            width: 120px; text-overflow: ellipsis; cursor: pointer; font-family: inherit;
+        }
+        .mic-container select option { background: var(--page-bg); color: var(--text); }
+
+        /* The Hero Timer */
         .timer {
-            font-size: 3.5rem; font-weight: 300; letter-spacing: 2px; line-height: 1; font-variant-numeric: tabular-nums;
-            color: var(--text); text-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); margin: 5px 0 15px 0; text-align: center;
+            font-size: 4.2rem; font-weight: 800; letter-spacing: 2px; line-height: 1; font-variant-numeric: tabular-nums;
+            background: linear-gradient(135deg, var(--c1), var(--c2)); -webkit-background-clip: text; background-clip: text; color: transparent;
+            filter: drop-shadow(0 4px 15px rgba(0, 0, 0, 0.15)); margin: 0 0 15px 0; text-align: center;
+            display: none; /* Hidden when idle */
         }
 
         .rec-controls { display: flex; justify-content: center; align-items: center; gap: 20px; }
@@ -139,23 +156,29 @@
         .btn-circle {
             border: 1px solid var(--glass-border); cursor: pointer; display: flex; align-items: center; justify-content: center;
             background: var(--btn-glass); color: var(--text); border-radius: 50%;
-            width: 55px; height: 55px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); backdrop-filter: blur(10px); transition: all 0.3s;
+            width: 55px; height: 55px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); backdrop-filter: blur(10px); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         .btn-circle svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 2; }
         .btn-circle:hover { transform: scale(1.05); background: var(--btn-hover); }
         .btn-circle:active { transform: scale(0.9); }
 
-        #btnMain { 
-            width: 75px; height: 75px; position: relative; overflow: hidden; z-index: 1; border: none; 
-            box-shadow: 0 0 20px rgba(161, 140, 209, 0.4); /* Idle glow */
+        /* Magic Record Button */
+        #btnMain { position: relative; overflow: hidden; z-index: 1; border: none; }
+        #btnMain svg { width: 34px; height: 34px; transition: all 0.3s; }
+        
+        #btnMain.idle { 
+            width: 85px; height: 85px; 
+            box-shadow: 0 0 25px var(--c1); 
+            animation: pulse-idle 2.5s infinite alternate;
         }
+        @keyframes pulse-idle { from { box-shadow: 0 0 15px rgba(161, 140, 209, 0.5); } to { box-shadow: 0 0 35px rgba(251, 194, 235, 0.8); } }
+        
         #btnMain::before {
             content: ''; position: absolute; inset: -20%; background: linear-gradient(135deg, var(--c1), var(--c2), var(--c1));
-            filter: blur(12px); opacity: 0.35; z-index: -1; animation: drift 4s ease infinite alternate;
+            filter: blur(12px); opacity: 0.4; z-index: -1; animation: drift 4s ease infinite alternate;
         }
-        #btnMain svg { width: 34px; height: 34px; transition: all 0.3s; }
-        #btnMain.state-recording { border-radius: 24px; color: var(--danger); box-shadow: 0 4px 20px rgba(255, 71, 87, 0.4); }
-        #btnMain.state-recording svg { fill: currentColor; stroke: none; }
+        #btnMain.state-recording { width: 55px; height: 55px; border-radius: 20px; color: var(--danger); box-shadow: 0 4px 20px rgba(255, 71, 87, 0.4); animation: none; }
+        #btnMain.state-recording svg { fill: currentColor; stroke: none; width: 24px; height: 24px; }
         #btnMain.state-recording::before { background: var(--danger); opacity: 0.15; }
         @keyframes drift { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
@@ -164,27 +187,38 @@
         .side-btn#btnCancel { color: var(--danger); }
         .side-btn#btnPause.state-paused { background: var(--warn); color: white; border-color: transparent; }
 
-        .active-top-bar, .entry-header { display: flex; flex-direction: column; align-items: center; width: 100%; gap: 8px; margin-bottom: 10px; }
-        .status-container, .stats-badges, .entry-actions { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; align-items: center; }
+        /* 2x2 Header Layout for Entries */
+        .entry-header-grid {
+            display: flex; gap: 10px; width: 100%; align-items: stretch; flex-wrap: wrap; margin-bottom: 10px;
+        }
+        .stats-grid {
+            flex: 1; min-width: 200px; display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 6px;
+        }
+        .actions-grid {
+            display: grid; grid-template-columns: repeat(2, 40px); grid-template-rows: repeat(2, 40px); gap: 6px; flex-shrink: 0;
+            margin-left: auto;
+        }
         
+        .stat-pill { 
+            font-size: 0.75rem; font-weight: 700; color: var(--text-muted); 
+            background: var(--badge-bg); padding: 6px 10px; border-radius: 12px; 
+            border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: flex-start; gap: 6px; 
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
         .status-badge {
-            font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;
-            padding: 4px 12px; border-radius: 20px; background: var(--badge-bg); border: 1px solid var(--glass-border); color: var(--text);
+            font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px; justify-content: center;
+            padding: 6px 15px; border-radius: 20px; background: var(--badge-bg); border: 1px solid var(--glass-border); color: var(--text);
+            width: 100%; margin-bottom: 10px;
         }
         .status-badge.highlight { color: var(--accent); border-color: var(--accent); animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
-
-        /* Compact Stat Pills */
-        .stat-pill { 
-            font-size: 0.75rem; font-weight: 700; color: var(--text-muted); 
-            background: var(--badge-bg); padding: 3px 8px; border-radius: 8px; 
-            border: 1px solid var(--glass-border); display: inline-flex; align-items: center; gap: 4px; 
-        }
 
         .seamless-text {
             width: 100%; background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text);
             font-family: inherit; resize: none; min-height: 80px; height: auto; overflow-y: hidden;
             line-height: 1.6; font-size: 15px; outline: none; padding: 15px; border-radius: 20px;
+            transition: opacity 0.3s;
         }
 
         details.custom-accordion { background: var(--badge-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 10px 15px; width: 100%; margin-top: 10px; }
@@ -220,9 +254,9 @@
             padding: 12px 30px; border-radius: 50px; font-weight: 800; opacity: 0; z-index: 9999;
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.2s;
-            display: flex; align-items: center; gap: 8px; pointer-events: none;
+            display: flex; align-items: center; gap: 8px; pointer-events: none; cursor: pointer;
         }
-        #toast.visible { transform: translate(-50%, 0); opacity: 1; }
+        #toast.visible { transform: translate(-50%, 0); opacity: 1; pointer-events: all; }
     </style>
 </head>
 
@@ -310,35 +344,33 @@
                     
                     <div class="title-container">
                         <div class="title-pill">
-                            <h1>Simple Transcription <span class="version-tag">V105</span></h1>
+                            <h1>Simple Transcription <span class="version-tag">V106</span></h1>
                         </div>
                     </div>
 
                     <div class="header-actions">
                         <button class="icon-btn" onclick="toggleModal('apiModal')" title="API Key"><svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg></button>
                         <button class="icon-btn" onclick="cycleTheme()" title="Theme" id="themeIcon"></button>
-                        <!-- Randomize Setup Palette Button -->
-                        <button class="icon-btn" onclick="randomizeSetup()" title="Randomize Look"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M12 21a9 9 0 0 1-6.6-2.6C5 18 5 17 5 16s1-2 2-2 2 1 2 2 1 2 2 2 1-1 1-2v-1a2 2 0 0 0-2-2H8a2 2 0 0 1-2-2V9a6 6 0 0 1 12 0v2a4 4 0 0 1-4 4h-1a1 1 0 0 0-1 1v3a2 2 0 0 0 2 2z"></path><circle cx="7.5" cy="11.5" r=".5" fill="currentColor"></circle><circle cx="10.5" cy="8.5" r=".5" fill="currentColor"></circle><circle cx="14.5" cy="8.5" r=".5" fill="currentColor"></circle><circle cx="17.5" cy="11.5" r=".5" fill="currentColor"></circle></svg></button>
+                        <!-- Randomize Setup (Magic Wand) -->
+                        <button class="icon-btn" onclick="randomizeSetup()" title="Randomize Look"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M15 4V2"></path><path d="M15 16v-2"></path><path d="M8 9h2"></path><path d="M20 9h2"></path><path d="M17.8 11.8L19 13"></path><path d="M15 9h.01"></path><path d="M17.8 6.2L19 5"></path><path d="m3 21 9-9"></path><path d="M12.2 6.2L11 5"></path></svg></button>
                         <button class="icon-btn" onclick="toggleModal('devPanel')" title="Studio"><svg viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r="2.5"></circle><circle cx="19" cy="13" r="2"></circle><circle cx="7" cy="8" r="2"></circle><circle cx="5" cy="15" r="2"></circle><circle cx="11" cy="19" r="2"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.3-.5-.8-.5-1.3 0-1.1.9-2 2-2h2.4c3.1 0 5.6-2.5 5.6-5.6C23 6.4 18 2 12 2z"></path></svg></button>
                         <button class="icon-btn" onclick="window.location.reload()" title="App neu laden"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg></button>
                         <button class="icon-btn" onclick="document.getElementById('fileUpload').click()" title="Audio hochladen"><svg viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></button>
-                        <button class="icon-btn" onclick="dlAllZip()" title="ZIP Download"><svg viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg></button>
-                        <button class="icon-btn" onclick="showQR()" title="App Teilen"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg></button>
                         
                         <div class="icon-btn" title="Mikrofon Auswahl" style="position:relative;">
                             <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
                             <select id="micSelect" style="position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;"><option value="default">Default</option></select>
                         </div>
                         
-                        <button class="icon-btn inactive" id="sysAudioBtn" onclick="toggleSysAudio()" title="System Sound (PC)"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg></button>
-                        <button class="icon-btn inactive" id="btnAutoSave" onclick="toggleSave()" title="Auto-Save"><svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg></button>
+                        <button class="icon-btn" id="sysAudioBtn" onclick="toggleSysAudio()" title="System Sound (PC)"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg></button>
+                        <button class="icon-btn" id="btnAutoSave" onclick="toggleSave()" title="Auto-Save"><svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg></button>
                         <button class="icon-btn" id="btnAutoCut" onclick="cycleAutoCut()" title="Auto-Cut"></button>
                     </div>
 
                     <div class="timer" id="timer">00:00</div>
                     <div class="rec-controls">
                         <button id="btnCancel" class="btn-circle side-btn" onclick="cancelRec(this)"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-                        <button id="btnMain" class="btn-circle" onclick="toggleMain()"><svg id="iconMain" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg></button>
+                        <button id="btnMain" class="btn-circle idle" onclick="toggleMain()"><svg id="iconMain" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg></button>
                         <button id="btnPause" class="btn-circle side-btn" onclick="togglePause()"><svg id="iconPause" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg></button>
                     </div>
                 </div>
@@ -349,17 +381,22 @@
             <div class="content-width">
                 <!-- LIVE RECORDING BLOCK -->
                 <div id="activeEntry" class="glass-panel" style="display:none; flex-direction:column; margin-bottom: 15px;">
-                    <div class="active-top-bar">
-                        <div class="status-container">
-                            <span class="status-badge" id="badgeListen"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg> Höre zu...</span>
-                            <span class="status-badge highlight" id="badgeTranscribe" style="display:none;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"></path></svg> Transkribiere...</span>
-                            <span class="status-badge" id="badgeCut" style="display:none; color:var(--warn); border-color:var(--warn);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line></svg> Cut...</span>
-                        </div>
-                        <div class="stats-badges" id="liveStatsContainer" style="width:100%; justify-content:center; margin-bottom:8px;">
+                    <span class="status-badge" id="badgeListen"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg> Höre zu...</span>
+                    <span class="status-badge highlight" id="badgeTranscribe" style="display:none;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"></path></svg> Transkribiere...</span>
+                    
+                    <div class="entry-header-grid">
+                        <div class="stats-grid">
                             <span class="stat-pill" id="liveStartTs"></span>
-                            <span class="stat-pill" id="liveWords"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> 0</span>
-                            <span class="stat-pill" id="liveTokens"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon><circle cx="12" cy="12" r="3"></circle></svg> 0</span>
-                            <span class="stat-pill" id="liveCost"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path></svg> 0.0</span>
+                            <span class="stat-pill" id="liveWords"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> 00:00 &nbsp;|&nbsp; <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> 0</span>
+                            <span class="stat-pill" id="liveCost"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path></svg> ~0.0 ct</span>
+                            <span class="stat-pill" id="liveTokens"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon></svg> 0</span>
+                        </div>
+                        <!-- Placeholder for alignment with archive -->
+                        <div class="actions-grid" style="opacity: 0.2; pointer-events: none;">
+                            <button class="mini-btn"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 8v13H3V8"></path><polyline points="1 3 23 3 23 8 1 8 1 3"></polyline><line x1="10" y1="12" x2="14" y2="12"></line></svg></button>
+                            <button class="mini-btn"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg></button>
+                            <button class="mini-btn"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg></button>
+                            <button class="mini-btn"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
                         </div>
                     </div>
                     <textarea id="activeText" class="seamless-text" readonly placeholder="Sprich in das Mikrofon..."></textarea>
@@ -382,8 +419,8 @@
                 short_name: "Transcribe",
                 start_url: window.location.href.split('?')[0].split('#')[0],
                 display: "standalone",
-                background_color: "#050505",
-                theme_color: "#bfa8e6",
+                background_color: "#000000",
+                theme_color: "#000000",
                 icons: [{ src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjI1IiBmaWxsPSIjYTE4Y2QxIi8+PHBhdGggZD0iTTUwIDI1YTEyIDEyIDAgMCAwLTEyIDEydjE1YTEyIDEyIDAgMCAwIDI0IDBWMzdhMTIgMTIgMCAwIDAtMTItMTJ6TTcwIDUydjJhMjAgMjAgMCAwIDEtNDAgMHYtMmgtNXYyYTI1IDI1IDAgMCAwIDIyIDI0LjhWODVoNnYtNi4yYTI1IDI1IDAgMCAwIDIyLTI0Ljh2LTJoLTV6IiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg==", sizes: "192x192", type: "image/svg+xml", purpose: "any maskable" }]
             };
             const blob = new Blob([JSON.stringify(manifest)], {type: 'application/manifest+json'});
@@ -434,7 +471,7 @@
             container.scrollTop = st;
         }
         
-        // Smart Toast
+        // Smart Toast & Catcher
         function tryCopy(text, showNow = true) {
             if (document.hasFocus()) {
                 navigator.clipboard.writeText(text).catch(e=>{});
@@ -444,13 +481,16 @@
                 els.toastMsg.innerText = "Text bereit!"; els.toast.className = 'visible'; setTimeout(()=>els.toast.className='', 3500);
             }
         }
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden && pendingCopyText) {
+        
+        // Universal Copy Catcher
+        document.body.addEventListener('click', () => {
+            if (pendingCopyText) {
                 navigator.clipboard.writeText(pendingCopyText).catch(e=>{});
                 pendingCopyText = null;
                 els.toastMsg.innerText = "Kopiert!"; els.toast.className = 'visible'; setTimeout(()=>els.toast.className='', 2500);
             }
         });
+
         function showToast(msg) { els.toastMsg.innerText = msg; els.toast.className = 'visible'; setTimeout(()=>els.toast.className='', 2500); }
         function playWarningSound() {
             if (!audioCtxLive) return;
@@ -474,34 +514,33 @@
             document.documentElement.setAttribute('data-theme', themes[currentThemeIdx]);
             els.themeIcon.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">${svgThemes[currentThemeIdx]}</svg>`;
             localStorage.setItem('theme_idx_v98', currentThemeIdx);
-            
-            const metaTheme = document.getElementById('theme-color-meta');
-            metaTheme.setAttribute('content', currentThemeIdx === 1 ? '#050505' : '#ffffff');
-            
             applyTransparency(); updateAnimParams();
         }
 
         // Toggles
         let isAutoSave = localStorage.getItem("autodl_v86") === 'true';
-        window.toggleSave = () => { isAutoSave = !isAutoSave; localStorage.setItem("autodl_v86", isAutoSave); els.btnAutoSave.className = isAutoSave ? 'icon-btn' : 'icon-btn inactive'; };
-        els.btnAutoSave.className = isAutoSave ? 'icon-btn' : 'icon-btn inactive';
+        window.toggleSave = () => { isAutoSave = !isAutoSave; localStorage.setItem("autodl_v86", isAutoSave); els.btnAutoSave.className = isAutoSave ? 'icon-btn active' : 'icon-btn'; showToast(isAutoSave ? "Auto-Save An" : "Auto-Save Aus"); };
+        els.btnAutoSave.className = isAutoSave ? 'icon-btn active' : 'icon-btn';
 
-        window.toggleSysAudio = () => { sysAudioEnabled = !sysAudioEnabled; document.getElementById('sysAudioBtn').className = sysAudioEnabled ? 'icon-btn active' : 'icon-btn inactive'; };
+        window.toggleSysAudio = () => { sysAudioEnabled = !sysAudioEnabled; document.getElementById('sysAudioBtn').className = sysAudioEnabled ? 'icon-btn active' : 'icon-btn'; showToast(sysAudioEnabled ? "System-Audio An" : "System-Audio Aus"); };
+        document.getElementById('sysAudioBtn').className = sysAudioEnabled ? 'icon-btn active' : 'icon-btn';
 
         const cutOptions = [0, 0.5, 1, 2];
         let currentCutIdx = parseInt(localStorage.getItem("autocut_idx_v86") || 3);
         window.cycleAutoCut = () => { currentCutIdx = (currentCutIdx + 1) % cutOptions.length; localStorage.setItem("autocut_idx_v86", currentCutIdx); updateCutBtn(); }
         
-        // Wide Circular Arcs for Auto-Cut
+        // Beautiful Circular Arcs for Auto-Cut (Wide Radius, True Circle logic)
         function updateCutBtn() {
             let arcs = '';
-            if(currentCutIdx >= 1) arcs += `<path d="M 6.5 19.5 A 11 11 0 0 0 17.5 19.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>`;
-            if(currentCutIdx >= 2) arcs += `<path d="M 21.5 13 A 11 11 0 0 0 13 2.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>`;
-            if(currentCutIdx >= 3) arcs += `<path d="M 11 2.5 A 11 11 0 0 0 2.5 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>`;
+            // Using stroke-dasharray on a circle of radius 10 (Circumference ~62.83). Center 12,12.
+            // Dasharray: segment, gap.
+            if (currentCutIdx === 1) arcs = `<circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" stroke-width="2.5" stroke-dasharray="15 47.83" stroke-dashoffset="18" stroke-linecap="round"/>`;
+            if (currentCutIdx === 2) arcs = `<circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" stroke-width="2.5" stroke-dasharray="15 5.94 15 26.89" stroke-dashoffset="18" stroke-linecap="round"/>`;
+            if (currentCutIdx === 3) arcs = `<circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" stroke-width="2.5" stroke-dasharray="15 5.94 15 5.94 15 5.94" stroke-dashoffset="18" stroke-linecap="round"/>`;
             
-            let svg = `<circle cx="6" cy="6" r="3" stroke="currentColor" fill="none" stroke-width="2"/><circle cx="6" cy="18" r="3" stroke="currentColor" fill="none" stroke-width="2"/><line x1="20" y1="4" x2="8.12" y2="15.88" stroke="currentColor" stroke-width="2"/><line x1="14.47" y1="14.48" x2="20" y2="20" stroke="currentColor" stroke-width="2"/><line x1="8.12" y1="8.12" x2="12" y2="12" stroke="currentColor" stroke-width="2"/>${arcs}`;
+            let svg = `<path d="M10 10L14 14M10 14L14 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="9" r="1" stroke="currentColor" fill="none" stroke-width="2"/><circle cx="9" cy="15" r="1" stroke="currentColor" fill="none" stroke-width="2"/>${arcs}`;
             els.btnAutoCut.innerHTML = `<svg viewBox="0 0 24 24">${svg}</svg>`;
-            els.btnAutoCut.className = cutOptions[currentCutIdx] > 0 ? 'icon-btn' : 'icon-btn inactive';
+            els.btnAutoCut.className = cutOptions[currentCutIdx] > 0 ? 'icon-btn active' : 'icon-btn';
         } updateCutBtn();
 
         // === COLOR STUDIO ===
@@ -532,7 +571,7 @@
             let currentHexes;
             
             if (sortedHues.length === 0) {
-                // Monochrome fallback
+                // Monochrome Mode
                 let isDark = themes[currentThemeIdx] === 'dark';
                 let monoHex = isDark ? '#ffffff' : '#000000';
                 document.documentElement.style.setProperty('--c1', monoHex); document.documentElement.style.setProperty('--c2', monoHex);
@@ -743,7 +782,7 @@
             let length = audioBuffer.length;
 
             let validChunks = [];
-            // FIX: Evaluate max energy across all channels individually so System Sound isn't diluted
+            // Evaluate max energy across all channels individually so System Sound isn't diluted
             for(let i=0; i<length; i+=chunkSize) {
                 let maxRms = 0;
                 let actualChunkSize = Math.min(chunkSize, length - i);
@@ -792,18 +831,20 @@
                 if(auds.length>0){ els.micSelect.innerHTML='<option value="default">Default</option>'; auds.forEach(d=>{ els.micSelect.appendChild(new Option(d.label.replace(/\s*\([a-fA-F0-9]{4}:[a-fA-F0-9]{4}\)\s*/g,'').substring(0,15)||'Mic', d.deviceId)); }); }
             } catch(e){}
         } 
-        // Initial request to prompt permissions if needed
         navigator.mediaDevices.getUserMedia({audio:true}).then(s => { s.getTracks().forEach(t=>t.stop()); loadMicrophones(); }).catch(e=>{});
 
         function setMainButtonState(s) {
             if(s==='idle') {
+                els.btnMain.className='btn-circle idle';
                 els.iconMain.innerHTML='<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>';
-                els.btnMain.className='btn-circle'; els.btnPause.classList.remove('visible'); els.btnCancel.classList.remove('visible');
+                els.timer.style.display = 'none';
+                els.btnPause.classList.remove('visible'); els.btnCancel.classList.remove('visible');
             } else if(s==='recording') {
-                els.iconMain.innerHTML='<rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor" stroke="none"></rect>';
                 els.btnMain.className='btn-circle state-recording';
+                els.iconMain.innerHTML='<rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor" stroke="none"></rect>';
+                els.timer.style.display = 'block'; els.timer.style.color="var(--text)";
                 els.iconPause.innerHTML='<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
-                els.btnPause.className='btn-circle side-btn visible'; els.btnCancel.className='btn-circle side-btn visible'; els.timer.style.color="var(--text)";
+                els.btnPause.className='btn-circle side-btn visible'; els.btnCancel.className='btn-circle side-btn visible'; 
             } else if(s==='paused') {
                 els.iconPause.innerHTML='<polygon points="7 4 19 12 7 20" fill="white" stroke="none"></polygon>';
                 els.btnPause.className='btn-circle side-btn visible state-paused'; els.timer.style.color="var(--warn)";
@@ -854,14 +895,14 @@
                     sessionStartTime=Date.now(); totalPauseDelta=0;
                     let sd = new Date(sessionStartTime);
                     els.activeText.value=''; els.activeText.placeholder='Sprich in das Mikrofon...';
-                    els.liveStartTs.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> ${sd.toLocaleDateString()} &nbsp;<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ${sd.toLocaleTimeString()}`;
-                    document.getElementById('liveWords').innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> 0`;
-                    document.getElementById('liveTokens').innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon><circle cx="12" cy="12" r="3"></circle></svg> 0`;
-                    document.getElementById('liveCost').innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path></svg> 0.0`;
+                    els.liveStartTs.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> ${sd.toLocaleDateString()} &nbsp;|&nbsp; <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ${sd.toLocaleTimeString()}`;
+                    document.getElementById('liveWords').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> 0`;
+                    document.getElementById('liveTokens').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon></svg> 0`;
+                    document.getElementById('liveCost').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path></svg> 0.0 ct`;
                     els.activeEntry.style.display='flex'; autoResizeText(els.activeText);
                 }
                 
-                partStartTime=Date.now(); partPauseDelta=0; isRecording=true; updateUIBadges();
+                partStartTime=Date.now(); partPauseDelta=0; isRecording=true; setMainButtonState('recording'); updateUIBadges();
                 mediaRecorder = new MediaRecorder(liveDest.stream, opts);
                 mediaRecorder.ondataavailable = e => { if(e.data.size>0) chunks.push(e.data); };
                 mediaRecorder.onstop = async () => {
@@ -877,7 +918,6 @@
                         sessionBlobs.push(trimmedBlob);
                         processAudio(trimmedBlob, currentPart, wasAuto);
                     } else {
-                        // Completely silent block
                         if(!wasAuto && sessionBlobs.length === 0) { els.activeEntry.style.display='none'; resetUI(); return; }
                     }
                     
@@ -891,7 +931,7 @@
                         resetUI(); finalizeArchive(currentSessionId, sessionBlobs, activeCost, dStr, savedStr);
                     }
                 };
-                mediaRecorder.start(); isPaused=false; if(!timerInt) timerInt=setInterval(timerTick,1000); setMainButtonState('recording');
+                mediaRecorder.start(); isPaused=false; if(!timerInt) timerInt=setInterval(timerTick,1000); 
             } catch(e) { alert('Hardware Fehler: '+e.message); setMainButtonState('idle'); }
         }
 
@@ -903,9 +943,9 @@
             if(cutOptions[currentCutIdx]>0 && pSec >= cutOptions[currentCutIdx]*60) { isAutoCutting=true; els.badgeCut.style.display='flex'; els.badgeListen.style.display='none'; mediaRecorder.stop(); setTimeout(()=> { els.badgeCut.style.display='none'; updateUIBadges(); }, 1200); return; }
             els.timer.innerText = `${Math.floor(tSec/60).toString().padStart(2,'0')}:${(tSec%60).toString().padStart(2,'0')}`;
             let txt = els.activeText.value.trim(); let w = txt?txt.split(/\s+/).length:0;
-            document.getElementById('liveWords').innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> ${w}`;
-            document.getElementById('liveTokens').innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon><circle cx="12" cy="12" r="3"></circle></svg> ${Math.ceil(w/0.75)}`;
-            document.getElementById('liveCost').innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path></svg> ~${activeCost.toFixed(1)}`;
+            document.getElementById('liveWords').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> ${w}`;
+            document.getElementById('liveTokens').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon></svg> ${Math.ceil(w/0.75)}`;
+            document.getElementById('liveCost').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path></svg> ~${activeCost.toFixed(1)} ct`;
         }
 
         function resetUI() { isRecording=isPaused=isAutoCutting=false; clearInterval(timerInt); timerInt=null; setMainButtonState('idle'); els.timer.innerText="00:00"; releaseWakeLock(); updateUIBadges(); stopHardware(); }
@@ -940,24 +980,24 @@
                 rBtn = `<button class="mini-btn safe" onclick="retrySession(${id},this)" title="Ganzes Memo neu transkribieren"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg></button>`;
             }
             
-            let savedPill = savedStr && savedStr !== "0.0s" ? `<span class="stat-pill" title="Stille entfernt"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg> -${savedStr}</span>` : "";
+            let savedPill = savedStr && savedStr !== "0.0s" ? `<span class="stat-pill" title="Stille entfernt"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg> -${savedStr}</span>` : "";
 
             let newE = document.createElement('div'); newE.className = 'entry'; newE.id = `e-${id}`; newE.audioBlobs = bList || [];
             newE.innerHTML = `
-                <div class="entry-header">
-                    <div class="stats-badges" style="width:100%; justify-content:center; margin-bottom:8px;">
-                        <span class="stat-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> ${ts}</span>
-                        <span class="stat-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ${dStr}</span>
-                        <span class="stat-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> ${w}</span>
-                        <span class="stat-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon><circle cx="12" cy="12" r="3"></circle></svg> ${Math.ceil(w/0.75)}</span>
-                        <span class="stat-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path></svg> ~${cost.toFixed(1)}</span>
+                <div class="entry-header-grid">
+                    <div class="stats-grid">
+                        <span class="stat-pill" style="grid-column: 1 / -1;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> ${ts}</span>
+                        <span class="stat-pill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ${dStr}</span>
+                        <span class="stat-pill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> ${w}</span>
+                        <span class="stat-pill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path></svg> ~${cost.toFixed(1)} ct</span>
+                        <span class="stat-pill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon></svg> ${Math.ceil(w/0.75)}</span>
                         ${savedPill}
                     </div>
-                    <div class="entry-actions">
+                    <div class="actions-grid">
                         <button class="mini-btn action" onclick="dlEntryZip(${id})" title="ZIP Download"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 8v13H3V8"></path><polyline points="1 3 23 3 23 8 1 8 1 3"></polyline><line x1="10" y1="12" x2="14" y2="12"></line></svg></button>
                         ${rBtn}
                         <button class="mini-btn" onclick="navigator.clipboard.writeText(document.getElementById('txt-${id}').value); showToast('Kopiert!');" title="Kopieren"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg></button>
-                        <button class="mini-btn danger" onclick="delEntry(${id},this)" title="Löschen"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg></button>
+                        <button class="mini-btn danger" onclick="delEntry(${id},this)" title="Löschen"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
                     </div>
                 </div>
                 <textarea id="txt-${id}" class="seamless-text" oninput="autoResizeText(this)">${txt}</textarea>
@@ -974,7 +1014,7 @@
             let w = txt.split(/\s+/).filter(x=>x).length;
             let tsDate = new Date(sessionStartTime).toLocaleDateString('de-DE',{dateStyle:'short'});
             let tsTime = new Date(sessionStartTime).toLocaleTimeString('de-DE',{timeStyle:'short'}) + " - " + new Date().toLocaleTimeString('de-DE',{timeStyle:'short'});
-            let ts = `${tsDate} ${tsTime}`;
+            let ts = `${tsDate} | ${tsTime}`;
             
             let h = JSON.parse(localStorage.getItem("hist_master")||"[]"); h.push({id:sId, text:txt, ts:ts, cost:cost, durationStr:dStr, savedStr:savedStr}); h.sort((a,b)=>b.id-a.id); if(h.length>30) h.pop(); localStorage.setItem("hist_master", JSON.stringify(h));
 
@@ -993,7 +1033,7 @@
             });
         } loadHistory();
 
-        window.delEntry = (id, btn) => { if(!btn.classList.contains('confirm')){ btn.classList.add('confirm'); btn.innerHTML='<b>Sicher?</b>'; btn.style.background='var(--danger)'; btn.style.color='white'; btn.style.width="auto"; btn.style.padding="0 10px"; setTimeout(()=>{if(document.getElementById(`e-${id}`)){btn.classList.remove('confirm');btn.style.background='';btn.style.color='';btn.style.width="34px";btn.style.padding="0";btn.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>';}},3000); return; } document.getElementById(`e-${id}`).remove(); let h = JSON.parse(localStorage.getItem("hist_master")||"[]"); localStorage.setItem("hist_master", JSON.stringify(h.filter(x=>x.id!=id))); };
+        window.delEntry = (id, btn) => { if(!btn.classList.contains('confirm')){ btn.classList.add('confirm'); btn.innerHTML='<b>Sicher?</b>'; btn.style.background='var(--danger)'; btn.style.color='white'; setTimeout(()=>{if(document.getElementById(`e-${id}`)){btn.classList.remove('confirm');btn.style.background='';btn.style.color='';btn.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';}},3000); return; } document.getElementById(`e-${id}`).remove(); let h = JSON.parse(localStorage.getItem("hist_master")||"[]"); localStorage.setItem("hist_master", JSON.stringify(h.filter(x=>x.id!=id))); };
         window.clearAllHistory = () => { if(confirm("Gesamten Verlauf löschen?")) { localStorage.setItem("hist_master","[]"); window.location.reload(); } };
 
         window.dlEntryZip = async id => { if(!window.JSZip) return; showToast("Packe ZIP..."); let z=new JSZip(), e=document.getElementById(`e-${id}`), t=document.getElementById(`txt-${id}`).value, w=t?t.split(/\s+/).filter(x=>x).length:0; z.file(`text_${id}.txt`, t); z.file(`stats.txt`, `Wörter: ${w}\nToken: ${Math.ceil(w/0.75)}\nID: ${id}`); if(e.audioBlobs && e.audioBlobs.length > 0) e.audioBlobs.forEach((b,i)=>z.folder("audio").file(`rec_${i+1}.wav`, b)); let a=document.createElement('a'); a.href=URL.createObjectURL(await z.generateAsync({type:"blob"})); a.download=`Backup_${id}.zip`; a.click(); };
@@ -1115,6 +1155,8 @@
             } catch (e) { document.getElementById(`txt-${id}`).value = "Fehler: " + e.message; }
         });
 
+        // Initialize state logic for main button on load
+        setMainButtonState('idle');
     </script>
 </body>
 </html>
